@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F71261682D5405C000F65745 /* ChatGPTSwift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		F751BD362D50049F00EDB703 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = Keepsake;
 			packageProductDependencies = (
+				F71261682D5405C000F65745 /* ChatGPTSwift */,
 			);
 			productName = Keepsake;
 			productReference = F751BD252D50049D00EDB703 /* Keepsake.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = F751BD1C2D50049D00EDB703;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F71261672D5405C000F65745 /* XCRemoteSwiftPackageReference "ChatGPTSwift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F751BD262D50049D00EDB703 /* Products */;
 			projectDirPath = "";
@@ -558,6 +567,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F71261672D5405C000F65745 /* XCRemoteSwiftPackageReference "ChatGPTSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/alfianlosari/ChatGPTSwift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F71261682D5405C000F65745 /* ChatGPTSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F71261672D5405C000F65745 /* XCRemoteSwiftPackageReference "ChatGPTSwift" */;
+			productName = ChatGPTSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F751BD1D2D50049D00EDB703 /* Project object */;
 }
