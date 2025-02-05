@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct JournalEntry {
+struct JournalEntry: Encodable {
     var date: String
     var title: String
     var text: String
