@@ -63,4 +63,25 @@ final class KeepsakeAITests {
         }
         print(prompt)
     }
+    
+    @Test
+    func smartPromptForEmptyJournal() async {
+        // Create journal
+        let name: String = "Test Journal"
+        let createdDate: String = "2/6/2025"
+        let entries: [JournalEntry] = []
+        let category: String = "Test"
+        let isSaved: Bool = false
+        let isShared: Bool = false
+        let template: Template = .init(name: "Test Template")
+        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template)
+        
+        // Query AI for prompt
+        let prompt = await vm.getSmartPrompts(journal: journal)
+        guard let prompt else {
+            print("Error: Failed to generate smart prompt")
+            return
+        }
+        print(prompt)
+    }
 }

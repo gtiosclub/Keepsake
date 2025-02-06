@@ -17,7 +17,8 @@ class AIViewModel: ObservableObject {
         // Get all entries in journal
         let journalEntries: [JournalEntry] = journal.entries
         if journalEntries.count == 0 {
-            // TODO: handle no entries
+            print("No journal entries")
+            return "Write your first journal entry to get prompts!"
         }
         
         // Convert entries to JSON
@@ -34,7 +35,7 @@ class AIViewModel: ObservableObject {
             title: <String>
             text: <String>
         }
-        A user wants to write a new JournalEntry. Based on these JournalEntry instances, suggest a one-line prompt that the user can answer when writing their new JournalEntry text. Give higher priority to more recent JournalEntry instances. Respond with only the one-line prompt.
+        A user wants to write a new JournalEntry. Based on these JournalEntry instances, suggest a one-line prompt that the user can answer when writing their new JournalEntry text. Give higher priority to more recent JournalEntry instances. If there are no JournalEntry instances, give a generic journaling prompt. Respond with only the one-line prompt.
         Here is the collection of JournalEntry:
         
         """
@@ -44,17 +45,16 @@ class AIViewModel: ObservableObject {
         
         // Query ChatGPT
         do {
-            let response = try await openAIAPIKey.sendMessage(
+            let response: String = try await openAIAPIKey.sendMessage(
                 text: prompt,
                 model: gptModel!)
-                // TODO: responseFormat
-                //responseFormat: jsonResponseFormat)
             
             print(response)
             
             return response
         } catch {
-            return "Send OpenAI Query Error: \(error.localizedDescription)"
+            print("Send OpenAI Query Error: \(error.localizedDescription)")
+            return "Unable to generate journal prompt."
         }
     }
     
