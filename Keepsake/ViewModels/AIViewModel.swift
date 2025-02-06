@@ -34,7 +34,7 @@ class AIViewModel: ObservableObject {
             title: <String>
             text: <String>
         }
-        A user wants to write a new JournalEntry. Based on these JournalEntry instances, suggest a one-line prompt that the user can answer when writing their new JournalEntry text. Respond with only the one-line prompt.
+        A user wants to write a new JournalEntry. Based on these JournalEntry instances, suggest a one-line prompt that the user can answer when writing their new JournalEntry text. Give higher priority to more recent JournalEntry instances. Respond with only the one-line prompt.
         Here is the collection of JournalEntry:
         
         """
