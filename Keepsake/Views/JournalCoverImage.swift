@@ -130,6 +130,7 @@ struct JournalCoverImage: View {
                     .foregroundStyle(.red)
                 Text("Title")
                     .font(.title)
+                    .opacity(isHidden ? 0 : 1)
                 VStack {
                     ForEach(0..<9, id: \.self) { i in
                         VStack(spacing: 0) {
