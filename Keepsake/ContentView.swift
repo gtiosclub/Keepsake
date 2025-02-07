@@ -10,15 +10,15 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         TabView {
+            HomeView()
+                .tabItem {
+                    Label("Home", systemImage: "house")
+                }
             CommunityView()
                 .tabItem {
                     Label("Community", systemImage: "person.2")
                 }
             
-            HomeView()
-                .tabItem {
-                    Label("Home", systemImage: "house")
-                }
         }.onAppear {
             // correct the transparency bug for Tab bars
             let tabBarAppearance = UITabBarAppearance()
