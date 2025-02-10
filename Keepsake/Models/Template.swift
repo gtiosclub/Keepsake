@@ -8,6 +8,6 @@
 import Foundation
 
 struct Template {
-    var name: String
+    var name: String = "Default"
     //insert other TBD variables like color, line type, etc
 }
