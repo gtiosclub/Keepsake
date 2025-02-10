@@ -9,38 +9,39 @@ import Foundation
 import ChatGPTSwift
 
 class AIViewModel: ObservableObject {
-    var openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
+    var openAIAPIKey = ChatGPTAPI(apiKey: "")
     
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
     
     func getSmartPrompts(journal: Journal) async -> String? {
         // Get all entries in journal
         let journalEntries: [JournalEntry] = journal.entries
+        var prompt: String = ""
         if journalEntries.count == 0 {
             print("No journal entries")
-            return "Write your first journal entry to get prompts!"
-        }
-        
-        // Convert entries to JSON
-        var journalEntriesJson: [String] = []
-        for entry in journalEntries {
-            journalEntriesJson.append(convertJournalEntryToJson(entry: entry))
-        }
-        
-        // Create prompt to give ChatGPT
-        var prompt: String = """
-        I have a collection of type JournalEntry. Each JournalEntry is a JSON object with the following fields:
-        {
-            date: <String>
-            title: <String>
-            text: <String>
-        }
-        A user wants to write a new JournalEntry. Based on these JournalEntry instances, suggest a one-line prompt that the user can answer when writing their new JournalEntry text. Give higher priority to more recent JournalEntry instances. If there are no JournalEntry instances, give a generic journaling prompt. Respond with only the one-line prompt.
-        Here is the collection of JournalEntry:
-        
-        """
-        for json in journalEntriesJson {
-            prompt.append("\n\(json)")
+            prompt = "A user of a journal app wants to write a new journal entry. Suggest a one-line prompt that the user can answer when writing their new entry. Respond with only the prompt, no additional text or quotation marks."
+        } else {
+            
+            // Convert entries to JSON
+            var journalEntriesJson: [String] = []
+            for entry in journalEntries {
+                journalEntriesJson.append(convertJournalEntryToJson(entry: entry))
+            }
+            
+            prompt = """
+                I have a collection of type JournalEntry. Each JournalEntry is a JSON object with the following fields:
+                {
+                    date: <String>
+                    title: <String>
+                    text: <String>
+                }
+                A user wants to write a new JournalEntry. Based on these JournalEntry instances, suggest a one-line prompt that the user can answer when writing their new JournalEntry text. Give higher priority to more recent JournalEntry instances. If there are no JournalEntry instances, give a generic journaling prompt. Respond with only the one-line prompt.
+                Here is the collection of JournalEntry:
+                
+                """
+            for json in journalEntriesJson {
+                prompt.append("\n\(json)")
+            }
         }
         
         // Query ChatGPT
