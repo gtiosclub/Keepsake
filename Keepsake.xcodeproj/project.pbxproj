@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5B27A50C2D5AB30600327B51 /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B27A50B2D5AB30600327B51 /* WatchConnectivity.framework */; };
 		F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F71261682D5405C000F65745 /* ChatGPTSwift */; };
 /* End PBXBuildFile section */
 
@@ -28,6 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5B27A50B2D5AB30600327B51 /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
 		F751BD252D50049D00EDB703 /* Keepsake.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Keepsake.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F751BD352D50049F00EDB703 /* KeepsakeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeepsakeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F751BD3F2D50049F00EDB703 /* KeepsakeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeepsakeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -57,6 +59,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */,
+				5B27A50C2D5AB30600327B51 /* WatchConnectivity.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,12 +80,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5B27A50A2D5AB30600327B51 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5B27A50B2D5AB30600327B51 /* WatchConnectivity.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		F751BD1C2D50049D00EDB703 = {
 			isa = PBXGroup;
 			children = (
 				F751BD272D50049D00EDB703 /* Keepsake */,
 				F751BD382D50049F00EDB703 /* KeepsakeTests */,
 				F751BD422D50049F00EDB703 /* KeepsakeUITests */,
+				5B27A50A2D5AB30600327B51 /* Frameworks */,
 				F751BD262D50049D00EDB703 /* Products */,
 			);
 			sourceTree = "<group>";
