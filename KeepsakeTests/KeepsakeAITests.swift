@@ -84,4 +84,24 @@ final class KeepsakeAITests {
         }
         print(prompt)
     }
+    
+    @Test
+        func topicCompletion() async {
+            // ChatGPT generated test entries
+            let entry1: JournalEntry = .init(
+                date: "2/7/2025, 3:15 pm",
+                title: "Afternoon Entry",
+                text: "I just got done eating at this place called Cheba Hut. They have some of the best subs I have experienced! The sandwich was packed to the brim with meat and cheese, it was sooo good."
+                )
+            
+            
+            // Query AI for prompt
+                let prompt = await vm.topicCompletion(journalEntry: entry1)
+            guard let prompt else {
+                print("Error: Failed to generate smart prompt")
+                return
+            }
+            print(prompt)
+        }
+    
 }

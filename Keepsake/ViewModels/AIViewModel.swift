@@ -7,11 +7,40 @@
 
 import Foundation
 import ChatGPTSwift
+import UIKit
 
 class AIViewModel: ObservableObject {
     var openAIAPIKey = ChatGPTAPI(apiKey: "")
-    
+    @Published var uiImage: UIImage? = nil
+    @Published var isLoading = false
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
+    
+
+    func generateImage(for entry: JournalEntry) async {
+        isLoading = true
+        defer{ isLoading = false }
+        
+        do {
+            let examplePrompt = entry.title + "\n" + entry.text
+            let response = try await openAIAPIKey.generateDallE3Image(prompt: examplePrompt)
+            if let urlString = response.url {
+                self.uiImage = fetchUIImage(from: urlString)
+            }
+        } catch {
+            print("Error: \(error)")
+        }
+    }
+    
+    
+    func fetchUIImage(from urlString: String) -> UIImage? {
+        guard let url = URL(string: urlString), let data = try? Data(contentsOf: url) else {
+           print("Failed to load data from URL!")
+           return nil
+       }
+       return UIImage(data: data)
+    }
+  
+  
     
     func getSmartPrompts(journal: Journal) async -> String? {
         // Get all entries in journal
@@ -58,6 +87,37 @@ class AIViewModel: ObservableObject {
             return "Unable to generate journal prompt."
         }
     }
+    
+    // function for continuing topics based on where you left off in the text
+        func topicCompletion (journalEntry: JournalEntry) async -> String? {
+            let journalEntryJSON: String = (convertJournalEntryToJson(entry: journalEntry))
+            
+            let prompt = """
+               
+               I have a journal entry of type JounralEntry that is now a JSON file with multiple variables:
+               
+               {
+                   date: <String>
+                   title: <String>
+                   text: <String>
+               }
+               
+               I want you to look at where the text ends and return a question that helps the writer think about something else to write past that point based around the same idea. It should be something like "Would you like to talk about...?" relating to an extension of the previous topic. This should not be too long, maybe around 1 line total. 
+               
+               This is the JournalEntry: 
+               
+               \(journalEntryJSON)
+               
+               """
+            
+            do {
+                let response = try await openAIAPIKey.sendMessage(text: prompt, model: gptModel!)
+                return response
+                
+            } catch {
+                return "Error: \(error.localizedDescription)"
+            }
+        }
     
     func convertJournalEntryToJson(entry: JournalEntry) -> String {
         guard let jsonData = try? JSONEncoder().encode(entry) else {
