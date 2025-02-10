@@ -127,4 +127,20 @@ class AIViewModel: ObservableObject {
         }
         return String(data: jsonData, encoding: .utf8)!
     }
+    
+    @Published var summary = ""
+    func summarize(entry: JournalEntry) async {
+            let prompt = "Summarize the entry: Title: \(entry.title) Text: \(entry.text)"
+
+            do {
+                let response = try await openAIAPIKey.sendMessage(
+                    text: prompt,
+                    model: .gpt_hyphen_4
+                )
+
+                self.summary = response
+            } catch {
+                print("Error: \(error.localizedDescription)")
+            }
+        }
 }
