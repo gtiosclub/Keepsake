@@ -106,11 +106,11 @@ struct JournalCoverImage: View {
             }.offset(x: UIScreen.main.bounds.width * -0.25)
             RoundedRectangle(cornerRadius: 10)
                 .frame(width: UIScreen.main.bounds.width * 0.5 + 8, height: UIScreen.main.bounds.height * 0.3)
-                .foregroundStyle(.red)
+                .foregroundStyle(Color(red: 0.96, green: 0.5, blue: 0.5))
                 .offset(x: 4, y: 7)
             RoundedRectangle(cornerRadius: 10)
                 .frame(width: UIScreen.main.bounds.width * 0.5, height: UIScreen.main.bounds.height * 0.3)
-                .foregroundStyle(.yellow)
+                .foregroundStyle(Color(red: 0.96, green: 0.95, blue: 0.78))
                 .offset(x: 5, y: 5)
             VStack {
                 ForEach(0..<9, id: \.self) { i in
@@ -127,7 +127,7 @@ struct JournalCoverImage: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
                     .frame(width: UIScreen.main.bounds.width * 0.5, height: UIScreen.main.bounds.height * 0.3)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(Color(red: 0.96, green: 0.5, blue: 0.5))
                 Text("Title")
                     .font(.title)
                     .opacity(isHidden ? 0 : 1)
