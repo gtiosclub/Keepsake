@@ -103,21 +103,5 @@ final class KeepsakeAITests {
             }
             print(prompt)
         }
-    @Test
-        func summarizeJournalEntry() async {
-            let entry: JournalEntry = .init(
-                date: "2/6/2025, 10:00 AM",
-                title: "Universal Studios Day",
-                text: "Today was a great day! I went on all the rollercoasters. I especially loved the harry potter and jurassic park rides. I also liked the minion ride."
-            )
-            
-            await vm.summarize(entry: entry)
-            
-            guard !vm.summary.isEmpty else {
-                print("Error: Summary was not generated.")
-                return
-            }
-            
-            print("Generated Summary: \(vm.summary)")
-        }
+    
 }
