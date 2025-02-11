@@ -7,85 +7,85 @@
 
 import SwiftUI
 
-struct ShallowArc: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.maxY),
-                          control: CGPoint(x: rect.midX, y: -1 * rect.maxY))
-        
-        return path
+//struct ShallowArc: Shape {
+//    func path(in rect: CGRect) -> Path {
+//        var path = Path()
+//        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+//        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.maxY),
+//                          control: CGPoint(x: rect.midX, y: -1 * rect.maxY))
+//        
+//        return path
+//
+//    }
+//}
+//
+//struct LeftSemi: Shape {
+//    func path(in rect: CGRect) -> Path {
+//        var path = Path()
+//        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+//        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY),
+//                          control: CGPoint(x: rect.minX, y:  rect.minY))
+//        
+//        return path
+//
+//    }
+//}
+//
+//struct RightSemi: Shape {
+//    func path(in rect: CGRect) -> Path {
+//        var path = Path()
+//        path.move(to: CGPoint(x: rect.maxX, y: rect.maxY))
+//        path.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.minY),
+//                          control: CGPoint(x: rect.maxX, y:  rect.minY))
+//        
+//        return path
+//
+//    }
+//}
+//
+//struct BottomLeftSemi: Shape {
+//    func path(in rect: CGRect) -> Path {
+//        var path = Path()
+//        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+//        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.maxY),
+//                          control: CGPoint(x: rect.minX, y:  rect.maxY))
+//        
+//        return path
+//
+//    }
+//}
+//
+//struct ConnectedArcs: Shape {
+//    func path(in rect: CGRect) -> Path {
+//        var path = Path()
+//        
+//        let startX = rect.minX
+//        let endX = rect.maxX
+//        let midX = rect.midX
+//        let midY = rect.midY
+//        let topY = rect.minY
+//        let bottomY = rect.maxY
+//        
+//        // Control points to adjust the curvature
+//        let controlTopY = topY - (rect.height * 0.3)
+//        let controlBottomY = bottomY + (rect.height * 0.2)
+//        
+//        // Move to starting point (left center)
+//        path.move(to: CGPoint(x: endX, y: midY))
+//        
+//        // Top arc (left to right)
+//        path.addQuadCurve(to: CGPoint(x: startX, y: midY),
+//                          control: CGPoint(x: midX, y: controlTopY))
+//        
+//        // Bottom arc (right to left) - completing the loop
+//        path.addQuadCurve(to: CGPoint(x: midX, y: rect.maxY),
+//                          control: CGPoint(x: midX, y: controlBottomY))
+//        
+//        return path
+//    }
+//}
 
-    }
-}
-
-struct LeftSemi: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY),
-                          control: CGPoint(x: rect.minX, y:  rect.minY))
-        
-        return path
-
-    }
-}
-
-struct RightSemi: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.minY),
-                          control: CGPoint(x: rect.maxX, y:  rect.minY))
-        
-        return path
-
-    }
-}
-
-struct BottomLeftSemi: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.maxY),
-                          control: CGPoint(x: rect.minX, y:  rect.maxY))
-        
-        return path
-
-    }
-}
-
-struct ConnectedArcs: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        
-        let startX = rect.minX
-        let endX = rect.maxX
-        let midX = rect.midX
-        let midY = rect.midY
-        let topY = rect.minY
-        let bottomY = rect.maxY
-        
-        // Control points to adjust the curvature
-        let controlTopY = topY - (rect.height * 0.3)
-        let controlBottomY = bottomY + (rect.height * 0.2)
-        
-        // Move to starting point (left center)
-        path.move(to: CGPoint(x: endX, y: midY))
-        
-        // Top arc (left to right)
-        path.addQuadCurve(to: CGPoint(x: startX, y: midY),
-                          control: CGPoint(x: midX, y: controlTopY))
-        
-        // Bottom arc (right to left) - completing the loop
-        path.addQuadCurve(to: CGPoint(x: midX, y: rect.maxY),
-                          control: CGPoint(x: midX, y: controlBottomY))
-        
-        return path
-    }
-}
-
-struct JournalCoverImage: View {
+struct JournalAnimation: View {
     @State var degrees: Double = 0
     @State var isHidden: Bool = false
     @State var coverZIndex: Double = 2
@@ -170,7 +170,7 @@ struct JournalCoverImage: View {
 }
 
 #Preview {
-    JournalCoverImage()
+    JournalAnimation()
 }
 
 

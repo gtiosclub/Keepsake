@@ -8,10 +8,10 @@ import SwiftUI
 
 struct HomepageView: View {
     var journals: [Journal] = [
-        Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template()),
-        Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template()),
-        Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template()),
-        Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template())
+        Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .white, titleColor: .black)),
+        Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .green, pageColor: .white, titleColor: .black)),
+        Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(coverColor: .blue, pageColor: .black, titleColor: .white)),
+        Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(coverColor: .brown, pageColor: .white, titleColor: .black))
     ]
     
     var body: some View {
@@ -38,11 +38,7 @@ struct HomepageView: View {
                             let verticalOffset = calculateVerticalOffset(proxy: geometry)
                             
                             VStack(spacing: 35) {
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.5))
-                                    .frame(width: 240, height: 330)
-                                    .cornerRadius(10)
-                                
+                                JournalCover(journal: journals[index])
                                 VStack(spacing: 10) {
                                     //Journal name, date, created by you
                                     Text(journals[index].name)
