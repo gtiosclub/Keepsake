@@ -9,7 +9,8 @@ import Foundation
 import SwiftUI
 
 struct VoiceRecordingView: View {
-    var body: some view {
+    
+    var body: some View {
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
