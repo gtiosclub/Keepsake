@@ -7,7 +7,12 @@
 
 import Foundation
 
-struct Journal {
+protocol Book {
+    var template: Template { get set }
+    var name: String { get }
+}
+
+struct Journal: Book {
     var name: String
     var createdDate: String
     var entries: [JournalEntry]

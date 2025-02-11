@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct HomepageView: View {
+    var shelf: Shelf
     var journals: [Journal] = [
         Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .white, titleColor: .black)),
         Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .green, pageColor: .white, titleColor: .black)),
@@ -33,12 +34,12 @@ struct HomepageView: View {
             //Journals
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 45) {
-                    ForEach(journals.indices, id: \.self) { index in
+                    ForEach(shelf.books.indices, id: \.self) { index in
                         GeometryReader { geometry in
                             let verticalOffset = calculateVerticalOffset(proxy: geometry)
                             
                             VStack(spacing: 35) {
-                                JournalCover(journal: journals[index])
+                                JournalCover(book: shelf.books[index])
                                 VStack(spacing: 10) {
                                     //Journal name, date, created by you
                                     Text(journals[index].name)
@@ -86,5 +87,10 @@ struct HomepageView: View {
 }
 
 #Preview {
-    HomepageView()
+    HomepageView(shelf: Shelf(name: "Bookshelf", books: [
+        Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .white, titleColor: .black)),
+        Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .green, pageColor: .white, titleColor: .black)),
+        Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(coverColor: .blue, pageColor: .black, titleColor: .white)),
+        Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(coverColor: .brown, pageColor: .white, titleColor: .black))
+    ]))
 }

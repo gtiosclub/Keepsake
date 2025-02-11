@@ -46,7 +46,7 @@ struct BottomLeftSemi: Shape {
 }
 
 struct JournalCover: View {
-    @State var journal: Journal
+    @State var book: Book
 //    @State var coverColor: Color
 //    @State var pageColor: Color
 //    @State var titleText: String
@@ -68,11 +68,11 @@ struct JournalCover: View {
             }.offset(x: UIScreen.main.bounds.width * -0.25)
             RoundedRectangle(cornerRadius: 10)
                 .frame(width: UIScreen.main.bounds.width * 0.5 + 8, height: UIScreen.main.bounds.height * 0.3)
-                .foregroundStyle(journal.template.coverColor)
+                .foregroundStyle(book.template.coverColor)
                 .offset(x: 4, y: 7)
             RoundedRectangle(cornerRadius: 10)
                 .frame(width: UIScreen.main.bounds.width * 0.5, height: UIScreen.main.bounds.height * 0.3)
-                .foregroundStyle(journal.template.pageColor)
+                .foregroundStyle(book.template.pageColor)
                 .offset(x: 5, y: 5)
             VStack {
                 ForEach(0..<9, id: \.self) { i in
@@ -89,10 +89,10 @@ struct JournalCover: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
                     .frame(width: UIScreen.main.bounds.width * 0.5, height: UIScreen.main.bounds.height * 0.3)
-                    .foregroundStyle(journal.template.coverColor)
-                Text(journal.name)
+                    .foregroundStyle(book.template.coverColor)
+                Text(book.name)
                     .font(.title)
-                    .foregroundStyle(journal.template.titleColor)
+                    .foregroundStyle(book.template.titleColor)
                 VStack {
                     ForEach(0..<9, id: \.self) { i in
                         VStack(spacing: 0) {
@@ -112,7 +112,7 @@ struct JournalCover: View {
     }
 }
 #Preview {
-    JournalCover(journal: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .green, pageColor: .white, titleColor: .black)))
+    JournalCover(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .green, pageColor: .white, titleColor: .black)))
 }
 
 //Color(red: 0.96, green: 0.5, blue: 0.5)
