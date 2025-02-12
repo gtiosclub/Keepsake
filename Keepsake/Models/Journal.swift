@@ -10,6 +10,7 @@ import Foundation
 protocol Book {
     var template: Template { get set }
     var name: String { get }
+    var createdDate: String { get }
 }
 
 struct Journal: Book {

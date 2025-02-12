@@ -9,5 +9,5 @@ import Foundation
 
 struct Shelf {
     var name: String
-    var books: [Book]
+    var books: [any Book]
 }

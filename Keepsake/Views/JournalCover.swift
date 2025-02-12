@@ -5,52 +5,13 @@
 //  Created by Alec Hance on 2/10/25.
 //
 
-import SwiftUI
 
 import SwiftUI
-
-struct LeftSemi: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY),
-                          control: CGPoint(x: rect.minX, y:  rect.minY))
-        
-        return path
-
-    }
-}
-
-struct RightSemi: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.minY),
-                          control: CGPoint(x: rect.maxX, y:  rect.minY))
-        
-        return path
-
-    }
-}
-
-struct BottomLeftSemi: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.maxY),
-                          control: CGPoint(x: rect.minX, y:  rect.maxY))
-        
-        return path
-
-    }
-}
 
 struct JournalCover: View {
-    @State var book: Book
-//    @State var coverColor: Color
-//    @State var pageColor: Color
-//    @State var titleText: String
-//    @State var titleColor: Color
+    @State var book: any Book
+//    @Binding var degrees: CGFloat
+    @State var degrees: CGFloat
     var body: some View {
         ZStack {
             VStack {
@@ -107,13 +68,13 @@ struct JournalCover: View {
                     }
                 }.offset(x: UIScreen.main.bounds.width * -0.24)
                 
-            }
+            }.rotation3DEffect(.degrees(degrees), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint.leading, anchorZ: 0, perspective: 0.2)
         }
     }
 }
-#Preview {
-    JournalCover(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .green, pageColor: .white, titleColor: .black)))
-}
+//#Preview {
+//    JournalCover(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .green, pageColor: .white, titleColor: .black)), degrees: 0)
+//}
 
 //Color(red: 0.96, green: 0.5, blue: 0.5)
 //Color(red: 0.96, green: 0.95, blue: 0.78)
