@@ -47,6 +47,7 @@ struct OpenJournal: View {
     @State var book: any Book
     @Binding var degrees: CGFloat
     @State var isHidden: Bool = false
+    @Binding var show: Bool
     var body: some View {
         ZStack {
             VStack {
@@ -105,6 +106,24 @@ struct OpenJournal: View {
                 }.offset(x: UIScreen.main.bounds.width * -0.43)
                 
             }.rotation3DEffect(.degrees(degrees), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint.leading, anchorZ: 0, perspective: 0.2)
+            HStack {
+                Button("Back") {
+                    withAnimation(.linear(duration: 1).delay(0.5)) {
+                        degrees += 180
+                    } completion: {
+                        withAnimation {
+                            show.toggle()
+                        }
+                    }
+                }
+                Button("Page left") {
+                    
+                }
+                Button("Page Right"){
+                    
+                }
+                
+            }.offset(y: 280)
         }
     }
 }
@@ -116,8 +135,9 @@ struct OpenJournal: View {
 #Preview {
     struct Preview: View {
         @State var number: CGFloat = -180.0
+        @State var show: Bool = true
         var body: some View {
-            OpenJournal(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .white, titleColor: .black)), degrees: $number)
+            OpenJournal(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .white, titleColor: .black)), degrees: $number, show: $show)
         }
     }
 

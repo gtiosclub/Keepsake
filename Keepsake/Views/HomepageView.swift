@@ -83,19 +83,10 @@ struct HomepageView: View {
             }
             .frame(maxHeight: .infinity, alignment: .top)
         } else {
-            OpenJournal(book: shelf.books[number], degrees: $degrees).matchedGeometryEffect(id: "journal_\(number)", in: shelfNamespace, properties: .position, anchor: .center)
+            OpenJournal(book: shelf.books[number], degrees: $degrees, show: $show).matchedGeometryEffect(id: "journal_\(number)", in: shelfNamespace, properties: .position, anchor: .center)
                 .onAppear() {
                     withAnimation(.linear(duration: 1).delay(0.7)) {
                         degrees = -180
-                    }
-                }
-                .onTapGesture {
-                    withAnimation(.linear(duration: 1).delay(0.5)) {
-                        degrees += 180
-                    } completion: {
-                        withAnimation {
-                            show.toggle()
-                        }
                     }
                 }
         }
