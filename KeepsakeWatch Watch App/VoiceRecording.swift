@@ -8,19 +8,29 @@
 import Foundation
 import SwiftUI
 
-struct VoiceRecordingView: View {
-    
+struct WatchFaceView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        ZStack {
+            Color.black.edgesIgnoringSafeArea(.all) // Black background like watchOS faces
+            
+            VStack(spacing: 8) {
+                Text("Recording")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.white)
+                Circle()
+                    .fill(Color.red)
+                    .frame(width: 70, height: 70)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white, lineWidth: 1)
+                    )
+            }
         }
-        .padding()
     }
 }
 
-#Preview {
-    VoiceRecordingView()
+struct WatchFaceView_Previews: PreviewProvider {
+    static var previews: some View {
+        WatchFaceView()
+    }
 }
