@@ -10,9 +10,15 @@ struct HomepageView: View {
     @Namespace private var shelfNamespace
     var shelf: Shelf
     @State var degrees: CGFloat = 0
+    @State var frontDegrees: CGFloat = 0
     @State var show: Bool = false
     @State var number = 0
     @State var bind: Int?
+    @State var coverZ: Double = 0
+    @State var circleStart: CGFloat = 0.5
+    @State var circleEnd: CGFloat = 0.5
+    @State var ellipseStart: CGFloat = 1
+    @State var ellipseEnd: CGFloat = 1
 //    @State var isHidden: Bool = false
 //    @State var selectedBook: Int = -1
     
@@ -83,10 +89,23 @@ struct HomepageView: View {
             }
             .frame(maxHeight: .infinity, alignment: .top)
         } else {
-            OpenJournal(book: (shelf.books[number] as? Journal)!, degrees: $degrees, show: $show, displayPageIndex: 0).matchedGeometryEffect(id: "journal_\(number)", in: shelfNamespace, properties: .position, anchor: .center)
+            OpenJournal(book: (shelf.books[number] as? Journal)!, degrees: $degrees, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: 0, coverZ: $coverZ).matchedGeometryEffect(id: "journal_\(number)", in: shelfNamespace, properties: .position, anchor: .center)
                 .onAppear() {
-                    withAnimation(.linear(duration: 1).delay(0.7)) {
-                        degrees = -180
+                    circleStart = 1
+                    circleEnd = 1
+                    withAnimation(.linear(duration: 0.7).delay(0.7)) {
+                        circleStart -= 0.25
+                        degrees -= 90
+                        frontDegrees -= 90
+                    } completion: {
+                        circleStart = 0.5
+                        circleEnd = 0.75
+                        coverZ = -1
+                        withAnimation(.linear(duration: 0.7).delay(0)) {
+                            circleEnd -= 0.25
+                            degrees -= 90
+                            frontDegrees -= 90
+                        }
                     }
                 }
         }
@@ -104,9 +123,9 @@ struct HomepageView: View {
 
 #Preview {
     HomepageView(shelf: Shelf(name: "Bookshelf", books: [
-        Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .white, titleColor: .black), pages: []),
-        Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .green, pageColor: .white, titleColor: .black), pages: []),
-        Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(coverColor: .blue, pageColor: .black, titleColor: .white), pages: []),
-        Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(coverColor: .brown, pageColor: .white, titleColor: .black), pages: [])
+        Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: Color(red: 0.9, green: 0.9, blue: 0.9), titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
+        Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .green, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
+        Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(coverColor: .blue, pageColor: .black, titleColor: .white), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
+        Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(coverColor: .brown, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])])
     ]))
 }
