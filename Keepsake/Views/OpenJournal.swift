@@ -50,6 +50,7 @@ struct OpenJournal: View {
     @State var displayIsHidden: Bool = false
     @State var frontIsHidden: Bool = true
     @Binding var coverZ: Double
+    @Binding var scaleFactor: CGFloat
     var body: some View {
         ZStack {
             VStack {
@@ -62,7 +63,7 @@ struct OpenJournal: View {
             }.offset(x: UIScreen.main.bounds.width * -0.45)
                 .zIndex(-100)
             RoundedRectangle(cornerRadius: 10)
-                .frame(width: UIScreen.main.bounds.width * 0.9 + 8, height: UIScreen.main.bounds.height * 0.56)
+                .frame(width: UIScreen.main.bounds.width * 0.92, height: UIScreen.main.bounds.height * 0.56)
                 .foregroundStyle(book.template.coverColor)
                 .offset(x: UIScreen.main.bounds.height * 0.004, y: 0)
                 .zIndex(-4)
@@ -154,8 +155,12 @@ struct OpenJournal: View {
                             degrees += 90
                             frontDegrees += 90
                         } completion: {
-                            withAnimation(.linear(duration: 1).delay(0.5)) {
-                                show.toggle()
+                            withAnimation(.linear(duration: 0.7)) {
+                                scaleFactor = 0.6
+                            } completion: {
+                                withAnimation {
+                                    show.toggle()
+                                }
                             }
                         }
                     }
@@ -219,8 +224,9 @@ struct OpenJournal: View {
         @State var cover: Double = -2
         @State var circleStart: CGFloat = 1
         @State var circleEnd: CGFloat = 1
+        @State var scaleFactor: CGFloat = 0.6
         var body: some View {
-            OpenJournal(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .gray, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]), degrees: $number, show: $show, frontDegrees: $number2, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: 2, coverZ: $cover)
+            OpenJournal(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .gray, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]), degrees: $number, show: $show, frontDegrees: $number2, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: 2, coverZ: $cover, scaleFactor: $scaleFactor)
         }
     }
 

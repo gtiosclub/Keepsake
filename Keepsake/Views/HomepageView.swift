@@ -19,6 +19,7 @@ struct HomepageView: View {
     @State var circleEnd: CGFloat = 0.5
     @State var ellipseStart: CGFloat = 1
     @State var ellipseEnd: CGFloat = 1
+    @State var scaleEffect: CGFloat = 0.6
 //    @State var isHidden: Bool = false
 //    @State var selectedBook: Int = -1
     
@@ -47,10 +48,13 @@ struct HomepageView: View {
                                 let verticalOffset = calculateVerticalOffset(proxy: geometry)
                                 VStack(spacing: 35) {
                                     JournalCover(book: shelf.books[index], degrees: 0)
+                                        .scaleEffect(scaleEffect)
+                                        .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                                        .transition(.identity)
                                         .matchedGeometryEffect(id: "journal_\(index)", in: shelfNamespace, properties: .position, anchor: .center)
                                         .onTapGesture {
                                             number = index
-                                            withAnimation(.linear(duration: 0.5)) {
+                                            withAnimation(.linear(duration: 0.7)) {
                                                 show.toggle()
                                             }
                                         }
@@ -89,8 +93,14 @@ struct HomepageView: View {
             }
             .frame(maxHeight: .infinity, alignment: .top)
         } else {
-            OpenJournal(book: (shelf.books[number] as? Journal)!, degrees: $degrees, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: 0, coverZ: $coverZ).matchedGeometryEffect(id: "journal_\(number)", in: shelfNamespace, properties: .position, anchor: .center)
+            OpenJournal(book: (shelf.books[number] as? Journal)!, degrees: $degrees, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: 2, coverZ: $coverZ, scaleFactor: $scaleEffect).matchedGeometryEffect(id: "journal_\(number)", in: shelfNamespace, properties: .position, anchor: .center)
+                .scaleEffect(scaleEffect)
+                .transition(.slide)
+                .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                 .onAppear() {
+                    withAnimation(.linear(duration: 0.7).delay(0.7)) {
+                        scaleEffect = 1
+                    }
                     circleStart = 1
                     circleEnd = 1
                     withAnimation(.linear(duration: 0.7).delay(0.7)) {
