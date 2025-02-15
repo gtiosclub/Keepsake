@@ -7,6 +7,7 @@
 import Testing
 @testable import Keepsake
 import Foundation
+import UIKit
 
 final class KeepsakeAITests {
     var vm: AIViewModel = AIViewModel()
@@ -104,4 +105,17 @@ final class KeepsakeAITests {
             print(prompt)
         }
     
+    @Test
+    func imageCaptionGeneration() async {
+        guard let image = UIImage(named: "TestAICaptionImage") else {
+            print("Failed to load test image")
+            return
+        }
+        let caption = await vm.generateCaptionForImage(image: image)
+        guard let caption else {
+            print("Failed to generate caption")
+            return
+        }
+        print(caption)
+    }
 }
