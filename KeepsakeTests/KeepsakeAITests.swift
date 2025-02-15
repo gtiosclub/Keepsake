@@ -53,7 +53,7 @@ final class KeepsakeAITests {
         let category: String = "Test"
         let isSaved: Bool = false
         let isShared: Bool = false
-        let template: Template = .init(name: "Test Template")
+        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
         let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template)
         
         // Query AI for prompt
@@ -74,7 +74,7 @@ final class KeepsakeAITests {
         let category: String = "Test"
         let isSaved: Bool = false
         let isShared: Bool = false
-        let template: Template = .init(name: "Test Template")
+        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
         let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template)
         
         // Query AI for prompt
