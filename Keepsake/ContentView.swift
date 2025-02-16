@@ -18,6 +18,10 @@ struct ContentView: View {
                 .tabItem {
                     Label("Community", systemImage: "person.2")
                 }
+            ScrapbookView()
+                .tabItem {
+                    Label("Scrapbooks", systemImage: "ellipsis.viewfinder")
+                }
             
         }.onAppear {
             // correct the transparency bug for Tab bars
