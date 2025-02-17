@@ -19,10 +19,14 @@ class TextBoxEntity: Entity {
         // Create the TextComponent component (built-in component that includes a mesh background)
         var textComponent = TextComponent()
         textComponent.backgroundColor = CGColor(gray: 0.5, alpha: 0.8)
+        
+        // Separately instatiatied width and height to use in collision box dimensions
         let componentWidth: Float = 2000
         let componentHeight: Float = 1000
         textComponent.size = CGSize(width: Int(componentWidth), height: Int(componentHeight))
         textComponent.cornerRadius = 100
+        
+        // Set insets for now, need to figure out how to center text later
         textComponent.edgeInsets = UIEdgeInsets(top: 100, left: 200, bottom: 100, right: 200)
         
         // TextComponent takes in a Attributed String instead of a normal string so needs extra work to instantiate
