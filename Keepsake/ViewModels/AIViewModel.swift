@@ -16,6 +16,7 @@ class AIViewModel: ObservableObject {
     @Published var isLoading = false
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
     
+    // FUTURE: Can change to accept URL instead of UIImage if needed, just change "url" field and do not convert to base64 string
     func generateCaptionForImage(image: UIImage) async -> String? {
         let errorResponse: String = "Unable to generate image caption."
         
