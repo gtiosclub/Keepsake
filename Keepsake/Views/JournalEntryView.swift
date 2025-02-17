@@ -18,24 +18,34 @@ struct JournelEntryView: View {
             ZStack {
                 Rectangle()
                     .fill(Color.gray)
-                    .frame(width: 300, height: 100)
+                    .frame(width: 300, height: 40)
                     .cornerRadius(10)
-
-                VStack(alignment: .leading, spacing: 5) {
-                    HStack {
-                        Text("Date:")
-                            .font(.headline)
-                        TextField("Enter date", text: $date_text)
-                    }
-
-                    HStack {
-                        Text("Prompt:")
-                            .font(.headline)
-                        TextField("Enter prompt", text: $prompt_text)
-                    }
+                HStack {
+                    Text("Date:")
+                        .font(.headline)
+                    TextField("Enter date", text: $date_text)
+                }
+                .padding(.horizontal, 10) // Provide inner spacing
+                .frame(width: 300, height: 40) // Constrain the HStack
+            }
+            
+            ZStack {
+                Rectangle()
+                    .fill(Color.orange)
+                    .frame(width: 300, height: 80)
+                HStack{
+                    Text("Prompt:")
+                        .font(.headline)
+                        .multilineTextAlignment(TextAlignment.leading)
+                    
+                    TextEditor(text: $prompt_text)
+                        .padding(5)
+                        .foregroundColor(.white)
+                        .frame(width: 205, height: 70)
+                        .scrollContentBackground(.hidden)
                 }
                 .padding(.horizontal, 10)
-                .frame(width: 300, height: 100)
+                .frame(width: 300, height: 70)
             }
 
             ZStack(alignment: .topLeading) {
