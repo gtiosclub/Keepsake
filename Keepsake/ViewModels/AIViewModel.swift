@@ -16,6 +16,48 @@ class AIViewModel: ObservableObject {
     @Published var isLoading = false
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
     
+    func getRelevantScrapbookEntries(scrapbook: Scrapbook, query: String, numHighlights: Int) async -> [ScrapbookEntry] {
+        let errorResponse: [ScrapbookEntry] = []
+        
+        // Get all captions in scrapbook
+        let captions: [String] = scrapbook.entries.compactMap { $0.caption }
+        if captions.isEmpty {
+            // No captions in the scrapbook
+            return []
+        }
+        var numHighlights: Int = numHighlights
+        if numHighlights > captions.count {
+            numHighlights = captions.count
+        }
+        
+        // ChatGPT Prompt
+        let prompt: String = """
+            You will be given an array of image captions and a user query. Read the user query and find \(numHighlights) image captions that best match this query. Respond with a list of indices that correspond to the given image captions array, using zero-based indexing. Respond with only these indices separated by commas.
+            Here is the array of image captions:
+            \(captions)
+            Here is the user query:
+            \(query)
+            """
+        
+        // Query ChatGPT
+        var response: String = ""
+        do {
+            response = try await openAIAPIKey.sendMessage(
+                text: prompt,
+                model: gptModel!)
+            
+            print(response)
+        } catch {
+            print("Send OpenAI Query Error: \(error.localizedDescription)")
+            return errorResponse
+        }
+        
+        // Parse indices
+        // Stopped working here
+        
+        return []
+    }
+    
     // FUTURE: Can change to accept URL instead of UIImage if needed, just change "url" field and do not convert to base64 string
     func generateCaptionForImage(image: UIImage) async -> String? {
         let errorResponse: String = "Unable to generate image caption."
