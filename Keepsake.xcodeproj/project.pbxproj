@@ -7,10 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4873C38C2D6138F400BDBC2D /* RealityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4873C38A2D6136AF00BDBC2D /* RealityKit.framework */; };
+		5B27A50C2D5AB30600327B51 /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B27A50B2D5AB30600327B51 /* WatchConnectivity.framework */; };
+		5B27A5342D5AB33500327B51 /* KeepsakeWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 5B27A5112D5AB33400327B51 /* KeepsakeWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F71261682D5405C000F65745 /* ChatGPTSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		5B27A5212D5AB33500327B51 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F751BD1D2D50049D00EDB703 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5B27A5102D5AB33400327B51;
+			remoteInfo = "KeepsakeWatch Watch App";
+		};
+		5B27A52B2D5AB33500327B51 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F751BD1D2D50049D00EDB703 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5B27A5102D5AB33400327B51;
+			remoteInfo = "KeepsakeWatch Watch App";
+		};
+		5B27A5322D5AB33500327B51 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F751BD1D2D50049D00EDB703 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5B27A5102D5AB33400327B51;
+			remoteInfo = "KeepsakeWatch Watch App";
+		};
 		F751BD362D50049F00EDB703 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F751BD1D2D50049D00EDB703 /* Project object */;
@@ -27,13 +51,47 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		5B27A5382D5AB33500327B51 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				5B27A5342D5AB33500327B51 /* KeepsakeWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		4873C38A2D6136AF00BDBC2D /* RealityKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealityKit.framework; path = System/Library/Frameworks/RealityKit.framework; sourceTree = SDKROOT; };
+		5B27A50B2D5AB30600327B51 /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
+		5B27A5112D5AB33400327B51 /* KeepsakeWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "KeepsakeWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5B27A5202D5AB33500327B51 /* KeepsakeWatch Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KeepsakeWatch Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5B27A52A2D5AB33500327B51 /* KeepsakeWatch Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KeepsakeWatch Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F751BD252D50049D00EDB703 /* Keepsake.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Keepsake.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F751BD352D50049F00EDB703 /* KeepsakeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeepsakeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F751BD3F2D50049F00EDB703 /* KeepsakeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeepsakeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		5B27A5122D5AB33400327B51 /* KeepsakeWatch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "KeepsakeWatch Watch App";
+			sourceTree = "<group>";
+		};
+		5B27A5232D5AB33500327B51 /* KeepsakeWatch Watch AppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "KeepsakeWatch Watch AppTests";
+			sourceTree = "<group>";
+		};
+		5B27A52D2D5AB33500327B51 /* KeepsakeWatch Watch AppUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "KeepsakeWatch Watch AppUITests";
+			sourceTree = "<group>";
+		};
 		F751BD272D50049D00EDB703 /* Keepsake */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Keepsake;
@@ -52,11 +110,34 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		5B27A50E2D5AB33400327B51 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5B27A51D2D5AB33500327B51 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5B27A5272D5AB33500327B51 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F751BD222D50049D00EDB703 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4873C38C2D6138F400BDBC2D /* RealityKit.framework in Frameworks */,
 				F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */,
+				5B27A50C2D5AB30600327B51 /* WatchConnectivity.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,12 +158,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5B27A50A2D5AB30600327B51 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4873C38A2D6136AF00BDBC2D /* RealityKit.framework */,
+				5B27A50B2D5AB30600327B51 /* WatchConnectivity.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		F751BD1C2D50049D00EDB703 = {
 			isa = PBXGroup;
 			children = (
 				F751BD272D50049D00EDB703 /* Keepsake */,
 				F751BD382D50049F00EDB703 /* KeepsakeTests */,
 				F751BD422D50049F00EDB703 /* KeepsakeUITests */,
+				5B27A5122D5AB33400327B51 /* KeepsakeWatch Watch App */,
+				5B27A5232D5AB33500327B51 /* KeepsakeWatch Watch AppTests */,
+				5B27A52D2D5AB33500327B51 /* KeepsakeWatch Watch AppUITests */,
+				5B27A50A2D5AB30600327B51 /* Frameworks */,
 				F751BD262D50049D00EDB703 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -93,6 +187,9 @@
 				F751BD252D50049D00EDB703 /* Keepsake.app */,
 				F751BD352D50049F00EDB703 /* KeepsakeTests.xctest */,
 				F751BD3F2D50049F00EDB703 /* KeepsakeUITests.xctest */,
+				5B27A5112D5AB33400327B51 /* KeepsakeWatch Watch App.app */,
+				5B27A5202D5AB33500327B51 /* KeepsakeWatch Watch AppTests.xctest */,
+				5B27A52A2D5AB33500327B51 /* KeepsakeWatch Watch AppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -100,6 +197,74 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		5B27A5102D5AB33400327B51 /* KeepsakeWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5B27A5352D5AB33500327B51 /* Build configuration list for PBXNativeTarget "KeepsakeWatch Watch App" */;
+			buildPhases = (
+				5B27A50D2D5AB33400327B51 /* Sources */,
+				5B27A50E2D5AB33400327B51 /* Frameworks */,
+				5B27A50F2D5AB33400327B51 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5B27A5122D5AB33400327B51 /* KeepsakeWatch Watch App */,
+			);
+			name = "KeepsakeWatch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "KeepsakeWatch Watch App";
+			productReference = 5B27A5112D5AB33400327B51 /* KeepsakeWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5B27A51F2D5AB33500327B51 /* KeepsakeWatch Watch AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5B27A5392D5AB33500327B51 /* Build configuration list for PBXNativeTarget "KeepsakeWatch Watch AppTests" */;
+			buildPhases = (
+				5B27A51C2D5AB33500327B51 /* Sources */,
+				5B27A51D2D5AB33500327B51 /* Frameworks */,
+				5B27A51E2D5AB33500327B51 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5B27A5222D5AB33500327B51 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5B27A5232D5AB33500327B51 /* KeepsakeWatch Watch AppTests */,
+			);
+			name = "KeepsakeWatch Watch AppTests";
+			packageProductDependencies = (
+			);
+			productName = "KeepsakeWatch Watch AppTests";
+			productReference = 5B27A5202D5AB33500327B51 /* KeepsakeWatch Watch AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5B27A5292D5AB33500327B51 /* KeepsakeWatch Watch AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5B27A53C2D5AB33500327B51 /* Build configuration list for PBXNativeTarget "KeepsakeWatch Watch AppUITests" */;
+			buildPhases = (
+				5B27A5262D5AB33500327B51 /* Sources */,
+				5B27A5272D5AB33500327B51 /* Frameworks */,
+				5B27A5282D5AB33500327B51 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5B27A52C2D5AB33500327B51 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5B27A52D2D5AB33500327B51 /* KeepsakeWatch Watch AppUITests */,
+			);
+			name = "KeepsakeWatch Watch AppUITests";
+			packageProductDependencies = (
+			);
+			productName = "KeepsakeWatch Watch AppUITests";
+			productReference = 5B27A52A2D5AB33500327B51 /* KeepsakeWatch Watch AppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		F751BD242D50049D00EDB703 /* Keepsake */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F751BD492D50049F00EDB703 /* Build configuration list for PBXNativeTarget "Keepsake" */;
@@ -107,10 +272,12 @@
 				F751BD212D50049D00EDB703 /* Sources */,
 				F751BD222D50049D00EDB703 /* Frameworks */,
 				F751BD232D50049D00EDB703 /* Resources */,
+				5B27A5382D5AB33500327B51 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				5B27A5332D5AB33500327B51 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				F751BD272D50049D00EDB703 /* Keepsake */,
@@ -176,9 +343,20 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1620;
+				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
+					5B27A5102D5AB33400327B51 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					5B27A51F2D5AB33500327B51 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 5B27A5102D5AB33400327B51;
+					};
+					5B27A5292D5AB33500327B51 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 5B27A5102D5AB33400327B51;
+					};
 					F751BD242D50049D00EDB703 = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -212,11 +390,35 @@
 				F751BD242D50049D00EDB703 /* Keepsake */,
 				F751BD342D50049F00EDB703 /* KeepsakeTests */,
 				F751BD3E2D50049F00EDB703 /* KeepsakeUITests */,
+				5B27A5102D5AB33400327B51 /* KeepsakeWatch Watch App */,
+				5B27A51F2D5AB33500327B51 /* KeepsakeWatch Watch AppTests */,
+				5B27A5292D5AB33500327B51 /* KeepsakeWatch Watch AppUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		5B27A50F2D5AB33400327B51 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5B27A51E2D5AB33500327B51 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5B27A5282D5AB33500327B51 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F751BD232D50049D00EDB703 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -241,6 +443,27 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		5B27A50D2D5AB33400327B51 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5B27A51C2D5AB33500327B51 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5B27A5262D5AB33500327B51 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F751BD212D50049D00EDB703 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -265,6 +488,21 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		5B27A5222D5AB33500327B51 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5B27A5102D5AB33400327B51 /* KeepsakeWatch Watch App */;
+			targetProxy = 5B27A5212D5AB33500327B51 /* PBXContainerItemProxy */;
+		};
+		5B27A52C2D5AB33500327B51 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5B27A5102D5AB33400327B51 /* KeepsakeWatch Watch App */;
+			targetProxy = 5B27A52B2D5AB33500327B51 /* PBXContainerItemProxy */;
+		};
+		5B27A5332D5AB33500327B51 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5B27A5102D5AB33400327B51 /* KeepsakeWatch Watch App */;
+			targetProxy = 5B27A5322D5AB33500327B51 /* PBXContainerItemProxy */;
+		};
 		F751BD372D50049F00EDB703 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = F751BD242D50049D00EDB703 /* Keepsake */;
@@ -278,6 +516,144 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		5B27A5362D5AB33500327B51 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"KeepsakeWatch Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = 3KPBV7865L;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.shaunakkarnik.Keepsake;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.shaunakkarnik.Keepsake.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		5B27A5372D5AB33500327B51 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"KeepsakeWatch Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = 3KPBV7865L;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.shaunakkarnik.Keepsake;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.shaunakkarnik.Keepsake.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		5B27A53A2D5AB33500327B51 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VM646AGC4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "nityapotti.KeepsakeWatch-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KeepsakeWatch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KeepsakeWatch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		5B27A53B2D5AB33500327B51 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VM646AGC4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "nityapotti.KeepsakeWatch-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KeepsakeWatch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KeepsakeWatch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		5B27A53D2D5AB33500327B51 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VM646AGC4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "nityapotti.KeepsakeWatch-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "KeepsakeWatch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		5B27A53E2D5AB33500327B51 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VM646AGC4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "nityapotti.KeepsakeWatch-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "KeepsakeWatch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
 		F751BD472D50049F00EDB703 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -405,10 +781,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Keepsake/Preview Content\"";
-				DEVELOPMENT_TEAM = N495U8874N;
+				DEVELOPMENT_TEAM = 3KPBV7865L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Need for AR";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Need to build AR Scrapbooks";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -420,7 +796,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.app.aryan-patel212";
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.shaunakkarnik.Keepsake;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -436,10 +812,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Keepsake/Preview Content\"";
-				DEVELOPMENT_TEAM = N495U8874N;
+				DEVELOPMENT_TEAM = 3KPBV7865L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Need for AR";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Need to build AR Scrapbooks";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -451,7 +827,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.app.aryan-patel212";
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.shaunakkarnik.Keepsake;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -534,6 +910,33 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		5B27A5352D5AB33500327B51 /* Build configuration list for PBXNativeTarget "KeepsakeWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5B27A5362D5AB33500327B51 /* Debug */,
+				5B27A5372D5AB33500327B51 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5B27A5392D5AB33500327B51 /* Build configuration list for PBXNativeTarget "KeepsakeWatch Watch AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5B27A53A2D5AB33500327B51 /* Debug */,
+				5B27A53B2D5AB33500327B51 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5B27A53C2D5AB33500327B51 /* Build configuration list for PBXNativeTarget "KeepsakeWatch Watch AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5B27A53D2D5AB33500327B51 /* Debug */,
+				5B27A53E2D5AB33500327B51 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		F751BD202D50049D00EDB703 /* Build configuration list for PBXProject "Keepsake" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
