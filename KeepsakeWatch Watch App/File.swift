@@ -18,19 +18,19 @@ struct Reminder: Identifiable {
 }
 
 // Reminders View
-struct RemindersView: View {
+struct RemindersListView: View {
     @State private var reminders: [Reminder] = [Reminder(title: "Meeting with John", date: Date().addingTimeInterval(3600), body: "Discuss project updates"), Reminder(title: "Complete Homework", date: Date().addingTimeInterval(5000), body: "Do Homework")]
     @State private var showAddReminder = false
-
+    
     var body: some View {
         NavigationStack {
             VStack {
                 // Static title at the top
-                Text("Reminders")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .padding()
-
+//                Text("Reminders")
+//                    .font(.title2)
+//                    .fontWeight(.bold)
+//                    .padding()
+//                
                 // List of reminders
                 List {
                     ForEach(reminders) { reminder in
@@ -48,22 +48,63 @@ struct RemindersView: View {
                 }
                 .listStyle(PlainListStyle())  // Optional: adds cleaner look for the list
                 .toolbar {
+                    ToolbarItem(placement: .topBarLeading){
+                        Text("Reminders")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                    }
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button(action: { showAddReminder = true }) {
+                        Button(action: { showAddReminder.toggle()}) {
                             Image(systemName: "plus.circle.fill")
                                 .foregroundColor(.blue)
                                 .font(.title2)
-                        }
+                        }.buttonStyle(PlainButtonStyle())
                     }
                 }
+                .sheet(isPresented: $showAddReminder) {
+                    RemindersAddView(reminders: $reminders)  // Present the add view
+                }
             }
+//            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
 
-// Preview Provider
+
+struct RemindersAddView: View {
+    @Binding var reminders: [Reminder]
+    @State var title: String = ""
+    @State var note: String = ""
+    var body: some View {
+        VStack {
+            Form {
+                Section(header: Text("Reminder Title")) {
+                    TextField("Enter title", text: $title)
+                }
+            }
+            Form {
+                Section(header: Text("Notes")) {
+                    TextField("Enter Notes", text: $note)
+                }
+            }
+        }.toolbar() {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: {}) {
+                    Text("Add")
+                            .foregroundColor(.white)
+                            .font(.body)
+                            .padding()
+                            .background(Color.blue)  // Set the background color to blue
+                            .cornerRadius(15)
+                }.buttonStyle(PlainButtonStyle())
+            }
+        }
+    }
+}
+        
+        // Preview Provider
 struct RemindersView_Previews: PreviewProvider {
     static var previews: some View {
-        RemindersView()
+        RemindersListView()
     }
 }
