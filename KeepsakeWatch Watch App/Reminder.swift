@@ -52,11 +52,12 @@ struct RemindersListView: View {
                         Text("Reminders")
                             .font(.title3)
                             .fontWeight(.bold)
+                            .foregroundColor(Color(hex: "FFADF4"))
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(action: { showAddReminder.toggle()}) {
                             Image(systemName: "plus.circle.fill")
-                                .foregroundColor(.blue)
+                                .foregroundColor(Color(hex: "FFADF4"))
                                 .font(.title2)
                         }.buttonStyle(PlainButtonStyle())
                     }
@@ -91,10 +92,10 @@ struct RemindersAddView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(action: {}) {
                     Text("Add")
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                             .font(.body)
                             .padding()
-                            .background(Color.blue)  // Set the background color to blue
+                            .background(Color(hex: "FFADF4"))
                             .cornerRadius(15)
                 }.buttonStyle(PlainButtonStyle())
             }
