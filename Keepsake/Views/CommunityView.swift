@@ -6,19 +6,20 @@
 //
 import SwiftUI
 
-var journals: [Journal] = [
-    Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template()),
-    Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template()),
-    Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template()),
-    Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template()),
-    Journal(name: "Journal 5", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template()),
-    Journal(name: "Journal 6", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template()),
-    Journal(name: "Journal 7", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template())
+var journals: [any Book] = [
+    Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .red, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
+    Scrapbook(name: "Scrapbook 1", createdDate: "5/7/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .cyan, pageColor: .white, titleColor: .black)),
+    Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .blue, pageColor: .yellow, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
+    Scrapbook(name: "Scarpbook 2", createdDate: "5/4/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .orange, pageColor: .white, titleColor: .black)),
+    Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .gray, pageColor: .brown, titleColor: .yellow), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
+    Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .green, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
+    Scrapbook(name: "Scarpbook 3", createdDate: "5/9/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .black, pageColor: .white, titleColor: .white))
 ]
 
 var sortOptions: [String] = ["↑↓", "Your Friends", "Travel", "Near You"]
 
 struct CommunityView: View {
+    @State var scaleEffect = 0.4
     var body: some View {
         ScrollView (.vertical, showsIndicators: false) {
             VStack (alignment: .leading) {
@@ -46,10 +47,13 @@ struct CommunityView: View {
                             let index = row * 2 + column
                             if index < journals.count {
                                 VStack(alignment: .leading) {
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.5))
-                                        .frame(width: 150, height: 200)
-                                        .cornerRadius(10)
+//                                    Rectangle()
+//                                        .fill(Color.gray.opacity(0.5))
+//                                        .frame(width: 150, height: 200)
+//                                        .cornerRadius(10)
+                                    JournalCover(book: journals[index], degrees: 0)
+                                        .scaleEffect(scaleEffect)
+                                        .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                                     VStack(alignment: .leading, spacing: 3) {
                                         Text(journals[index].name)
                                             .font(.headline)
