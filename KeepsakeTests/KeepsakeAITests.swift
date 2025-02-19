@@ -7,6 +7,7 @@
 import Testing
 @testable import Keepsake
 import Foundation
+import UIKit
 
 final class KeepsakeAITests {
     var vm: AIViewModel = AIViewModel()
@@ -52,7 +53,7 @@ final class KeepsakeAITests {
         let category: String = "Test"
         let isSaved: Bool = false
         let isShared: Bool = false
-        let template: Template = .init(name: "Test Template")
+        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
         let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template)
         
         // Query AI for prompt
@@ -73,7 +74,7 @@ final class KeepsakeAITests {
         let category: String = "Test"
         let isSaved: Bool = false
         let isShared: Bool = false
-        let template: Template = .init(name: "Test Template")
+        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
         let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template)
         
         // Query AI for prompt
@@ -122,4 +123,17 @@ final class KeepsakeAITests {
             print("Generated Summary: \(vm.summary)")
         }
     
+    @Test
+    func imageCaptionGeneration() async {
+        guard let image = UIImage(named: "TestAICaptionImage") else {
+            print("Failed to load test image")
+            return
+        }
+        let caption = await vm.generateCaptionForImage(image: image)
+        guard let caption else {
+            print("Failed to generate caption")
+            return
+        }
+        print(caption)
+    }
 }
