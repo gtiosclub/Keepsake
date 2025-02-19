@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5724A4492D64E87F0012A6F2 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 5724A4482D64E87F0012A6F2 /* FirebaseAuth */; };
+		5724A44B2D64E87F0012A6F2 /* FirebaseAuthCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 5724A44A2D64E87F0012A6F2 /* FirebaseAuthCombine-Community */; };
+		5724A44D2D64E87F0012A6F2 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5724A44C2D64E87F0012A6F2 /* FirebaseCore */; };
+		5724A44F2D64E87F0012A6F2 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 5724A44E2D64E87F0012A6F2 /* FirebaseFirestore */; };
+		5724A4512D64E87F0012A6F2 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 5724A4502D64E87F0012A6F2 /* FirebaseStorage */; };
 		5B27A50C2D5AB30600327B51 /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B27A50B2D5AB30600327B51 /* WatchConnectivity.framework */; };
 		5B27A5342D5AB33500327B51 /* KeepsakeWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 5B27A5112D5AB33400327B51 /* KeepsakeWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F71261682D5405C000F65745 /* ChatGPTSwift */; };
@@ -134,7 +139,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */,
+				5724A44D2D64E87F0012A6F2 /* FirebaseCore in Frameworks */,
+				5724A4492D64E87F0012A6F2 /* FirebaseAuth in Frameworks */,
 				5B27A50C2D5AB30600327B51 /* WatchConnectivity.framework in Frameworks */,
+				5724A4512D64E87F0012A6F2 /* FirebaseStorage in Frameworks */,
+				5724A44B2D64E87F0012A6F2 /* FirebaseAuthCombine-Community in Frameworks */,
+				5724A44F2D64E87F0012A6F2 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,6 +291,11 @@
 			name = Keepsake;
 			packageProductDependencies = (
 				F71261682D5405C000F65745 /* ChatGPTSwift */,
+				5724A4482D64E87F0012A6F2 /* FirebaseAuth */,
+				5724A44A2D64E87F0012A6F2 /* FirebaseAuthCombine-Community */,
+				5724A44C2D64E87F0012A6F2 /* FirebaseCore */,
+				5724A44E2D64E87F0012A6F2 /* FirebaseFirestore */,
+				5724A4502D64E87F0012A6F2 /* FirebaseStorage */,
 			);
 			productName = Keepsake;
 			productReference = F751BD252D50049D00EDB703 /* Keepsake.app */;
@@ -377,6 +392,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				F71261672D5405C000F65745 /* XCRemoteSwiftPackageReference "ChatGPTSwift" */,
+				5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F751BD262D50049D00EDB703 /* Products */;
@@ -972,6 +988,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.8.1;
+			};
+		};
 		F71261672D5405C000F65745 /* XCRemoteSwiftPackageReference "ChatGPTSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/alfianlosari/ChatGPTSwift.git";
@@ -983,6 +1007,31 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		5724A4482D64E87F0012A6F2 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		5724A44A2D64E87F0012A6F2 /* FirebaseAuthCombine-Community */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = "FirebaseAuthCombine-Community";
+		};
+		5724A44C2D64E87F0012A6F2 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		5724A44E2D64E87F0012A6F2 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		5724A4502D64E87F0012A6F2 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
 		F71261682D5405C000F65745 /* ChatGPTSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F71261672D5405C000F65745 /* XCRemoteSwiftPackageReference "ChatGPTSwift" */;
