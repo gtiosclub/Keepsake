@@ -21,4 +21,5 @@ struct Journal: Book {
     var isSaved: Bool
     var isShared: Bool
     var template: Template
+    var pages: [JournalPage]
 }

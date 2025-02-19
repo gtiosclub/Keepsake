@@ -10,10 +10,85 @@ import ChatGPTSwift
 import UIKit
 
 class AIViewModel: ObservableObject {
+    let openAIAPIKeyString: String = ""
     var openAIAPIKey = ChatGPTAPI(apiKey: "")
     @Published var uiImage: UIImage? = nil
     @Published var isLoading = false
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
+    
+    // FUTURE: Can change to accept URL instead of UIImage if needed, just change "url" field and do not convert to base64 string
+    func generateCaptionForImage(image: UIImage) async -> String? {
+        let errorResponse: String = "Unable to generate image caption."
+        
+        // Convert image to base64 string
+        let base64Image = imageToBase64(image: image)
+        guard let base64Image = base64Image else {
+            print("Unable to convert image to base64 string.")
+            return errorResponse
+        }
+        // Create prompt
+        let systemPrompt: String = "You are creating captions for user uploaded images in a journaling app. Respond with only a short (one line maximum) caption for this image. If you do not understand the image, respond with a generic caption, such as \'My Image\'. Do not hallucinate an image or caption."
+        
+        // Create API call
+        let requestBody: [String: Any] = [
+            "model": "gpt-4o",
+            "messages": [
+                ["role": "system","content": systemPrompt],
+                ["role": "user", "content": [
+                    [
+                        "type": "image_url",
+                        "image_url": [
+                            "url": "data:image/jpeg;base64,\(base64Image)"
+                        ]
+                    ]
+                ]]
+            ],
+            "max_tokens": 50
+        ]
+        let url = URL(string: "https://api.openai.com/v1/chat/completions")
+        guard let url = url else {
+            print("Unable to create URL")
+            return errorResponse
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(openAIAPIKeyString)", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody, options: [])
+        } catch {
+            print("Failed to encode request body: \(error.localizedDescription)")
+            return errorResponse
+        }
+        
+        // Query
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Invalid response from server")
+                print(response)
+                return errorResponse
+            }
+            
+            let decodedResponse = try JSONDecoder().decode(OpenAIResponse.self, from: data)
+            
+            if let caption = decodedResponse.choices.first?.message.content {
+                let trimmedCaption = caption.trimmingCharacters(in: .whitespacesAndNewlines)
+                print(trimmedCaption)
+                return trimmedCaption
+            } else {
+                return errorResponse
+            }
+        } catch {
+            print("API Request Error: \(error.localizedDescription)")
+            return errorResponse
+        }
+    }
+    
+    func imageToBase64(image: UIImage) -> String? {
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else { return nil }
+        return imageData.base64EncodedString()
+    }
     
 
     func generateImage(for entry: JournalEntry) async {
@@ -130,17 +205,27 @@ class AIViewModel: ObservableObject {
     
     @Published var summary = ""
     func summarize(entry: JournalEntry) async {
-            let prompt = "Summarize the entry: Title: \(entry.title) Text: \(entry.text)"
-
-            do {
-                let response = try await openAIAPIKey.sendMessage(
-                    text: prompt,
-                    model: .gpt_hyphen_4
-                )
-
-                self.summary = response
-            } catch {
-                print("Error: \(error.localizedDescription)")
-            }
+        let prompt = "Summarize the entry: Title: \(entry.title) Text: \(entry.text)"
+        
+        do {
+            let response = try await openAIAPIKey.sendMessage(
+                text: prompt,
+                model: .gpt_hyphen_4
+            )
+            
+            self.summary = response
+        } catch {
+            print("Error: \(error.localizedDescription)")
         }
+    }
+    
+    struct OpenAIResponse: Codable {
+        struct Choice: Codable {
+            struct Message: Codable {
+                let content: String
+            }
+            let message: Message
+        }
+        let choices: [Choice]
+    }
 }
