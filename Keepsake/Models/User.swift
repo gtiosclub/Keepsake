@@ -10,13 +10,11 @@ import Foundation
 class User: Identifiable, ObservableObject {
     var id: String
     var name: String
-    @Published var journals: [Journal]
-    @Published var scrapbooks: [Scrapbook]
+    var shelves: [Shelf]
     
-    init(id: String, name: String, journals: [Journal], scrapbooks: [Scrapbook]) {
+    init(id: String, name: String, shelves: [Shelf]) {
         self.id = id
         self.name = name
-        self.journals = journals
-        self.scrapbooks = scrapbooks
+        self.shelves = shelves
     }
 }
