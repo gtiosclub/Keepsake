@@ -7,11 +7,14 @@
 
 import Foundation
 import SwiftUI
+import AVFoundation
 
 struct VoiceRecordingView: View {
+//    @ObservedObject private var audioRecorder = AudioRecorder()
     @State private var isRecording = false
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
+    private let audioRecording = AudioRecording()
 
     var formattedTime: String {
         let minutes = Int(elapsedTime) / 60
@@ -32,10 +35,12 @@ struct VoiceRecordingView: View {
                 Button(action: {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         isRecording.toggle()
-                        if isRecording {
-                            startTimer()
-                        } else {
+                        if audioRecording.isRecording {
+                            audioRecording.stopRecording()
                             stopTimer()
+                        } else {
+                            audioRecording.startRecording()
+                            startTimer()
                         }
                     }
                 }) {
@@ -57,7 +62,7 @@ struct VoiceRecordingView: View {
             )
 
         let animatedOverlay = Circle()
-            .stroke(Color.white.opacity(isRecording ? 0.5 : 0), lineWidth: 5)
+            .stroke(Color.white.opacity(audioRecording.isRecording ? 0.5 : 0), lineWidth: 5)
             .scaleEffect(isRecording ? 1.3 : 1.0)
             .opacity(isRecording ? 0 : 1)
             .animation(isRecording ? Animation.easeOut(duration: 0.8).repeatForever(autoreverses: true) : .default, value: isRecording)
