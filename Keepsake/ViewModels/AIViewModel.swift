@@ -20,20 +20,23 @@ class AIViewModel: ObservableObject {
         let errorResponse: [ScrapbookEntry] = []
         
         // Get all captions in scrapbook
-        let captions: [String] = scrapbook.entries.compactMap { $0.caption }
+        let captions: [String:String] = scrapbook.entries.compactMap { ($0.id, $0.caption) }
         if captions.isEmpty {
             // No captions in the scrapbook
             return []
         }
         var numHighlights: Int = numHighlights
+        if numHighlights <= 0 {
+            numHighlights = 1
+        }
         if numHighlights > captions.count {
             numHighlights = captions.count
         }
         
         // ChatGPT Prompt
         let prompt: String = """
-            You will be given an array of image captions and a user query. Read the user query and find \(numHighlights) image captions that best match this query. Respond with a list of indices that correspond to the given image captions array, using zero-based indexing. Respond with only these indices separated by commas.
-            Here is the array of image captions:
+            You will be given a dictionary mapping IDs to image captions. You will also be given a user query. Read the user query and find \(numHighlights) image captions that best match this query. Respond with a list of IDs corresponding to the relevant image captions. Respond with only these IDs separated by commas. Do not hallucinate non-existing IDs.
+            Here is the dictionary of IDs to image captions:
             \(captions)
             Here is the user query:
             \(query)
@@ -52,10 +55,16 @@ class AIViewModel: ObservableObject {
             return errorResponse
         }
         
-        // Parse indices
-        // Stopped working here
+        // Parse IDs
+        do {
+            let ids: [String] = try response.split(separator: ",").map(\.trimmingCharacters(in: .whitespacesAndNewlines))
+            let relevantEntries: [ScrapbookEntry] = try scrapbook.entries.filter { ids.contains($0.id) }
+        } catch {
+            print("Unable to parse IDs from response: \(error.localizedDescription)")
+            return errorResponse
+        }
         
-        return []
+        return relevantEntries
     }
     
     // FUTURE: Can change to accept URL instead of UIImage if needed, just change "url" field and do not convert to base64 string
