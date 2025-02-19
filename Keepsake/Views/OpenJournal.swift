@@ -117,7 +117,7 @@ struct OpenJournal: View {
     struct Preview: View {
         @State var number: CGFloat = -180.0
         var body: some View {
-            OpenJournal(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .white, titleColor: .black)), degrees: $number)
+            OpenJournal(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black)), degrees: $number)
         }
     }
 
