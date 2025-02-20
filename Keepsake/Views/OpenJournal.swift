@@ -86,6 +86,54 @@ struct OpenJournal: View {
                 Text(displayPageIndex < book.pages.count && displayPageIndex > -1 ? "\(book.pages[displayPageIndex].number)" : "no more pages")
 
             }.rotation3DEffect(.degrees(displayDegrees), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint.leading, anchorZ: 0, perspective: 0.2)
+                .gesture(
+                    DragGesture()
+                        .onEnded({ value in
+                            if value.translation.width < 0 {
+                                circleStart = 1
+                                circleEnd = 1
+                                zIndex = -0.5
+                                withAnimation(.linear(duration: 0.5).delay(0.5)) {
+                                    displayDegrees -= 90
+                                    circleStart -= 0.25
+                                } completion: {
+                                    circleStart = 0.5
+                                    circleEnd = 0.75
+                                    displayIsHidden = true
+                                    withAnimation(.linear(duration: 0.5).delay(0)) {
+                                        displayDegrees -= 90
+                                        circleEnd -= 0.25
+                                    } completion: {
+                                        displayDegrees = 0
+                                        displayPageIndex += 1
+                                        displayIsHidden = false
+                                    }
+                                }
+                            }
+
+                            if value.translation.width > 0 {
+                                // right
+                                circleStart = 0.5
+                                circleEnd = 0.5
+                                withAnimation(.linear(duration: 0.5).delay(0.5)) {
+                                    frontDegrees += 90
+                                    circleEnd += 0.25
+                                } completion: {
+                                    frontIsHidden = false
+                                    circleStart = 0.75
+                                    circleEnd = 1
+                                    withAnimation(.linear(duration: 0.5).delay(0)) {
+                                        frontDegrees += 90
+                                        circleStart += 0.25
+                                    } completion: {
+                                        displayPageIndex -= 1
+                                        frontDegrees = -180
+                                        frontIsHidden = true
+                                    }
+                                }
+                            }
+                        })
+                    )
               
             //Fake Front Page
             RoundedRectangle(cornerRadius: 10)
@@ -165,48 +213,6 @@ struct OpenJournal: View {
                         }
                     }
                 }
-                Button("Page left") {
-                    circleStart = 1
-                    circleEnd = 1
-                    zIndex = -0.5
-                    withAnimation(.linear(duration: 0.5).delay(0.5)) {
-                        displayDegrees -= 90
-                        circleStart -= 0.25
-                    } completion: {
-                        circleStart = 0.5
-                        circleEnd = 0.75
-                        displayIsHidden = true
-                        withAnimation(.linear(duration: 0.5).delay(0)) {
-                            displayDegrees -= 90
-                            circleEnd -= 0.25
-                        } completion: {
-                            displayDegrees = 0
-                            displayPageIndex += 1
-                            displayIsHidden = false
-                        }
-                    }
-                }
-                Button("Page Right"){
-                    circleStart = 0.5
-                    circleEnd = 0.5
-                    withAnimation(.linear(duration: 0.5).delay(0.5)) {
-                        frontDegrees += 90
-                        circleEnd += 0.25
-                    } completion: {
-                        frontIsHidden = false
-                        circleStart = 0.75
-                        circleEnd = 1
-                        withAnimation(.linear(duration: 0.5).delay(0)) {
-                            frontDegrees += 90
-                            circleStart += 0.25
-                        } completion: {
-                            displayPageIndex -= 1
-                            frontDegrees = -180
-                            frontIsHidden = true
-                        }
-                    }
-                }
-                
             }.offset(y: 280)
         }
     }
