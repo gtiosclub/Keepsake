@@ -10,14 +10,20 @@ import RealityKit
 
 class TextBoxEntity: Entity {
     
+    private var textEntity: Entity
+    private var textComponent: TextComponent
+    
     init(text: String) async {
+        self.textEntity = Entity()
+        self.textComponent = TextComponent()
+
         super.init()
         
-        // Creates the text box entity
-        let textEntity = Entity()
+//        // Creates the text box entity
+//        let textEntity = Entity()
+//        // Create the TextComponent component (built-in component that includes a mesh background)
+//        var textComponent = TextComponent()
         
-        // Create the TextComponent component (built-in component that includes a mesh background)
-        var textComponent = TextComponent()
         textComponent.backgroundColor = CGColor(gray: 0.5, alpha: 0.8)
         
         // Separately instatiatied width and height to use in collision box dimensions
@@ -43,6 +49,15 @@ class TextBoxEntity: Entity {
         
         // Adds entity to parent view --> basically the "return" statement if my understanding is correct
         self.addChild(textEntity)
+    }
+    
+    func updateText(_ newText: String) {
+            var attributedText = AttributedString(newText)
+            attributedText.font = .boldSystemFont(ofSize: 200)
+            textComponent.text = attributedText
+            
+            // Update the text entity's component
+            textEntity.components[TextComponent.self] = textComponent
     }
     
     // Needed since this class is a subclass of Entity

@@ -1,41 +1,71 @@
-//
-//  ScrapbookView.swift
-//  Keepsake
-//
-//  Created by Shaunak Karnik on 2/15/25.
-//
-
 import SwiftUI
 import RealityKit
 
 struct ScrapbookView: View {
-    @State var textBox: Entity = .init()
-    @State var position: UnitPoint = .zero
+    @State private var textBox: TextBoxEntity?
+    @State private var textInput: String = "Hello World"
+    @State private var position: UnitPoint = .zero
+    @State private var isEditing: Bool = false
+
     var body: some View {
-        RealityView { content in
-            // Sets the background to the phone's camera --> .virtal loads in just the entities without the camera
-            content.camera = .spatialTracking
-            
-            // Creates an Anchor in 3D space 2 meters in front of the camera
-            let anchor = AnchorEntity(world: SIMD3<Float>(x: 0, y: 0, z: -2))
-            
-            // Adds the anchor to the content in RealityView
-            content.add(anchor)
-            
-            // Asynchronously loads in the TextBox and adds it to the anchor
-            textBox = await TextBoxEntity(text: "Hello World")
-            anchor.addChild(textBox)
-            
-            
-        }.gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
-            // Gesture translates movement on screen coordinates to 3D coordinates
-            .onChanged {
-                textBox.position.x = Float($0.translation.width + position.x) * 0.002
-                textBox.position.y = Float($0.translation.height + position.y) * -0.002
+        ZStack {
+            RealityView { content in
+                content.camera = .spatialTracking
+                let anchor = AnchorEntity(world: SIMD3<Float>(x: 0, y: 0, z: -2))
+                content.add(anchor)
+
+                Task {
+                    let newTextBox = await TextBoxEntity(text: textInput)
+                    self.textBox = newTextBox
+                    anchor.addChild(newTextBox)
+                }
             }
-            .onEnded {
-                position.x += $0.translation.width
-                position.y += $0.translation.height
-            })
+            .gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
+                .onChanged {
+                    if let textBox = textBox {
+                        textBox.position.x = Float($0.translation.width + position.x) * 0.002
+                        textBox.position.y = Float($0.translation.height + position.y) * -0.002
+                    }
+                }
+                .onEnded {
+                    position.x += $0.translation.width
+                    position.y += $0.translation.height
+                })
+
+            if isEditing {
+                VStack {
+                    TextField("Edit Text", text: $textInput)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+                        .background(Color.white.opacity(0.8))
+                        .cornerRadius(10)
+                        .onSubmit {
+                            updateTextBox()
+                            isEditing = false
+                        }
+
+                    Button("Done") {
+                        updateTextBox()
+                        isEditing = false
+                    }
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+                .frame(maxWidth: 250)
+                .background(Color.black.opacity(0.6))
+                .cornerRadius(15)
+                .padding()
+            }
+        }
+        .onTapGesture {
+            isEditing.toggle()
+        }
+    }
+
+    private func updateTextBox() {
+        textBox?.updateText(textInput)
     }
 }
+
