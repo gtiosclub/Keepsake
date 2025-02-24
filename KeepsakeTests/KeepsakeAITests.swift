@@ -54,7 +54,7 @@ final class KeepsakeAITests {
         let isSaved: Bool = false
         let isShared: Bool = false
         let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
-        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template)
+        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: [])
         
         // Query AI for prompt
         let prompt = await vm.getSmartPrompts(journal: journal)
@@ -75,7 +75,7 @@ final class KeepsakeAITests {
         let isSaved: Bool = false
         let isShared: Bool = false
         let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
-        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template)
+        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: [])
         
         // Query AI for prompt
         let prompt = await vm.getSmartPrompts(journal: journal)
