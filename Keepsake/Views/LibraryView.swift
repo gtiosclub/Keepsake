@@ -39,7 +39,7 @@ struct LibraryView: View {
 struct LibraryView_Previews: PreviewProvider {
     static var previews: some View {
         let sampleUser = User(id: "1", name: "Sample User", shelves: [
-            Shelf(name: "2025", books: [Journal(name: "Journal A", createdDate: "2023-01-01", entries: [], category: "Personal", isSaved: true, isShared: false, template: Template()), Journal(name: "Journal B", createdDate: "2023-01-01", entries: [], category: "Work", isSaved: true, isShared: false, template: Template())]),
+            Shelf(name: "2025", books: [Journal(name: "Journal A", createdDate: "2023-01-01", entries: [], category: "Personal", isSaved: true, isShared: false, template: Template(), pages: []), Journal(name: "Journal B", createdDate: "2023-01-01", entries: [], category: "Work", isSaved: true, isShared: false, template: Template(), pages: [])]),
             Shelf(name: "2024", books: [Scrapbook(name: "Scrapbook B", createdDate: "2022-06-15", entries: [], category: "Travel", isSaved: true, isShared: true, template: Template())])
         ])
         
