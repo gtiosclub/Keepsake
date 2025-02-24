@@ -39,10 +39,16 @@ struct LibraryView: View {
 struct LibraryView_Previews: PreviewProvider {
     static var previews: some View {
         let sampleUser = User(id: "1", name: "Sample User", shelves: [
-            Shelf(name: "2025", books: [Journal(name: "Journal A", createdDate: "2023-01-01", entries: [], category: "Personal", isSaved: true, isShared: false, template: Template(), pages: []), Journal(name: "Journal B", createdDate: "2023-01-01", entries: [], category: "Work", isSaved: true, isShared: false, template: Template(), pages: [])]),
+            Shelf(name: "Bookshelf", books: [
+                Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: Color(red: 0.9, green: 0.9, blue: 0.9), titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
+                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Template 2", coverColor: .green, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
+                Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
+                Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])])
+            ]),
             Shelf(name: "2024", books: [Scrapbook(name: "Scrapbook B", createdDate: "2022-06-15", entries: [], category: "Travel", isSaved: true, isShared: true, template: Template())])
         ])
         
         return LibraryView(user: sampleUser)
     }
 }
+
