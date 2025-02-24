@@ -16,6 +16,56 @@ class AIViewModel: ObservableObject {
     @Published var isLoading = false
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
     
+    func getRelevantScrapbookEntries(scrapbook: Scrapbook, query: String, numHighlights: Int) async -> [ScrapbookEntry] {
+        let errorResponse: [ScrapbookEntry] = []
+        
+        // Get all captions in scrapbook
+        let captions: [String: String] = scrapbook.entries.reduce(into: [:]) { dict, entry in
+            dict[entry.id] = entry.caption
+        }
+        if captions.isEmpty {
+            // No captions in the scrapbook
+            return []
+        }
+        var numHighlights: Int = numHighlights
+        if numHighlights <= 0 {
+            numHighlights = 1
+        }
+        if numHighlights > captions.count {
+            numHighlights = captions.count
+        }
+        
+        // ChatGPT Prompt
+        let prompt: String = """
+            You will be given a dictionary mapping IDs to image captions. You will also be given a user query. Read the user query and find \(numHighlights) image captions that best match this query. Respond with a list of IDs corresponding to the relevant image captions. Respond with only these IDs separated by commas. Do not hallucinate non-existing IDs.
+            Here is the dictionary of IDs to image captions:
+            \(captions)
+            Here is the user query:
+            \(query)
+            """
+        
+        // Query ChatGPT
+        var response: String = ""
+        do {
+            response = try await openAIAPIKey.sendMessage(
+                text: prompt,
+                model: gptModel!)
+            
+            print(response)
+        } catch {
+            print("Send OpenAI Query Error: \(error.localizedDescription)")
+            return errorResponse
+        }
+        
+        // Parse IDs
+        let ids: [String] = response
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        let relevantEntries: [ScrapbookEntry] = scrapbook.entries.filter { ids.contains($0.id) }
+        return relevantEntries
+
+    }
+    
     // FUTURE: Can change to accept URL instead of UIImage if needed, just change "url" field and do not convert to base64 string
     func generateCaptionForImage(image: UIImage) async -> String? {
         let errorResponse: String = "Unable to generate image caption."
