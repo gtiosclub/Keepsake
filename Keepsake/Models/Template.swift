@@ -22,10 +22,12 @@ struct Template {
         self.titleColor = titleColor
     }
     
+    // Overloaded initializers
+    init(coverColor: Color, pageColor: Color, titleColor: Color) {
+        self.init(name: "Default", coverColor: coverColor, pageColor: pageColor, titleColor: titleColor)
+    }
+
     init() {
-        self.name = "Default"
-        self.coverColor = .blue
-        self.pageColor = .white
-        self.titleColor = .black
+        self.init(name: "Default", coverColor: .blue, pageColor: .white, titleColor: .black)
     }
 }
