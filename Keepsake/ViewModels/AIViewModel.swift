@@ -20,7 +20,9 @@ class AIViewModel: ObservableObject {
         let errorResponse: [ScrapbookEntry] = []
         
         // Get all captions in scrapbook
-        let captions: [String:String] = scrapbook.entries.compactMap { ($0.id, $0.caption) }
+        let captions: [String: String] = scrapbook.entries.reduce(into: [:]) { dict, entry in
+            dict[entry.id] = entry.caption
+        }
         if captions.isEmpty {
             // No captions in the scrapbook
             return []
@@ -56,15 +58,12 @@ class AIViewModel: ObservableObject {
         }
         
         // Parse IDs
-        do {
-            let ids: [String] = try response.split(separator: ",").map(\.trimmingCharacters(in: .whitespacesAndNewlines))
-            let relevantEntries: [ScrapbookEntry] = try scrapbook.entries.filter { ids.contains($0.id) }
-        } catch {
-            print("Unable to parse IDs from response: \(error.localizedDescription)")
-            return errorResponse
-        }
-        
+        let ids: [String] = response
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        let relevantEntries: [ScrapbookEntry] = scrapbook.entries.filter { ids.contains($0.id) }
         return relevantEntries
+
     }
     
     // FUTURE: Can change to accept URL instead of UIImage if needed, just change "url" field and do not convert to base64 string
