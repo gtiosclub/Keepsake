@@ -28,12 +28,17 @@ struct LibraryView: View {
             .navigationTitle("Your Library")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { /* Add bookshelf action */ }) {
+                    Button(action: addBookshelf) {
                         Image(systemName: "plus.circle")
                     }
                 }
             }
         }
+    }
+    
+    private func addBookshelf() {
+        let newShelf = Shelf(name: "New Shelf", books: [])
+        user.shelves.append(newShelf)
     }
 }
 
