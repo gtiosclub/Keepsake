@@ -7,24 +7,52 @@
 import SwiftUI
 
 struct HomepageView: View {
-    @Namespace private var shelfNamespace
-    var shelf: Shelf
     @State var degrees: CGFloat = 0
+    @State var frontDegrees: CGFloat = 0
     @State var show: Bool = false
     @State var number = 0
     @State var bind: Int?
+    @State var coverZ: Double = 0
+    @State var circleStart: CGFloat = 0.5
+    @State var circleEnd: CGFloat = 0.5
+    @State var ellipseStart: CGFloat = 1
+    @State var ellipseEnd: CGFloat = 1
+    @State var scaleEffect: CGFloat = 0.6
+    @Namespace private var shelfNamespace
+    @ObservedObject var shelf: Shelf
+    @State private var showJournalForm = false
 //    @State var isHidden: Bool = false
 //    @State var selectedBook: Int = -1
     
     var body: some View {
+        ZStack {
         if !show {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("Welcome back, Name")
-                        .font(.title3)
-                        .foregroundColor(.gray)
-                        .bold()
-                    
+                    HStack {
+                        Text("Welcome back, Name")
+                            .font(.title3)
+                            .foregroundColor(.gray)
+                            .bold()
+                        
+                        Spacer()
+                        Menu {
+                            Button(action: {
+                                showJournalForm = true
+                                // form with choosing name, cover color, page color, and title color
+                                // creating from existing journal
+                            }) {
+                                Text("Create from scratch")
+                            }}
+                        label: {
+                                Image(systemName: "plus.circle")
+                                    .font(.system(size: 35))
+                                    .foregroundColor(.gray)
+                                
+                            }
+                        }
+                            .padding(.trailing, 10)
+               
                     Text("What is on your mind today?")
                         .font(.largeTitle)
                         .bold()
@@ -73,7 +101,7 @@ struct HomepageView: View {
                                 .frame(width: 240, height: 700)
                                 .offset(y: verticalOffset)
                             }
-                            .frame(width: 240, height: 600)
+                            .frame(width: 240, height: 700)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -82,24 +110,84 @@ struct HomepageView: View {
                 
             }
             .frame(maxHeight: .infinity, alignment: .top)
-        } else {
-            OpenJournal(book: shelf.books[number], degrees: $degrees).matchedGeometryEffect(id: "journal_\(number)", in: shelfNamespace, properties: .position, anchor: .center)
-                .onAppear() {
-                    withAnimation(.linear(duration: 1).delay(0.7)) {
-                        degrees = -180
-                    }
-                }
-                .onTapGesture {
-                    withAnimation(.linear(duration: 1).delay(0.5)) {
-                        degrees += 180
-                    } completion: {
-                        withAnimation {
-                            show.toggle()
+            
+        }
+            else {
+                OpenJournal(book: shelf.books[number], degrees: $degrees).matchedGeometryEffect(id: "journal_\(number)", in: shelfNamespace, properties: .position, anchor: .center)
+                    .onAppear() {
+                        withAnimation(.linear(duration: 1).delay(0.7)) {
+                            degrees = -180
                         }
                     }
+                    .onTapGesture {
+                        withAnimation(.linear(duration: 1).delay(0.5)) {
+                            degrees += 180
+                        } completion: {
+                            withAnimation {
+                                show.toggle()
+                                
+                            }
+                        }
+                    }
+            }
+    
+    }
+        // Journal creation sheet
+        .sheet(isPresented: $showJournalForm) {
+                    JournalFormView(
+                        isPresented: $showJournalForm,
+                        onCreate: { title, coverColor, pageColor, titleColor in
+
+                            let newJournal = Journal(
+                                name: title,
+                                createdDate: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short),
+                                entries: [],
+                                category: "General",
+                                isSaved: false,
+                                isShared: false,
+                                template: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor)
+                            )
+                            shelf.books.append(newJournal)
+                        }
+                    )
                 }
+            }
+    
+    
+    // Journal Form View
+    struct JournalFormView: View {
+        @Binding var isPresented: Bool
+        var onCreate: (String, Color, Color, Color) -> Void
+
+        @State private var journalTitle = ""
+        @State private var coverColor = Color.blue
+        @State private var pageColor = Color.white
+        @State private var titleColor = Color.black
+
+        var body: some View {
+            NavigationView {
+                Form {
+                    Section(header: Text("Journal Details")) {
+                        TextField("Journal Title", text: $journalTitle)
+                        ColorPicker("Cover Color", selection: $coverColor)
+                        ColorPicker("Page Color", selection: $pageColor)
+                        ColorPicker("Title Color", selection: $titleColor)
+                    }
+                }
+                .navigationTitle("New Journal")
+                .navigationBarItems(
+                    leading: Button("Cancel") {
+                        isPresented = false
+                    },
+                    trailing: Button("Create") {
+                        onCreate(journalTitle, coverColor, pageColor, titleColor)
+                        isPresented = false
+                    }.disabled(journalTitle.isEmpty)
+                )
+            }
         }
     }
+
     
     private func calculateVerticalOffset(proxy: GeometryProxy) -> CGFloat {
         let midX = proxy.frame(in: .global).midX
@@ -109,6 +197,7 @@ struct HomepageView: View {
         let centeredness = 1 - (distance / maxDistance)
         return -50 * centeredness
     }
+
 }
 
 #Preview {

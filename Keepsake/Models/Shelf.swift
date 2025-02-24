@@ -6,8 +6,14 @@
 //
 
 import Foundation
+import SwiftUI
 
-struct Shelf {
-    var name: String
-    var books: [any Book]
+class Shelf: ObservableObject {
+    @Published var name: String
+    @Published var books: [Journal]
+
+    init(name: String, books: [Journal]) {
+        self.name = name
+        self.books = books
+    }
 }
