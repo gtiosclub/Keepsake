@@ -18,19 +18,37 @@ struct BookshelfView: View {
                 .padding(.top, 8)
             
             HStack {
-                ForEach(shelf.books.indices, id: \.self) { _ in
+                if !shelf.books.isEmpty {
+                    // Placeholder to maintain height and width
 //                    Rectangle()
-//                        .fill(Color.gray.opacity(0.3))
-//                        .frame(width: 40, height: 100)
-//                        .cornerRadius(4)
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(height: 100)
-                        .cornerRadius(8)
-                        .padding(.horizontal)
-                        .padding(.vertical)
+//                        .fill(Color.gray.opacity(0.2))
+//                        .frame(height: 100)
+//                        .cornerRadius(8)
+//                        .padding(.horizontal)
+//                        .padding(.vertical)
+                    ForEach(shelf.books.indices, id: \.self) { _ in
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(height: 100)
+                            .cornerRadius(8)
+                            .padding(.horizontal)
+                            .padding(.vertical)
+                    }
                 }
+//                else {
+//                    ForEach(shelf.books.indices, id: \.self) { _ in
+//                        Rectangle()
+//                            .fill(Color.gray.opacity(0.3))
+//                            .frame(height: 100)
+//                            .cornerRadius(8)
+//                            .padding(.horizontal)
+//                            .padding(.vertical)
+//                    }
+//                }
+                
             }
+            .frame(maxWidth: .infinity)
+            .frame(height: 120)
             .background(Color.white)
         }
 //        .frame(maxWidth: .infinity, maxHeight: .infinity)

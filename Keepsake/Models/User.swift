@@ -10,11 +10,18 @@ import Foundation
 class User: Identifiable, ObservableObject {
     var id: String
     var name: String
-    var shelves: [Shelf]
+    @Published var shelves: [Shelf]
     
     init(id: String, name: String, shelves: [Shelf]) {
         self.id = id
         self.name = name
+        self.shelves = shelves
+    }
+    
+    // Provide default values for id and name
+    init(shelves: [Shelf] = []) {
+        self.id = UUID().uuidString
+        self.name = "Default User"
         self.shelves = shelves
     }
 }
