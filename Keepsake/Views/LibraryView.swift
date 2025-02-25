@@ -15,7 +15,7 @@ struct LibraryView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     ForEach(user.shelves.indices, id: \.self) { index in
-                        NavigationLink(destination: HomepageView(shelf: user.shelves[index])) {
+                        NavigationLink(destination: ShelfView(shelf: user.shelves[index])) {
                             BookshelfView(shelf: user.shelves[index])
                         }
                         .buttonStyle(PlainButtonStyle())
