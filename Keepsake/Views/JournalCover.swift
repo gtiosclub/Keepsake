@@ -8,17 +8,6 @@
 
 import SwiftUI
 
-struct CustomTriangle: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.closeSubpath()
-        return path
-    }
-}
-
 struct JournalCover: View {
     @State var book: any Book
 //    @Binding var degrees: CGFloat
@@ -42,13 +31,13 @@ struct JournalCover: View {
                         .opacity(0.4) // Adjust for realism
                 )
             
-            // Page Thickness Simulation (Right Edge)
-            Rectangle()
-                .fill(Color.white.opacity(0.8))
-                .frame(width: UIScreen.main.bounds.width * 0.02, height: UIScreen.main.bounds.height * 0.54)
-                .offset(x: UIScreen.main.bounds.width * 0.41)
-                .shadow(radius: 2)
-                .zIndex(-3)
+//            // Page Thickness Simulation (Right Edge)
+//            Rectangle()
+//                .fill(Color.gray.opacity(0.8))
+//                .frame(width: UIScreen.main.bounds.width * 0.02, height: UIScreen.main.bounds.height * 0.54)
+//                .offset(x: UIScreen.main.bounds.width * 0.46)
+//                .shadow(radius: 2)
+//                .zIndex(-3)
             
             // Cover Page
             ZStack {
@@ -59,6 +48,7 @@ struct JournalCover: View {
                         Image("leather") // Load texture image from assets
                             .resizable()
                             .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                             .scaledToFill()
                             .opacity(0.4) // Adjust for realism
                     )
@@ -70,14 +60,6 @@ struct JournalCover: View {
                     .foregroundStyle(book.template.titleColor)
             }
             .rotation3DEffect(.degrees(0), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint.leading, anchorZ: 0, perspective: 0.2)
-            
-            // Bookmark Ribbon
-            Rectangle()
-                .fill(Color.red)
-                .frame(width: UIScreen.main.bounds.width * 0.05, height: UIScreen.main.bounds.height * 0.3)
-                .offset(x: UIScreen.main.bounds.width * 0.35, y: UIScreen.main.bounds.height * 0.2) // Positioned near the bottom right
-                .clipShape(CustomTriangle()) // Uses a custom shape for the ribbon cut
-                .shadow(radius: 2)
         }
     }
 }
