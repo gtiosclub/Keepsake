@@ -12,14 +12,14 @@ import SwiftUI
 struct JournalEntryTextView: View {
     var entry: JournalEntry
     let lineHeight: CGFloat = 18  // Matches the drawn line spacing.
-    let maxCharactersPerLine: Int = 90  // Adjust this value as needed.
+    let maxCharactersPerLine: Int = 30  // Adjust this value as needed.
     
     // Splits a string into an array of lines, trying not to exceed maxCharactersPerLine per line.
     private func splitTextIntoLines(_ text: String) -> [String] {
         var lines: [String] = []
         var currentLine = ""
         let words = text.split(separator: " ")
-
+        
         for word in words {
             if currentLine.isEmpty {
                 currentLine = String(word)
@@ -27,9 +27,12 @@ struct JournalEntryTextView: View {
                 currentLine += " " + word
             } else {
                 lines.append(currentLine)
-                if lines.count == 9 { // Stop at 9 lines and add ellipsis
-                    return Array(lines.prefix(8)) + ["..."]
+                
+                if lines.count == 9 { // Stop at 9 lines, append "..." to the last line
+                    let truncatedLine = lines.last!.prefix(maxCharactersPerLine - 3) + "..."
+                    return Array(lines.prefix(8)) + [String(truncatedLine)]
                 }
+                
                 currentLine = String(word)
             }
         }
@@ -38,8 +41,15 @@ struct JournalEntryTextView: View {
             lines.append(currentLine)
         }
 
-        return lines.count > 9 ? Array(lines.prefix(8)) + ["..."] : lines
+        if lines.count > 9 { // Ensure "..." is appended if text is too long
+            let truncatedLine = lines[8].prefix(maxCharactersPerLine - 3) + "..."
+            return Array(lines.prefix(8)) + [String(truncatedLine)]
+        }
+
+        return lines
     }
+
+
 
 
 
@@ -72,6 +82,8 @@ struct JournalEntryTextView: View {
 }
 
 struct JournalPageView: View {
+    @State private var showEntryView = false
+    @State private var selectedEntry: JournalEntry? = nil
     @State var book: any Book
     var topEntry: JournalEntry
     var bottomEntry: JournalEntry
@@ -112,28 +124,36 @@ struct JournalPageView: View {
             
             VStack(spacing: 0) {
                 Button(action: {
-                    // Action for top entry tap.
+                    selectedEntry = topEntry
+                    showEntryView = true
                 }) {
                     JournalEntryTextView(entry: topEntry)
-                        .frame(height: pageHeight / 2, alignment: .top)
+                        .frame(height: UIScreen.main.bounds.height / 2, alignment: .top)
                 }
                 .buttonStyle(PlainButtonStyle())
-                
-                // Bottom half button.
+
                 Button(action: {
-                    // Action for bottom entry tap.
+                    selectedEntry = bottomEntry
+                    showEntryView = true
                 }) {
                     JournalEntryTextView(entry: bottomEntry)
-                        .frame(height: pageHeight / 2, alignment: .top)
+                        .frame(height: UIScreen.main.bounds.height / 2, alignment: .top)
                 }
                 .buttonStyle(PlainButtonStyle())
             }
-            .frame(width: pageWidth, height: pageHeight)
+            .frame(width: UIScreen.main.bounds.width - 10, height: UIScreen.main.bounds.height)
             .offset(x: 5, y: 5)
+            .sheet(isPresented: $showEntryView) {
+                if let entry = selectedEntry {
+                    JournalEntryView(entry: entry)
+                        .presentationDetents([.medium, .large]) // Allows resizing
+                        .presentationDragIndicator(.visible) // Swipe down to dismiss
+                }
+            }
         }
-        .padding()
-    }
+    }   
 }
+
 
 #Preview {
     // Create a sample book and two sample journal entries.
@@ -150,7 +170,7 @@ struct JournalPageView: View {
         topEntry: JournalEntry(
             date: "Feb 21, 2025",
             title: "Morning Thoughts",
-            text: "Today was one of those rare, peaceful days where everything seemed to slow down. I woke up to the sound of light rain tapping against the window, a comforting rhythm that made me linger in bed a little longer. Breakfast was simple—just a warm cup of tea and toast—but it felt like a luxury to eat without rushing. I spent most of the afternoon reading, getting lost in a novel that had been sitting on my shelf for months. The words pulled me in, and for a while, the outside world faded away. By evening, the sky had cleared, so I went for a walk. The air was crisp, and the streets were quiet, except for the occasional rustle of leaves. It felt good to just breathe, to exist in the moment without any distractions. Some days don’t need to be extraordinary to be meaningful. "
+            text: "Today was one of those rare, peaceful days where everything seemed to slow down. I woke up to the sound of light rain tapping against the window, a comforting rhythm that made me linger in bed a little longer. Breakfast was simple—just a warm cup of tea and toast—but it felt like a luxury to eat without rushing. I spent most of the afternoon reading, getting lost in a novel that had been sitting on my shelf for months. The words pulled me in, and for a while, the outside world faded away. By evening, the sky had cleared, so I went for a walk. The air was crisp, and the streets were quiet, except for the occasional rustle of leaves. It felt good to just breathe, to exist in the moment without any distractions. Some days don’t need to be extraordinary to be meaningful."
         ),
         bottomEntry: JournalEntry(
             date: "Feb 15, 2025",
