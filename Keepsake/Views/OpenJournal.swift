@@ -221,6 +221,7 @@ struct OpenJournal: View {
                 }
             }.offset(x: UIScreen.main.bounds.width * -0.45)
             HStack {
+                
                 Button("Back") {
                     circleStart = 0.5
                     circleEnd = 0.5
@@ -247,7 +248,9 @@ struct OpenJournal: View {
                             }
                         }
                     }
-                }
+                }.opacity(degrees == -180 ? 1 : 0)
+                AddEntryButtonView()
+                    .opacity(degrees == -180 ? 1 : 0)
             }.offset(y: 280)
         }
     }
