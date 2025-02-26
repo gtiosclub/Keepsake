@@ -524,7 +524,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"KeepsakeWatch Watch App/Preview Content\"";
-				DEVELOPMENT_TEAM = N495U8874N;
+				DEVELOPMENT_TEAM = G6V8SXG4F4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatch;
@@ -554,7 +554,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"KeepsakeWatch Watch App/Preview Content\"";
-				DEVELOPMENT_TEAM = N495U8874N;
+				DEVELOPMENT_TEAM = G6V8SXG4F4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatch;
@@ -781,7 +781,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Keepsake/Preview Content\"";
-				DEVELOPMENT_TEAM = N495U8874N;
+				DEVELOPMENT_TEAM = G6V8SXG4F4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Need to build AR Scrapbooks";
@@ -812,7 +812,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Keepsake/Preview Content\"";
-				DEVELOPMENT_TEAM = N495U8874N;
+				DEVELOPMENT_TEAM = G6V8SXG4F4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Need to build AR Scrapbooks";
