@@ -137,6 +137,36 @@ final class KeepsakeAITests {
         print(caption)
     }
     
+    
+    @Test
+    func testCategorizeAllImages() async {
+        let imageNames = ["cat", "random", "TestAICaptionImage"]
+
+        var catImages: [String] = []
+
+        for imageName in imageNames {
+            guard let image = UIImage(named: imageName) else {
+                print("Failed to load image: \(imageName)")
+                continue
+            }
+
+            let category = await vm.categorizeImage(image: image)?.lowercased()
+
+            guard let category, !category.isEmpty else {
+                print("Failed to categorize image: \(imageName)")
+                continue
+            }
+
+            print("\(imageName) categorized as: \(category)")
+
+            if category == "cat" {
+                catImages.append(imageName)
+            }
+        }
+
+        print("Images categorized as cats: \(catImages)")
+    }
+    
     @Test
     func relevantImagesForQuery() async {
         let dogEntry1: ScrapbookEntry = .init(id: "123", imageURL: "", caption: "Golden retriever posing", date: "")
