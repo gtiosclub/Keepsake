@@ -36,7 +36,7 @@ struct BottomLeftSemi: Shape {
 }
 
 struct OpenJournal: View {
-//    @State var book: any Book
+    //    @State var book: any Book
     @State var book: Journal
     @Binding var degrees: CGFloat
     @State var isHidden: Bool = false
@@ -51,6 +51,7 @@ struct OpenJournal: View {
     @State var frontIsHidden: Bool = true
     @Binding var coverZ: Double
     @Binding var scaleFactor: CGFloat
+    @State private var isExpanded: Bool = false
     var body: some View {
         ZStack {
             VStack {
@@ -84,9 +85,9 @@ struct OpenJournal: View {
                     .foregroundStyle(book.template.pageColor)
                     .offset(x: 5, y: 0)
                 Text(displayPageIndex < book.pages.count && displayPageIndex > -1 ? "\(book.pages[displayPageIndex].number)" : "no more pages")
-
+                
             }.rotation3DEffect(.degrees(displayDegrees), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint.leading, anchorZ: 0, perspective: 0.2)
-              
+            
             //Fake Front Page
             RoundedRectangle(cornerRadius: 10)
                 .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.55)
@@ -102,7 +103,7 @@ struct OpenJournal: View {
                     .foregroundStyle(book.template.pageColor)
                     .offset(x: UIScreen.main.bounds.height * 0.004, y: 0)
                 Text(displayPageIndex - 1 < book.pages.count && displayPageIndex - 1 > -1 ? "\(book.pages[displayPageIndex - 1].number)" : "no more pages")
-//                    .opacity(frontIsHidden ? 0 : 1)
+                //                    .opacity(frontIsHidden ? 0 : 1)
             }.rotation3DEffect(.degrees(frontDegrees), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint.leading, anchorZ: 0, perspective: 0.2)
             //Cover page
             ZStack {
@@ -112,7 +113,7 @@ struct OpenJournal: View {
                 Text(book.name)
                     .font(.title)
                     .foregroundStyle(book.template.titleColor)
-//                    .opacity(isHidden ? 0 : 1)
+                //                    .opacity(isHidden ? 0 : 1)
             }.rotation3DEffect(.degrees(degrees), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint.leading, anchorZ: 0, perspective: 0.2)
                 .zIndex(coverZ)
             VStack {
@@ -132,7 +133,6 @@ struct OpenJournal: View {
                                 .frame(width: UIScreen.main.bounds.width * 0.08, height: UIScreen.main.bounds.height * 0.02)
                                 .offset(y: -UIScreen.main.bounds.height * 0.02)
                         }.frame(width: UIScreen.main.bounds.width * 0.08, height: UIScreen.main.bounds.height * 0.04)
-                        
                     }
                     
                     
@@ -208,27 +208,74 @@ struct OpenJournal: View {
                 }
                 
             }.offset(y: 280)
-        }
-    }
-}
-//
-//#Preview {
-//    OpenJournal(book: shelf.books[number], degrees: $degrees)
-//}
+            HStack {
+                if !isExpanded {
+                    Button(action: {
+                        withAnimation {
+                            isExpanded.toggle()
+                        }
+                    }) {
+                        Image(systemName: "plus.circle.fill")
+                            .resizable()
+                            .frame(width: 45, height: 45)
+                            .foregroundColor(.red)
+                        
+                    }.offset (x: 150, y: 350)
+                }
+                if isExpanded {
+                    HStack {
+                        Button(action: {}) { Image(systemName: "t.square.fill")
+                                .resizable()
+                                .frame(width: 45, height: 45)
+                            .foregroundColor(.black)}
+                        Button(action: {}) {Image(systemName: "photo.fill")
+                                .resizable()
+                                .frame(width: 45, height: 45)
+                            .foregroundColor(.blue)}
+                        Button(action:{}) {Image(systemName: "face.smiling.inverse")
+                                .resizable()
+                                .frame(width: 45, height: 45)
+                            .foregroundColor(.yellow)}
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                            isExpanded.toggle()
+                                        }
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .resizable()
+                                .frame(width: 45, height: 45)
+                            .foregroundColor(.red)}
+                    }.offset (x: 70, y: 350)
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                    .padding(.trailing, 10)
+                }
+            }
 
-#Preview {
-    struct Preview: View {
-        @State var number: CGFloat = -180
-        @State var number2: CGFloat = -180
-        @State var show: Bool = true
-        @State var cover: Double = -2
-        @State var circleStart: CGFloat = 1
-        @State var circleEnd: CGFloat = 1
-        @State var scaleFactor: CGFloat = 0.6
-        var body: some View {
-            OpenJournal(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .gray, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]), degrees: $number, show: $show, frontDegrees: $number2, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: 2, coverZ: $cover, scaleFactor: $scaleFactor)
+            }
         }
+   }
+    
+    
+    //
+    //#Preview {
+    //    OpenJournal(book: shelf.books[number], degrees: $degrees)
+    //}
+    
+    #Preview {
+        struct Preview: View {
+            @State var number: CGFloat = -180
+            @State var number2: CGFloat = -180
+            @State var show: Bool = true
+            @State var cover: Double = -2
+            @State var circleStart: CGFloat = 1
+            @State var circleEnd: CGFloat = 1
+            @State var scaleFactor: CGFloat = 0.6
+            var body: some View {
+                OpenJournal(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .gray, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]), degrees: $number, show: $show, frontDegrees: $number2, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: 2, coverZ: $cover, scaleFactor: $scaleFactor)
+            }
+        }
+        
+        return Preview()
+        
     }
 
-    return Preview()
-}
