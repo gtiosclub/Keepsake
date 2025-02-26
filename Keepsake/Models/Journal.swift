@@ -15,6 +15,7 @@ protocol Book {
 
 struct Journal: Book {
     var name: String
+    var id: UUID
     var createdDate: String
     var entries: [JournalEntry]
     var category: String
@@ -23,8 +24,9 @@ struct Journal: Book {
     var template: Template
     var pages: [JournalPage]
     
-    init(name: String, createdDate: String, entries: [JournalEntry], category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage]) {
+    init(name: String, id: UUID, createdDate: String, entries: [JournalEntry], category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage]) {
         self.name = name
+        self.id = id
         self.createdDate = createdDate
         self.entries = entries
         self.category = category
@@ -36,6 +38,7 @@ struct Journal: Book {
     
     init () {
         self.name = "Default Journal"
+        self.id = UUID()
         self.createdDate = Date().description
         self.entries = []
         self.category = ""
