@@ -23,8 +23,18 @@ final class AudioRecording {
             print("failed")
         }
         print("recording started")
+//        let fileName = UUID().uuidString + ".m4a"
+////        let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+//        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+//        let fileURL = documentsDirectory.appendingPathComponent(fileName)
+//        let fileName = UUID().uuidString + ".m4a"
+//        let downloadsDirectory = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
+//        let fileURL = downloadsDirectory.appendingPathComponent(fileName)
         let fileName = UUID().uuidString + ".m4a"
-        let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+        let downloadsDirectory = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Downloads")
+        let fileURL = downloadsDirectory.appendingPathComponent(fileName)
+
+        saveFileURL = fileURL
         saveFileURL = fileURL
         print(fileName)
         print(fileURL.path)
