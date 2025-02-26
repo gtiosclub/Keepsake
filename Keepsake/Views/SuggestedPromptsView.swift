@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SuggestedPromptsView: View {
+    var explorePrompts: [String] = []
+    var savedPrompts: [String] = []
     @State private var exploreOrSaved = 0
     
     var body: some View {
@@ -32,40 +34,47 @@ struct SuggestedPromptsView: View {
                 .padding(.horizontal)
                 Spacer()
             }
-            // List prompts
-            List {
-                VStack {
-                    Text("Write about what you bought at the store last night.")
-                        .font(.headline)
-                        .padding()
-                        .padding(.vertical)
-                        .lineLimit(3)
+            List{
+                let prompts = exploreOrSaved == 0 ? explorePrompts : savedPrompts
+                ForEach(prompts, id: \.self) { prompt in
+                    VStack (alignment: .leading) {
+                        HStack {
+                            Text(prompt)
+                                .font(.headline)
+                                .padding()
+                                .padding(.vertical)
+                                .lineLimit(3)
+                                
+                            Spacer()
+                        }
                         .background(
                             RoundedRectangle(cornerRadius: 10)
                                 .fill(Color.gray)
                         )
-                }
-                .listRowBackground(Color.clear)
-                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button {
-                        print("Button clicked")
-                    } label: {
-                        Text("choose prompt?")
-                            .font(.title3)
-                        // STOPPED WORKING HERE
-                        // COLOR NOT WORKING FOR SOME REASON
-                            .foregroundStyle(Color.gray)
                     }
-                    .tint(.clear)
+                    .listRowBackground(Color.clear)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button {
+                            print("Button clicked")
+                        } label: {
+                            Text("choose prompt?")
+                                .font(.title3)
+                           // COLOR NOT WORKING FOR SOME REASON
+                                .foregroundStyle(Color.gray)
+                        }
+                        .tint(.clear)
+                    }
+                    .listRowSeparator(.hidden)
+                    .padding(.bottom)
                 }
             }
             .scrollContentBackground(.hidden)
-            
+            .listStyle(.plain)
         }
         .background(Color.gray.opacity(0.3))
     }
 }
 
 #Preview {
-    SuggestedPromptsView()
+    SuggestedPromptsView(explorePrompts: ["Reflect on your day", "Write about your passion for baseball", "Journal about your gratitude"], savedPrompts: ["Saved1", "Saved2"])
 }
