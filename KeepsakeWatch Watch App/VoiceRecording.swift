@@ -279,7 +279,11 @@ struct DateTimeSelectionView: View {
             //            }
             Button {
                 let finalDate = combineDateAndTime()
-                print("Final Date Selected: \(finalDate)")
+                let formatter = DateFormatter()
+                formatter.dateStyle = .long
+                formatter.timeStyle = .long
+                formatter.timeZone = TimeZone.current
+                print("Final Date Selected: (\(formatter.string(from: finalDate))")
             } label: {
                 Text("Confirm")
             }
@@ -303,7 +307,12 @@ struct DateTimeSelectionView: View {
     /// 🛠️ Combines the selected date and time into a full Date object
     private func combineDateAndTime() -> Date {
         var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
-        components.hour = isAM ? (selectedHour == 12 ? 0 : selectedHour) : (selectedHour == 12 ? 12 : selectedHour + 12)
+        if isAM {
+            components.hour = (selectedHour == 12) ? 0 : selectedHour
+        } else {
+            components.hour = (selectedHour == 12) ? 12 : selectedHour + 12
+        }
+       
         components.minute = selectedMinute
         return Calendar.current.date(from: components) ?? Date()
     }
