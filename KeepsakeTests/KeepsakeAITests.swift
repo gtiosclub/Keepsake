@@ -54,7 +54,7 @@ final class KeepsakeAITests {
         let isSaved: Bool = false
         let isShared: Bool = false
         let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
-        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template)
+        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: [])
         
         // Query AI for prompt
         let prompt = await vm.getSmartPrompts(journal: journal)
@@ -75,7 +75,7 @@ final class KeepsakeAITests {
         let isSaved: Bool = false
         let isShared: Bool = false
         let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
-        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template)
+        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: [])
         
         // Query AI for prompt
         let prompt = await vm.getSmartPrompts(journal: journal)
@@ -135,5 +135,26 @@ final class KeepsakeAITests {
             return
         }
         print(caption)
+    }
+    
+    @Test
+    func relevantImagesForQuery() async {
+        let dogEntry1: ScrapbookEntry = .init(id: "123", imageURL: "", caption: "Golden retriever posing", date: "")
+        let dogEntry2: ScrapbookEntry = .init(id: "456", imageURL: "", caption: "Puppy playing fetch", date: "")
+        let carEntry1: ScrapbookEntry = .init(id: "789", imageURL: "", caption: "Sedan driving down the street", date: "")
+        let carEntry2: ScrapbookEntry = .init(id: "101", imageURL: "", caption: "Sports car zooming around", date: "")
+        
+        let entries: [ScrapbookEntry] = [dogEntry1, carEntry1, dogEntry2, carEntry2]
+        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
+        let scrapbook: Scrapbook = .init(name: "Test Scrapbook", createdDate: "", entries: entries, category: "", isSaved: false, isShared: false, template: template)
+        let userQuery: String = "Images of dogs"
+        let numResults: Int = 2
+        
+        let relevantImages = await vm.getRelevantScrapbookEntries(scrapbook: scrapbook, query: userQuery, numHighlights: numResults)
+        
+        #expect(relevantImages.count == 2)
+        #expect(relevantImages[0].id == "123" || relevantImages[0].id == "456")
+        #expect(relevantImages[1].id == "456" || relevantImages[1].id == "123")
+        #expect(relevantImages[0].id != relevantImages[1].id)
     }
 }
