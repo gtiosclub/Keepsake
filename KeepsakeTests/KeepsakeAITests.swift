@@ -53,7 +53,7 @@ final class KeepsakeAITests {
         let category: String = "Test"
         let isSaved: Bool = false
         let isShared: Bool = false
-        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
+        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .leather)
         let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: [])
         
         // Query AI for prompt
@@ -74,7 +74,7 @@ final class KeepsakeAITests {
         let category: String = "Test"
         let isSaved: Bool = false
         let isShared: Bool = false
-        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
+        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .leather)
         let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: [])
         
         // Query AI for prompt
@@ -145,7 +145,7 @@ final class KeepsakeAITests {
         let carEntry2: ScrapbookEntry = .init(id: "101", imageURL: "", caption: "Sports car zooming around", date: "")
         
         let entries: [ScrapbookEntry] = [dogEntry1, carEntry1, dogEntry2, carEntry2]
-        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
+        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .leather)
         let scrapbook: Scrapbook = .init(name: "Test Scrapbook", createdDate: "", entries: entries, category: "", isSaved: false, isShared: false, template: template)
         let userQuery: String = "Images of dogs"
         let numResults: Int = 2
