@@ -56,6 +56,7 @@ struct OpenJournal: View {
                     HStack {
                         Spacer()
                         Text(displayPageIndex + 1 < book.pages.count && displayPageIndex > -1 ? "\(book.pages[displayPageIndex + 1].number)" : "no more pages")
+                            .opacity(degrees == 0 ? 0 : 1)
                     }.frame(width: UIScreen.main.bounds.width * 0.87)
                 }
             }.frame(width: UIScreen.main.bounds.width * 0.87, height: UIScreen.main.bounds.height * 0.55)
@@ -210,10 +211,6 @@ struct OpenJournal: View {
                                 .stroke(lineWidth: 2)
                                 .frame(width: UIScreen.main.bounds.width * 0.08)
                                 .opacity(isHidden ? 1 : 0)
-//                            Circle()
-//                                .trim(from: circleStart, to: circleEnd)
-//                                .stroke(coverZ != 0 ? book.template.pageColor : book.template.coverColor, lineWidth: 3)
-//                                .frame(width: UIScreen.main.bounds.width * 0.08)
                             
                         }.frame(width: UIScreen.main.bounds.width * 0.08, height: UIScreen.main.bounds.height * 0.04)
                         
