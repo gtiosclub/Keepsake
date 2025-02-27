@@ -67,7 +67,7 @@ struct OpenJournal: View {
                 .fill(book.template.coverColor)
                 .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
                 .overlay(
-                    Image("leather") // Load texture image from assets
+                    Image("\(book.template.texture)") // Load texture image from assets
                         .resizable()
                         .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -167,7 +167,7 @@ struct OpenJournal: View {
                     .fill(book.template.coverColor)
                     .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
                     .overlay(
-                        Image("leather") // Load texture image from assets
+                        Image("\(book.template.texture)") // Load texture image from assets
                             .resizable()
                             .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -190,7 +190,7 @@ struct OpenJournal: View {
                     .opacity(isHidden ? 0 : 1)
                     .zIndex(-3)
                     .overlay(
-                        Image("leather") // Load texture image from assets
+                        Image("\(book.template.texture)") // Load texture image from assets
                             .resizable()
                             .frame(width: UIScreen.main.bounds.width * 0.1, height: UIScreen.main.bounds.height * 0.56)
                             .offset(x: UIScreen.main.bounds.width * -0.42)
@@ -272,7 +272,7 @@ struct OpenJournal: View {
         @State var isHidden: Bool = false
         @State var mainCircleStart: CGFloat = 0.5
         var body: some View {
-            OpenJournal(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .gray, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]), degrees: $number, isHidden: $isHidden, show: $show, frontDegrees: $number2, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: 2, coverZ: $cover, scaleFactor: $scaleFactor, mainCircleStart: $mainCircleStart)
+            OpenJournal(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .gray, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]), degrees: $number, isHidden: $isHidden, show: $show, frontDegrees: $number2, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: 2, coverZ: $cover, scaleFactor: $scaleFactor, mainCircleStart: $mainCircleStart)
         }
     }
 

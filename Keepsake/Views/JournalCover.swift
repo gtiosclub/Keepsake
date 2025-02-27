@@ -23,7 +23,7 @@ struct JournalCover: View {
                 .shadow(radius: 3)
                 .zIndex(-3)
                 .overlay(
-                    Image("leather") // Load texture image from assets
+                    Image("\(book.template.texture)") // Load texture image from assets
                         .resizable()
                         .frame(width: UIScreen.main.bounds.width * 0.1, height: UIScreen.main.bounds.height * 0.56)
                         .offset(x: UIScreen.main.bounds.width * -0.42)
@@ -45,7 +45,7 @@ struct JournalCover: View {
                     .fill(book.template.coverColor)
                     .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
                     .overlay(
-                        Image("leather") // Load texture image from assets
+                        Image("\(book.template.texture)") // Load texture image from assets
                             .resizable()
                             .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
