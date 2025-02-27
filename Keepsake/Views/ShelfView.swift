@@ -21,7 +21,6 @@ struct ShelfView: View {
     @State var ellipseEnd: CGFloat = 1
     @State var scaleEffect: CGFloat = 0.6
     @State var isHidden: Bool = false
-    @State var mainCircleStart: CGFloat = 0.75
 //    @State var isHidden: Bool = false
 //    @State var selectedBook: Int = -1
     
@@ -95,7 +94,7 @@ struct ShelfView: View {
             }
             .frame(maxHeight: .infinity, alignment: .top)
         } else {
-            OpenJournal(book: (shelf.books[number] as? Journal)!, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: 2, coverZ: $coverZ, scaleFactor: $scaleEffect, mainCircleStart: $mainCircleStart).matchedGeometryEffect(id: "journal_\(number)", in: shelfNamespace, properties: .position, anchor: .center)
+            OpenJournal(book: (shelf.books[number] as? Journal)!, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: 2, coverZ: $coverZ, scaleFactor: $scaleEffect).matchedGeometryEffect(id: "journal_\(number)", in: shelfNamespace, properties: .position, anchor: .center)
                 .scaleEffect(scaleEffect)
                 .transition(.slide)
                 .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
@@ -106,15 +105,17 @@ struct ShelfView: View {
                     circleStart = 1
                     circleEnd = 1
                     withAnimation(.linear(duration: 0.7).delay(0.7)) {
+                        circleStart -= 0.25
                         degrees -= 90
                         frontDegrees -= 90
                     } completion: {
                         coverZ = -1
                         isHidden = true
                         withAnimation(.linear(duration: 0.7).delay(0)) {
-                            mainCircleStart -= 0.25
+                            circleStart -= 0.25
                             degrees -= 90
                             frontDegrees -= 90
+                            
                         }
                     }
                 }
