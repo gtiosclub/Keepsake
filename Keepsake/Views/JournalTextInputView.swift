@@ -14,10 +14,14 @@ struct JournalTextInputView: View {
     var body: some View {
         VStack {
             Text(title).font(.headline)
-                .frame(width: UIScreen.main.bounds.width)
-            Text(date).font(.subheadline)
-            TextEditor(text: $inputText)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+            Text(date).font(.subheadline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+            TextEditor(text: $inputText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
             Spacer()
         }
     }
