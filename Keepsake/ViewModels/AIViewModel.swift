@@ -169,7 +169,11 @@ class AIViewModel: ObservableObject {
     
     func getSmartPrompts(journal: Journal) async -> String? {
         // Get all entries in journal
-        let journalEntries: [JournalEntry] = journal.entries
+        let journalPages: [JournalPage] = journal.pages
+        var journalEntries: [JournalEntry] = []
+        for page in journalPages {
+            journalEntries.append(contentsOf: page.entries)
+        }
         var prompt: String = ""
         if journalEntries.count == 0 {
             print("No journal entries")

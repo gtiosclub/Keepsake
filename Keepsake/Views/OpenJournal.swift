@@ -7,34 +7,6 @@
 
 import SwiftUI
 
-struct LeftSemi: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY),
-                          control: CGPoint(x: rect.minX, y:  rect.minY))
-        return path
-    }
-}
-struct RightSemi: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.minY),
-                          control: CGPoint(x: rect.maxX, y:  rect.minY))
-        return path
-    }
-}
-struct BottomLeftSemi: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.maxY),
-                          control: CGPoint(x: rect.minX, y:  rect.maxY))
-        return path
-    }
-}
-
 struct OpenJournal: View {
 //    @State var book: any Book
     @State var book: Journal
@@ -269,7 +241,7 @@ struct OpenJournal: View {
         @State var circleStart: CGFloat = 1
         @State var circleEnd: CGFloat = 1
         @State var scaleFactor: CGFloat = 0.6
-        @State var isHidden: Bool = false
+        @State var isHidden: Bool = true
         @State var mainCircleStart: CGFloat = 0.5
         var body: some View {
             OpenJournal(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .gray, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]), degrees: $number, isHidden: $isHidden, show: $show, frontDegrees: $number2, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: 2, coverZ: $cover, scaleFactor: $scaleFactor, mainCircleStart: $mainCircleStart)
