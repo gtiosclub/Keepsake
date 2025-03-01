@@ -25,6 +25,7 @@ struct ShelfView: View {
     @State var inTextEntry: Bool = false
     @State var selectedEntry: Int = 0
     @State var displayPage: Int = 2
+    @State var showNavBack: Bool = false
     
     var body: some View {
         if !show {
@@ -65,6 +66,7 @@ struct ShelfView: View {
                                                 }
                                                 circleStart = 1
                                                 circleEnd = 1
+                                                showNavBack.toggle()
                                                 withAnimation(.linear(duration: 0.7).delay(0.0)) {
                                                     circleStart -= 0.25
                                                     degrees -= 90
@@ -116,13 +118,15 @@ struct ShelfView: View {
             .frame(maxHeight: .infinity, alignment: .top)
         } else {
             if !inTextEntry {
-                OpenJournal(userVM: userVM, shelfIndex: shelfIndex, bookIndex: selectedJournal, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPage, coverZ: $coverZ, scaleFactor: $scaleEffect, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+                OpenJournal(userVM: userVM, journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal), shelfIndex: shelfIndex, bookIndex: selectedJournal, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPage, coverZ: $coverZ, scaleFactor: $scaleEffect, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, showNavBack: $showNavBack)
                     .matchedGeometryEffect(id: "journal_\(selectedJournal)", in: shelfNamespace, properties: .position, anchor: .center)
                     .scaleEffect(scaleEffect)
                     .transition(.slide)
                     .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                    .navigationBarBackButtonHidden(showNavBack)
             } else {
                 JournalTextInputView(userVM: userVM, shelfIndex: shelfIndex, journalIndex: selectedJournal, entryIndex: selectedEntry, pageIndex: displayPage, inTextEntry: $inTextEntry, entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                    .navigationBarBackButtonHidden(true)
             }
             
         }

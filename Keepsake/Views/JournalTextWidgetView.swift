@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct JournalTextWidgetView: View {
-    @State var entry: JournalEntry
+    @Binding var entry: JournalEntry
     var body: some View {
         VStack {
             ZStack {
@@ -19,6 +19,7 @@ struct JournalTextWidgetView: View {
                 VStack {
                     Text(entry.title)
                         .font(.headline)
+                        .padding(.horizontal, 10)
                     Text(entry.date)
                         .font(.subheadline)
                     Rectangle()
@@ -36,5 +37,12 @@ struct JournalTextWidgetView: View {
 }
 
 #Preview {
-    JournalTextWidgetView(entry: JournalEntry(date: "01-01-2025", title: "Daily Reflection", text: "Text that could be very long", summary: "I had a great day, asdfasdfasda, asdfalsdfsad, asdfajsdfl, adsflkasdjflsk"))
+    struct Preview: View {
+        @State var entry = JournalEntry(date: "01/01/2000", title: "Title", text: "written text", summary: "summary")
+        var body: some View {
+            JournalTextWidgetView(entry: $entry)
+        }
+    }
+
+    return Preview()
 }

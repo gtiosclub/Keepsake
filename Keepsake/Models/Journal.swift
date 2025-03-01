@@ -13,7 +13,7 @@ protocol Book {
     var createdDate: String { get }
 }
 
-class Journal: Book {
+class Journal: Book, ObservableObject {
     var name: String
     var createdDate: String
     var category: String
