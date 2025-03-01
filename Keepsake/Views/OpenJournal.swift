@@ -98,6 +98,227 @@ struct OpenJournal: View {
 //    OpenJournal(book: shelf.books[number], degrees: $degrees)
 //}
 
+struct JournalBackPagesView: View {
+    @State var book: Journal
+    @Binding var displayPageIndex: Int
+    @Binding var degrees: CGFloat
+    var body: some View {
+        RoundedRectangle(cornerRadius: 10)
+            .fill(book.template.coverColor)
+            .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
+            .overlay(
+                Image("\(book.template.texture)") // Load texture image from assets
+                    .resizable()
+                    .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .scaledToFill()
+                    .opacity(0.4) // Adjust for realism
+            )
+            .shadow(color: .black.opacity(0.3), radius: 5, x: 5, y: 5) // Gives depth
+            .zIndex(-4)
+        //Back Page
+        ZStack {
+            RoundedRectangle(cornerRadius: 10)
+                .frame(width: UIScreen.main.bounds.width * 0.87, height: UIScreen.main.bounds.height * 0.55)
+                .foregroundStyle(book.template.pageColor)
+                .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
+                .zIndex(-2)
+            VStack {
+                if displayPageIndex + 1 < book.pages.count && displayPageIndex - 1 > -1{
+                    ForEach(book.pages[displayPageIndex + 1].entries.indices, id: \.self) { index in
+                        JournalTextWidgetView(entry: book.pages[displayPageIndex + 1].entries[index])
+                            .padding(.top, 10)
+                    }
+                }
+                Spacer()
+                HStack {
+                    Spacer()
+                    Text(displayPageIndex + 1 < book.pages.count && displayPageIndex > -1 ? "\(book.pages[displayPageIndex + 1].number)" : "no more pages")
+                        .padding(.trailing, UIScreen.main.bounds.width * 0.025)
+                        .opacity(degrees == 0 ? 0 : 1)
+                }.frame(width: UIScreen.main.bounds.width * 0.87)
+            }
+        }.frame(width: UIScreen.main.bounds.width * 0.87, height: UIScreen.main.bounds.height * 0.55)
+    }
+}
+
+struct JournalFrontPagesView: View {
+    var book: Journal
+    @Binding var degrees: CGFloat
+    @Binding var frontIsHidden: Bool
+    @Binding var displayPageIndex: Int
+    @Binding var frontDegrees: CGFloat
+    @Binding var isHidden: Bool
+    @Binding var coverZ: Double
+    var body: some View {
+        //Fake Front Page
+        RoundedRectangle(cornerRadius: 10)
+            .frame(width: UIScreen.main.bounds.width * 0.87, height: UIScreen.main.bounds.height * 0.55)
+            .zIndex(0)
+            .foregroundStyle(book.template.pageColor)
+            .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
+            .rotation3DEffect(.degrees(degrees), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint(x: UnitPoint.leading.x - 0.011, y: UnitPoint.leading.y), anchorZ: 0, perspective: 0.2)
+        //Front Page
+        ZStack {
+            RoundedRectangle(cornerRadius: 10)
+                .frame(width: UIScreen.main.bounds.width * 0.87, height: UIScreen.main.bounds.height * 0.55)
+                .zIndex(0)
+                .foregroundStyle(book.template.pageColor)
+                .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
+            VStack {
+                if displayPageIndex - 1 < book.pages.count && displayPageIndex - 1 > -1 {
+                    ForEach(book.pages[displayPageIndex - 1].entries.indices, id: \.self) { index in
+                        JournalTextWidgetView(entry: book.pages[displayPageIndex - 1].entries[index])
+                            .padding(.top, 10)
+                            .opacity(frontIsHidden ? 0 : 1)
+                    }
+                }
+                Spacer()
+                HStack {
+                    Spacer()
+                    Text(displayPageIndex - 1 < book.pages.count && displayPageIndex > -1 ? "\(book.pages[displayPageIndex - 1].number)" : "no more pages")
+                        .padding(.trailing, UIScreen.main.bounds.width * 0.025)
+                }
+            }
+            //                    .opacity(frontIsHidden ? 0 : 1)
+        }.frame(width: UIScreen.main.bounds.width * 0.87, height: UIScreen.main.bounds.height * 0.55)
+            .rotation3DEffect(.degrees(frontDegrees), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint(x: UnitPoint.leading.x - 0.011, y: UnitPoint.leading.y), anchorZ: 0, perspective: 0.2)
+        ZStack {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(book.template.coverColor)
+                .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
+                .overlay(
+                    Image("\(book.template.texture)") // Load texture image from assets
+                        .resizable()
+                        .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .scaledToFill()
+                        .opacity(0.4) // Adjust for realism
+                )
+                .shadow(color: .black.opacity(degrees > -180 ? 0 : 0.3), radius: 5, x: 5, y: 5) // Gives depth
+            
+            // Title
+            Text(book.name)
+                .font(.title)
+                .foregroundStyle(book.template.titleColor)
+                .opacity(isHidden ? 0 : 1)
+            Rectangle()
+                .fill(book.template.coverColor) // Darker than cover color
+                .brightness(-0.2)
+                .frame(width: UIScreen.main.bounds.width * 0.1, height: UIScreen.main.bounds.height * 0.56)
+                .offset(x: UIScreen.main.bounds.width * -0.42)
+                .shadow(radius: 3)
+                .opacity(isHidden ? 0 : 1)
+                .zIndex(-3)
+                .overlay(
+                    Image("\(book.template.texture)") // Load texture image from assets
+                        .resizable()
+                        .frame(width: UIScreen.main.bounds.width * 0.1, height: UIScreen.main.bounds.height * 0.56)
+                        .offset(x: UIScreen.main.bounds.width * -0.42)
+                        .scaledToFill()
+                        .opacity(isHidden ? 0 : 0.4) // Adjust for realism
+                )
+        }.rotation3DEffect(.degrees(degrees), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint.leading, anchorZ: 0, perspective: 0.2)
+            .zIndex(coverZ)
+    }
+}
+
+struct JournalDisplayView: View {
+    @Binding var displayIsHidden: Bool
+    @ObservedObject var userVM: UserViewModel
+    @State var shelfIndex: Int
+    @State var bookIndex: Int
+    @Binding var displayPageIndex: Int
+    @Binding var zIndex: Double
+    @Binding var displayDegrees: CGFloat
+    @Binding var circleStart: CGFloat
+    @Binding var circleEnd: CGFloat
+    @Binding var frontIsHidden: Bool
+    @Binding var frontDegrees: CGFloat
+    @Binding var inTextEntry: Bool
+    @State var scaleFactor: CGFloat = 1
+    @Binding var selectedEntry: Int
+    var body: some View {
+        ZStack(alignment: .top) {
+            RoundedRectangle(cornerRadius: 10)
+                .frame(width: UIScreen.main.bounds.width * 0.87, height: UIScreen.main.bounds.height * 0.55)
+                .zIndex(displayIsHidden ? 0 : zIndex)
+                .foregroundStyle(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).template.pageColor)
+                .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
+            VStack {
+                if displayPageIndex < userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages.count && displayPageIndex > -1 {
+                    ForEach(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages[displayPageIndex].entries.indices, id: \.self) { index in
+                        JournalTextWidgetView(entry: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages[displayPageIndex].entries[index])
+                            .padding(.top, 10)
+                            .opacity(displayIsHidden ? 0 : 1)
+                            .onTapGesture {
+                                selectedEntry = index
+                                inTextEntry.toggle()
+                            }
+                      
+                    }
+                }
+                Spacer()
+                HStack {
+                    Spacer()
+                    Text(displayPageIndex < userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages.count && displayPageIndex > -1 ? "\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages[displayPageIndex].number)" : "no more pages")
+                        .padding(.trailing, UIScreen.main.bounds.width * 0.025)
+                }
+            }
+            
+        }.frame(width: UIScreen.main.bounds.width * 0.87, height: UIScreen.main.bounds.height * 0.55)
+            .rotation3DEffect(.degrees(displayDegrees), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint(x: UnitPoint.leading.x - 0.011, y: UnitPoint.leading.y), anchorZ: 0, perspective: 0.2)
+            .gesture(
+                DragGesture()
+                    .onEnded({ value in
+                        if value.translation.width < 0 {
+                            circleStart = 0.5
+                            circleEnd = 1
+                            zIndex = -0.5
+                            withAnimation(.linear(duration: 0.5).delay(0.5)) {
+                                displayDegrees -= 90
+                                circleEnd -= 0.25
+                            } completion: {
+                                circleStart = 0.75
+                                circleEnd = 1
+                                displayIsHidden = true
+                                withAnimation(.linear(duration: 0.5).delay(0)) {
+                                    displayDegrees -= 90
+                                    circleStart -= 0.25
+                                } completion: {
+                                    displayDegrees = 0
+                                    displayPageIndex += 1
+                                    displayIsHidden = false
+                                }
+                            }
+                        }
+                        
+                        if value.translation.width > 0 {
+                            // right
+                            circleStart = 0.5
+                            circleEnd = 1
+                            withAnimation(.linear(duration: 0.5).delay(0.5)) {
+                                frontDegrees += 90
+                                circleStart += 0.25
+                            } completion: {
+                                frontIsHidden = false
+                                circleStart = 0.5
+                                circleEnd = 0.75
+                                withAnimation(.linear(duration: 0.5).delay(0)) {
+                                    frontDegrees += 90
+                                    circleEnd += 0.25
+                                } completion: {
+                                    displayPageIndex -= 1
+                                    frontDegrees = -180
+                                    frontIsHidden = true
+                                }
+                            }
+                        }
+                    })
+            )
+    }
+}
+
 #Preview {
     struct Preview: View {
         @State var degrees: CGFloat = -180
