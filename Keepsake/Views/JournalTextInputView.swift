@@ -28,9 +28,10 @@ struct JournalTextInputView: View {
                     .foregroundStyle(.black)
             }.frame(maxWidth: .infinity, alignment: .leading)
                 .padding(UIScreen.main.bounds.width * 0.025)
-            Text(title).font(.title)
+            TextField("", text: $title, axis: .vertical)
+                .font(.title)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
             Text(date).font(.subheadline)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
@@ -97,6 +98,7 @@ struct JournalTextInputView: View {
                     }
                 })
             }.padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                .padding(.bottom, 10)
         }.onAppear() {
             title = entry.title
             inputText = entry.text

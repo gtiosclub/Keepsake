@@ -11,6 +11,7 @@ struct OpenJournal: View {
     @Namespace private var openJournalNamespace
 //    @State var book: any Book
     @ObservedObject var userVM: UserViewModel
+    @ObservedObject var journal: Journal
     @State var shelfIndex: Int
     @State var bookIndex: Int
     @Binding var degrees: CGFloat
@@ -30,12 +31,13 @@ struct OpenJournal: View {
     @State var entryIndex = -1
     @State var scaleFactor2 = 0
     @Binding var selectedEntry: Int
+    @Binding var showNavBack: Bool
     var body: some View {
         ZStack {
-            JournalBackPagesView(book: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex), displayPageIndex: $displayPageIndex, degrees: $degrees)
-            JournalDisplayView(displayIsHidden: $displayIsHidden, userVM: userVM, shelfIndex: shelfIndex, bookIndex: bookIndex, displayPageIndex: $displayPageIndex, zIndex: $zIndex, displayDegrees: $displayDegrees, circleStart: $circleStart, circleEnd: $circleEnd, frontIsHidden: $frontIsHidden, frontDegrees: $frontDegrees, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+            JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees)
+            JournalDisplayView(displayIsHidden: $displayIsHidden, userVM: userVM, journal: journal, shelfIndex: shelfIndex, bookIndex: bookIndex, displayPageIndex: $displayPageIndex, zIndex: $zIndex, displayDegrees: $displayDegrees, circleStart: $circleStart, circleEnd: $circleEnd, frontIsHidden: $frontIsHidden, frontDegrees: $frontDegrees, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
             
-            JournalFrontPagesView(book: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex), degrees: $degrees, frontIsHidden: $frontIsHidden, displayPageIndex: $displayPageIndex, frontDegrees: $frontDegrees, isHidden: $isHidden, coverZ: $coverZ)
+            JournalFrontPagesView(book: journal, degrees: $degrees, frontIsHidden: $frontIsHidden, displayPageIndex: $displayPageIndex, frontDegrees: $frontDegrees, isHidden: $isHidden, coverZ: $coverZ)
             VStack {
                 ForEach(0..<9, id: \.self) { i in
                     VStack(spacing: 0) {
@@ -72,6 +74,7 @@ struct OpenJournal: View {
                             withAnimation(.linear(duration: 0.7)) {
                                 scaleFactor = 0.6
                             } completion: {
+                                showNavBack.toggle()
                                 withAnimation {
                                     show.toggle()
                                 }
@@ -99,7 +102,7 @@ struct OpenJournal: View {
 //}
 
 struct JournalBackPagesView: View {
-    @State var book: Journal
+    @ObservedObject var book: Journal
     @Binding var displayPageIndex: Int
     @Binding var degrees: CGFloat
     var body: some View {
@@ -126,7 +129,7 @@ struct JournalBackPagesView: View {
             VStack {
                 if displayPageIndex + 1 < book.pages.count && displayPageIndex - 1 > -1{
                     ForEach(book.pages[displayPageIndex + 1].entries.indices, id: \.self) { index in
-                        JournalTextWidgetView(entry: book.pages[displayPageIndex + 1].entries[index])
+                        JournalTextWidgetView(entry: $book.pages[displayPageIndex + 1].entries[index])
                             .padding(.top, 10)
                     }
                 }
@@ -143,7 +146,7 @@ struct JournalBackPagesView: View {
 }
 
 struct JournalFrontPagesView: View {
-    var book: Journal
+    @ObservedObject var book: Journal
     @Binding var degrees: CGFloat
     @Binding var frontIsHidden: Bool
     @Binding var displayPageIndex: Int
@@ -168,7 +171,7 @@ struct JournalFrontPagesView: View {
             VStack {
                 if displayPageIndex - 1 < book.pages.count && displayPageIndex - 1 > -1 {
                     ForEach(book.pages[displayPageIndex - 1].entries.indices, id: \.self) { index in
-                        JournalTextWidgetView(entry: book.pages[displayPageIndex - 1].entries[index])
+                        JournalTextWidgetView(entry: $book.pages[displayPageIndex - 1].entries[index])
                             .padding(.top, 10)
                             .opacity(frontIsHidden ? 0 : 1)
                     }
@@ -226,6 +229,7 @@ struct JournalFrontPagesView: View {
 struct JournalDisplayView: View {
     @Binding var displayIsHidden: Bool
     @ObservedObject var userVM: UserViewModel
+    @ObservedObject var journal: Journal
     @State var shelfIndex: Int
     @State var bookIndex: Int
     @Binding var displayPageIndex: Int
@@ -248,7 +252,7 @@ struct JournalDisplayView: View {
             VStack {
                 if displayPageIndex < userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages.count && displayPageIndex > -1 {
                     ForEach(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages[displayPageIndex].entries.indices, id: \.self) { index in
-                        JournalTextWidgetView(entry: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages[displayPageIndex].entries[index])
+                        JournalTextWidgetView(entry: $journal.pages[displayPageIndex].entries[index])
                             .padding(.top, 10)
                             .opacity(displayIsHidden ? 0 : 1)
                             .onTapGesture {
@@ -333,13 +337,15 @@ struct JournalDisplayView: View {
         @State var inTextEntry = false
         @State var selectedEntry: Int = 0
         @State var displayPageIndex: Int = 2
+        @State var showNavBack: Bool = false
+        @ObservedObject var userVM: UserViewModel = UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
+            Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")]), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")]), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")]), JournalPage(number: 5, entries: [])]),
+            Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
+            Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
+            Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])])
+        ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: []))
         var body: some View {
-            OpenJournal(userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
-                Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")]), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")]), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")]), JournalPage(number: 5, entries: [])]),
-                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
-                Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
-                Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])])
-            ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), shelfIndex: 0, bookIndex: 0, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPageIndex, coverZ: $cover, scaleFactor: $scaleFactor, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+            OpenJournal(userVM: userVM, journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), shelfIndex: 0, bookIndex: 0, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPageIndex, coverZ: $cover, scaleFactor: $scaleFactor, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, showNavBack: $showNavBack)
         }
     }
 
