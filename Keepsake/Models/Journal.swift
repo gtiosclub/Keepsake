@@ -13,7 +13,7 @@ protocol Book {
     var createdDate: String { get }
 }
 
-struct Journal: Book {
+class Journal: Book {
     var name: String
     var createdDate: String
     var category: String

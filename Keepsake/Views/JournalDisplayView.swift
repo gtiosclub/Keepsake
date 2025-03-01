@@ -9,7 +9,9 @@ import SwiftUI
 
 struct JournalDisplayView: View {
     @Binding var displayIsHidden: Bool
-    var book: Journal
+    @ObservedObject var userVM: UserViewModel
+    @State var shelfIndex: Int
+    @State var bookIndex: Int
     @Binding var displayPageIndex: Int
     @Binding var zIndex: Double
     @Binding var displayDegrees: CGFloat
@@ -19,22 +21,22 @@ struct JournalDisplayView: View {
     @Binding var frontDegrees: CGFloat
     @Binding var inTextEntry: Bool
     @State var scaleFactor: CGFloat = 1
-    @State var entryIndex: Int = -1
+    @Binding var selectedEntry: Int
     var body: some View {
         ZStack(alignment: .top) {
             RoundedRectangle(cornerRadius: 10)
                 .frame(width: UIScreen.main.bounds.width * 0.87, height: UIScreen.main.bounds.height * 0.55)
                 .zIndex(displayIsHidden ? 0 : zIndex)
-                .foregroundStyle(book.template.pageColor)
+                .foregroundStyle(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).template.pageColor)
                 .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
             VStack {
-                if displayPageIndex < book.pages.count && displayPageIndex > -1 {
-                    ForEach(book.pages[displayPageIndex].entries.indices, id: \.self) { index in
-                        JournalTextWidgetView(entry: book.pages[displayPageIndex].entries[index])
+                if displayPageIndex < userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages.count && displayPageIndex > -1 {
+                    ForEach(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages[displayPageIndex].entries.indices, id: \.self) { index in
+                        JournalTextWidgetView(entry: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages[displayPageIndex].entries[index])
                             .padding(.top, 10)
                             .opacity(displayIsHidden ? 0 : 1)
                             .onTapGesture {
-                                entryIndex = index
+                                selectedEntry = index
                                 inTextEntry.toggle()
                             }
                       
@@ -43,7 +45,7 @@ struct JournalDisplayView: View {
                 Spacer()
                 HStack {
                     Spacer()
-                    Text(displayPageIndex < book.pages.count && displayPageIndex > -1 ? "\(book.pages[displayPageIndex].number)" : "no more pages")
+                    Text(displayPageIndex < userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages.count && displayPageIndex > -1 ? "\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages[displayPageIndex].number)" : "no more pages")
                         .padding(.trailing, UIScreen.main.bounds.width * 0.025)
                 }
             }

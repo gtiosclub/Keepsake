@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct JournalBackPagesView: View {
-    var book: Journal
+    @State var book: Journal
     @Binding var displayPageIndex: Int
     @Binding var degrees: CGFloat
     var body: some View {
