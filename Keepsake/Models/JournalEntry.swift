@@ -11,4 +11,5 @@ struct JournalEntry: Encodable {
     var date: String
     var title: String
     var text: String
+    var summary: String
 }
