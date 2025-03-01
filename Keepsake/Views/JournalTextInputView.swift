@@ -11,9 +11,18 @@ struct JournalTextInputView: View {
     @State var title: String = "Prompt"
     @State var date: String = "01-01-2025"
     @State var inputText: String = ""
+    @Binding var inTextEntry: Bool
     var body: some View {
         VStack {
-            Text(title).font(.headline)
+            Button {
+                inTextEntry.toggle()
+                
+            } label: {
+                Image(systemName: "chevron.left")
+                    .foregroundStyle(.black)
+            }.frame(maxWidth: .infinity, alignment: .leading)
+                .padding(UIScreen.main.bounds.width * 0.025)
+            Text(title).font(.title)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
             Text(date).font(.subheadline)
@@ -87,5 +96,13 @@ struct JournalTextInputView: View {
 }
 
 #Preview {
-    JournalTextInputView()
+    struct Preview: View {
+        @State var inTextEntry = false
+        var body: some View {
+            JournalTextInputView(inTextEntry: $inTextEntry)
+        }
+    }
+
+    return Preview()
 }
+
