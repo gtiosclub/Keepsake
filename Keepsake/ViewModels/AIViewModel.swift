@@ -295,6 +295,84 @@ class AIViewModel: ObservableObject {
         return nil
     }
     
+    @Published var categorizedImages: [String: [UIImage]] = [:]
+            
+    func categorizeImage(image: UIImage) async -> String? {
+        let errorResponse: String = "Unable to categorize image."
+        
+        guard let base64Image = imageToBase64(image: image) else {
+            print("Unable to convert image to base64 string.")
+            return errorResponse
+        }
+
+        let systemPrompt = "You are categorizing images by similarity. Respond with only a single category keyword that best describes this image (e.g., 'dog', 'cat', 'rabbit')."
+
+        let requestBody: [String: Any] = [
+            "model": "gpt-4o",
+            "messages": [
+                ["role": "system", "content": systemPrompt],
+                ["role": "user", "content": [
+                    [
+                        "type": "image_url",
+                        "image_url": [
+                            "url": "data:image/jpeg;base64,\(base64Image)"
+                        ]
+                    ]
+                ]]
+            ],
+            "max_tokens": 10
+        ]
+
+        guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else {
+            print("Unable to create URL")
+            return errorResponse
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(openAIAPIKeyString)", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody, options: [])
+        } catch {
+            print("Failed to encode request body: \(error.localizedDescription)")
+            return errorResponse
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Invalid response from server")
+                return errorResponse
+            }
+
+            let decodedResponse = try JSONDecoder().decode(OpenAIResponse.self, from: data)
+            if let category = decodedResponse.choices.first?.message.content.trimmingCharacters(in: .whitespacesAndNewlines) {
+                storeImage(category: category, image: image)
+                print("Categorized image as: \(category)")
+                return category
+            } else {
+                return errorResponse
+            }
+        } catch {
+            print("API Request Error: \(error.localizedDescription)")
+            return errorResponse
+        }
+    }
+
+    func storeImage(category: String, image: UIImage) {
+        if categorizedImages[category] != nil {
+            categorizedImages[category]?.append(image)
+        } else {
+            categorizedImages[category] = [image]
+        }
+    }
+
+    func fetchImages(for category: String) -> [UIImage]? {
+        return categorizedImages[category]
+    }
+    
     struct OpenAIResponse: Codable {
         struct Choice: Codable {
             struct Message: Codable {
