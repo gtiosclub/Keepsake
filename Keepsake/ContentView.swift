@@ -47,6 +47,8 @@ struct ContentView: View {
     @State private var notificationMessage: String = "No notifications yet"
         
         var body: some View {
+            ViewControllerWrapper()
+                .frame(width: 0, height: 0)
             VStack {
                 Text(notificationMessage)
                     .font(.title)

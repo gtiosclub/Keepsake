@@ -79,22 +79,9 @@
 		F751BD3F2D50049F00EDB703 /* KeepsakeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeepsakeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		5B5114CA2D74CFB2008CA17E /* Exceptions for "KeepsakeWatch Watch App" folder in "KeepsakeWatch Watch App" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"KeepsakeWatch-Watch-App-Info.plist",
-			);
-			target = 5B27A5102D5AB33400327B51 /* KeepsakeWatch Watch App */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5B27A5122D5AB33400327B51 /* KeepsakeWatch Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				5B5114CA2D74CFB2008CA17E /* Exceptions for "KeepsakeWatch Watch App" folder in "KeepsakeWatch Watch App" target */,
-			);
 			path = "KeepsakeWatch Watch App";
 			sourceTree = "<group>";
 		};
