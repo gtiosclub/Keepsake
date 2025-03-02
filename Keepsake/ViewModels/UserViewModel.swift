@@ -34,7 +34,4 @@ class UserViewModel: ObservableObject {
         user.getJournalShelves()[shelfIndex].journals[bookIndex].pages[pageNum].entries[entryIndex] = newEntry
     }
     
-    func addNewJournalEntry(shelfIndex: Int, bookIndex: Int, pageNum: Int, newEntry: JournalEntry) {
-        user.getJournalShelves()[shelfIndex].journals[bookIndex].pages[pageNum].entries.append(newEntry)
-    }
 }

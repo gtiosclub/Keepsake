@@ -18,7 +18,7 @@ final class KeepsakeAITests {
         let title: String = "Test"
         let text: String = "This is a test."
         let entry: JournalEntry = .init(
-            date: date, title: title, text: text
+            date: date, title: title, text: text, summary: ""
         )
         let jsonEntryString: String = vm.convertJournalEntryToJson(entry: entry)
         let backToJson = try! JSONSerialization.jsonObject(with: jsonEntryString.data(using: .utf8)!, options: []) as! [String: Any]
@@ -33,17 +33,17 @@ final class KeepsakeAITests {
         let entry1: JournalEntry = .init(
             date: "2/6/2025, 7:45 AM",
             title: "Morning Reflections",
-            text: "Woke up early today and watched the sunrise. There's something peaceful about the quiet moments before the world wakes up. Hoping to carry this calmness throughout the day."
+            text: "Woke up early today and watched the sunrise. There's something peaceful about the quiet moments before the world wakes up. Hoping to carry this calmness throughout the day.", summary: ""
         )
         let entry2: JournalEntry = .init(
             date: "2/6/2025, 2:15 PM",
             title: "Afternoon Thoughts",
-            text: "Work has been overwhelming, but I managed to step outside for a quick walk. The fresh air helped clear my mind. Reminding myself to take small breaks and breathe."
+            text: "Work has been overwhelming, but I managed to step outside for a quick walk. The fresh air helped clear my mind. Reminding myself to take small breaks and breathe.", summary: ""
         )
         let entry3: JournalEntry = .init(
             date: "2/6/2025, 10:30 PM",
             title: "End of the Day",
-            text: "Reflecting on today, I feel grateful for the little moments. Even when things felt stressful, I found time to appreciate the beauty around me. Looking forward to a fresh start tomorrow. I would like to journal about my passion for baseball tomorrow, please prompt me to do so."
+            text: "Reflecting on today, I feel grateful for the little moments. Even when things felt stressful, I found time to appreciate the beauty around me. Looking forward to a fresh start tomorrow. I would like to journal about my passion for baseball tomorrow, please prompt me to do so.", summary: ""
         )
         
         // Create journal
@@ -92,12 +92,12 @@ final class KeepsakeAITests {
             let entry1: JournalEntry = .init(
                 date: "2/7/2025, 3:15 pm",
                 title: "Afternoon Entry",
-                text: "I just got done eating at this place called Cheba Hut. They have some of the best subs I have experienced! The sandwich was packed to the brim with meat and cheese, it was sooo good."
+                text: "I just got done eating at this place called Cheba Hut. They have some of the best subs I have experienced! The sandwich was packed to the brim with meat and cheese, it was sooo good.", summary: ""
                 )
             
             
             // Query AI for prompt
-                let prompt = await vm.topicCompletion(journalEntry: entry1)
+            let prompt = await vm.topicCompletion(journalText: entry1.text)
             guard let prompt else {
                 print("Error: Failed to generate smart prompt")
                 return
@@ -110,17 +110,13 @@ final class KeepsakeAITests {
             let entry: JournalEntry = .init(
                 date: "2/6/2025, 10:00 AM",
                 title: "Universal Studios Day",
-                text: "Today was a great day! I went on all the rollercoasters. I especially loved the harry potter and jurassic park rides. I also liked the minion ride."
+                text: "Today was a great day! I went on all the rollercoasters. I especially loved the harry potter and jurassic park rides. I also liked the minion ride.", summary: ""
             )
 
-            await vm.summarize(entry: entry)
+            let summary = await vm.summarize(entry: entry)
 
-            guard !vm.summary.isEmpty else {
-                print("Error: Summary was not generated.")
-                return
-            }
 
-            print("Generated Summary: \(vm.summary)")
+            print("Generated Summary: \(summary ?? "None")")
         }
     
     @Test
