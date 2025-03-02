@@ -26,7 +26,10 @@ struct AddEntryButtonView: View {
             }
             if isExpanded {
                 HStack {
-                    Button(action: {}) { Image(systemName: "t.square.fill")
+                    Button(action: {
+                        
+                        
+                    }) { Image(systemName: "t.square.fill")
                             .resizable()
                             .frame(width: 45, height: 45)
                         .foregroundColor(.black)}
