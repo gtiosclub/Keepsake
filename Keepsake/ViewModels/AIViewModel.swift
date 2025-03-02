@@ -10,11 +10,33 @@ import ChatGPTSwift
 import UIKit
 
 class AIViewModel: ObservableObject {
-    let openAIAPIKeyString: String = ""
-    var openAIAPIKey = ChatGPTAPI(apiKey: "")
+    var openAIAPIKeyString: String = "<PUT API KEY HERE>"
+    var openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
+    var giphyKey: String = "<PUT API KEY HERE>"
     @Published var uiImage: UIImage? = nil
     @Published var isLoading = false
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
+    
+    let FirebaseVM: FirebaseViewModel = FirebaseViewModel.vm
+    
+    init()  {
+        fetchAPIKeys()
+    }
+    
+    private func fetchAPIKeys() {
+        Task {
+            do {
+                let apimap = try await FirebaseVM.getAPIKeys()
+                
+                self.openAIAPIKey = ChatGPTAPI(apiKey: apimap["OPENAI"] ?? "Error")
+                self.openAIAPIKeyString = apimap["OPENAI"] ?? "Error"
+                self.giphyKey = apimap["GIPHY"] ?? "Error"
+
+            } catch {
+                print("Failed to fetch API keys: \(error)")
+            }
+        }
+    }
     
     func getRelevantScrapbookEntries(scrapbook: Scrapbook, query: String, numHighlights: Int) async -> [ScrapbookEntry] {
         let errorResponse: [ScrapbookEntry] = []
@@ -257,9 +279,8 @@ class AIViewModel: ObservableObject {
         return String(data: jsonData, encoding: .utf8)!
     }
     
-    @Published var summary = ""
-    func summarize(entry: JournalEntry) async {
-        let prompt = "Summarize the entry: Title: \(entry.title) Text: \(entry.text)"
+    func summarize(entry: JournalEntry) async -> String? {
+        let prompt = "Summarize the entry in one line. Here is the title: \(entry.title) and text: \(entry.text)"
         
         do {
             let response = try await openAIAPIKey.sendMessage(
@@ -267,10 +288,11 @@ class AIViewModel: ObservableObject {
                 model: .gpt_hyphen_4
             )
             
-            self.summary = response
+            return response
         } catch {
             print("Error: \(error.localizedDescription)")
         }
+        return nil
     }
     
     struct OpenAIResponse: Codable {
