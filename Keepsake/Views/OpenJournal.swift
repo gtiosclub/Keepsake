@@ -139,73 +139,73 @@ struct OpenJournal: View {
                 }
             }.offset(x: UIScreen.main.bounds.width * -0.45)
             HStack {
-                Button("Back") {
-                    circleStart = 0.5
-                    circleEnd = 0.5
-                    withAnimation(.linear(duration: 1).delay(0.5)) {
-                        circleEnd += 0.25
-                        degrees += 90
-                        frontDegrees += 90
-                    } completion: {
-                        circleStart = 0.75
-                        circleEnd = 1
-                        coverZ = 0
-                        withAnimation {
-                            circleStart += 0.25
-                            degrees += 90
-                            frontDegrees += 90
-                        } completion: {
-                            withAnimation(.linear(duration: 0.7)) {
-                                scaleFactor = 0.6
-                            } completion: {
-                                withAnimation {
-                                    show.toggle()
-                                }
-                            }
-                        }
-                    }
-                }
-                Button("Page left") {
-                    circleStart = 1
-                    circleEnd = 1
-                    zIndex = -0.5
-                    withAnimation(.linear(duration: 0.5).delay(0.5)) {
-                        displayDegrees -= 90
-                        circleStart -= 0.25
-                    } completion: {
-                        circleStart = 0.5
-                        circleEnd = 0.75
-                        displayIsHidden = true
-                        withAnimation(.linear(duration: 0.5).delay(0)) {
-                            displayDegrees -= 90
-                            circleEnd -= 0.25
-                        } completion: {
-                            displayDegrees = 0
-                            displayPageIndex += 1
-                            displayIsHidden = false
-                        }
-                    }
-                }
-                Button("Page Right"){
-                    circleStart = 0.5
-                    circleEnd = 0.5
-                    withAnimation(.linear(duration: 0.5).delay(0.5)) {
-                        frontDegrees += 90
-                        circleEnd += 0.25
-                    } completion: {
-                        frontIsHidden = false
-                        circleStart = 0.75
-                        circleEnd = 1
-                        withAnimation(.linear(duration: 0.5).delay(0)) {
-                            frontDegrees += 90
-                            circleStart += 0.25
-                        } completion: {
-                            displayPageIndex -= 1
-                            frontDegrees = -180
-                            frontIsHidden = true
-                        }
-                    }
-                }
+//                Button("Back") {
+//                    circleStart = 0.5
+//                    circleEnd = 0.5
+//                    withAnimation(.linear(duration: 1).delay(0.5)) {
+//                        circleEnd += 0.25
+//                        degrees += 90
+//                        frontDegrees += 90
+//                    } completion: {
+//                        circleStart = 0.75
+//                        circleEnd = 1
+//                        coverZ = 0
+//                        withAnimation {
+//                            circleStart += 0.25
+//                            degrees += 90
+//                            frontDegrees += 90
+//                        } completion: {
+//                            withAnimation(.linear(duration: 0.7)) {
+//                                scaleFactor = 0.6
+//                            } completion: {
+//                                withAnimation {
+//                                    show.toggle()
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                Button("Page left") {
+//                    circleStart = 1
+//                    circleEnd = 1
+//                    zIndex = -0.5
+//                    withAnimation(.linear(duration: 0.5).delay(0.5)) {
+//                        displayDegrees -= 90
+//                        circleStart -= 0.25
+//                    } completion: {
+//                        circleStart = 0.5
+//                        circleEnd = 0.75
+//                        displayIsHidden = true
+//                        withAnimation(.linear(duration: 0.5).delay(0)) {
+//                            displayDegrees -= 90
+//                            circleEnd -= 0.25
+//                        } completion: {
+//                            displayDegrees = 0
+//                            displayPageIndex += 1
+//                            displayIsHidden = false
+//                        }
+//                    }
+//                }
+//                Button("Page Right"){
+//                    circleStart = 0.5
+//                    circleEnd = 0.5
+//                    withAnimation(.linear(duration: 0.5).delay(0.5)) {
+//                        frontDegrees += 90
+//                        circleEnd += 0.25
+//                    } completion: {
+//                        frontIsHidden = false
+//                        circleStart = 0.75
+//                        circleEnd = 1
+//                        withAnimation(.linear(duration: 0.5).delay(0)) {
+//                            frontDegrees += 90
+//                            circleStart += 0.25
+//                        } completion: {
+//                            displayPageIndex -= 1
+//                            frontDegrees = -180
+//                            frontIsHidden = true
+//                        }
+//                    }
+//                }
                 
             }.offset(y: 280)
         }

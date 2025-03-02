@@ -103,20 +103,20 @@ struct HomepageView: View {
                     }
                     circleStart = 1
                     circleEnd = 1
-                    withAnimation(.linear(duration: 0.7).delay(0.7)) {
-                        circleStart -= 0.25
-                        degrees -= 90
-                        frontDegrees -= 90
-                    } completion: {
-                        circleStart = 0.5
-                        circleEnd = 0.75
-                        coverZ = -1
-                        withAnimation(.linear(duration: 0.7).delay(0)) {
-                            circleEnd -= 0.25
-                            degrees -= 90
-                            frontDegrees -= 90
-                        }
-                    }
+//                    withAnimation(.linear(duration: 0.7).delay(0.7)) {
+//                        circleStart -= 0.25
+//                        degrees -= 90
+//                        frontDegrees -= 90
+//                    } completion: {
+//                        circleStart = 0.5
+//                        circleEnd = 0.75
+//                        coverZ = -1
+//                        withAnimation(.linear(duration: 0.7).delay(0)) {
+//                            circleEnd -= 0.25
+//                            degrees -= 90
+//                            frontDegrees -= 90
+//                        }
+//                    }
                 }
         }
     }
