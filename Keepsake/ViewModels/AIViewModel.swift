@@ -393,4 +393,65 @@ class AIViewModel: ObservableObject {
         }
         let choices: [Choice]
     }
+    
+    
+    @Published var conversationHistory: [String] = []
+    @Published var userInput: String = ""
+    func startConversation(entry: ConversationEntry) async {
+        var entryLog = entry.conversationLog
+        let startPrompt = """
+        You will be holding a back and forth conversation with a user in their conversation entry. This conversation entry will have fields such as: 
+        
+        
+            date: \(entry.date)
+            title: \(entry.title)
+            conversationLog: <String>
+        
+        Start off the conversation by asking "What do you want to talk about today?" or maybe a question related to their title to kick things off. Try not to make it too long
+        
+        """
+        
+        isLoading = true
+        do {
+            let firstResponse = try await openAIAPIKey.sendMessage(text: startPrompt, model: gptModel!)
+            conversationHistory.append("GPT: \(firstResponse)")
+            entryLog.append("GPT: \(firstResponse)")
+            
+        } catch {
+            print("Error: \(error.localizedDescription)")
+        }
+        isLoading = false
+    }
+    
+    func sendMessage(entry: ConversationEntry) async {
+        var entryLog = entry.conversationLog
+        guard (!userInput.isEmpty) else {
+            return
+        }
+        let userMsg = "User: \(userInput)"
+        conversationHistory.append(userMsg)
+        entryLog.append(userMsg)
+        let conversation = conversationHistory.joined(separator: "\n")
+        let chatPrompt = """
+            
+        Based on the text provided please continue the conversation naturally, keeping the reader engaged.
+        
+        \(conversation)
+        
+        Make sure the responses aren't too long and fit on one line 
+
+        """
+        
+        userInput = ""
+        isLoading = true
+        
+        do {
+            let gptResponse = try await openAIAPIKey.sendMessage(text: chatPrompt, model: gptModel!)
+            conversationHistory.append("GPT: \(gptResponse)")
+            entryLog.append("GPT: \(gptResponse)")
+        } catch {
+            print("Error: \(error.localizedDescription)")
+        }
+        isLoading = false
+    }
 }
