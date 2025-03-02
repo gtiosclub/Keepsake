@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct JournalTextInputView: View {
     @ObservedObject var userVM: UserViewModel
@@ -23,8 +24,10 @@ struct JournalTextInputView: View {
         VStack {
             Button {
                 Task {
-                    var newEntry = JournalEntry(date: date, title: title, text: inputText, summary: "")
-                    newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
+                    var newEntry = JournalEntry(date: date, title: title, text: inputText, summary: entry.summary)
+                    if entry.text != inputText {
+                        newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
+                    }
                     
                     userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
                 
@@ -45,9 +48,7 @@ struct JournalTextInputView: View {
             Text(date).font(.subheadline)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-            TextEditor(text: $inputText)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
+            DebounceTextField(inputText: $inputText, aiVM: aiVM)
             Spacer()
             HStack() {
                 Menu {
@@ -117,6 +118,88 @@ struct JournalTextInputView: View {
             title = entry.title
             inputText = entry.text
             date = entry.date
+        }
+    }
+}
+
+//struct DebounceTextField: View {
+//  
+//    @State var publisher = PassthroughSubject<String, Never>()
+//      
+//    @Binding var inputText: String
+//    var valueChanged: ((_ value: String) -> Void)?
+//  
+//    @State var debounceSeconds = 0.7
+//  
+//    var body: some View {
+//        TextEditor(text: $inputText)
+//          .frame(maxWidth: .infinity, alignment: .leading)
+//          .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
+//          .onChange(of: inputText) { inputText in
+//            publisher.send(inputText)
+//          }
+//          .onReceive(
+//            publisher.debounce(
+//              for: .seconds(debounceSeconds),
+//              scheduler: DispatchQueue.main
+//            )
+//          ) { value in
+//            if let valueChanged = valueChanged {
+//              valueChanged(value)
+//            }
+//        }
+//    }
+//}
+
+struct DebounceTextField: View {
+    @State var publisher = PassthroughSubject<String, Never>()
+    @Binding var inputText: String
+    var valueChanged: ((_ value: String) -> Void)?
+    @State var debounceSeconds = 2
+    @State private var suggestion: String = ""
+    @ObservedObject var aiVM: AIViewModel
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            // The actual TextEditor for user input
+            TextEditor(text: $inputText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
+                .background(Color.clear)
+                .onChange(of: inputText) { newValue in
+                    publisher.send(newValue)
+                }
+                .onReceive(
+                    publisher.debounce(
+                        for: .seconds(debounceSeconds),
+                        scheduler: DispatchQueue.main
+                    )
+                ) { value in
+                    if let valueChanged = valueChanged {
+                        valueChanged(value)
+                    }
+                    // Fetch the suggestion from the AI model
+                    if value != "" {
+                        Task {
+                            let completion = await aiVM.topicCompletion(journalText: value)
+                            suggestion = completion ?? ""
+                        }
+                    }
+                }
+            
+            // Display the suggestion as grayed-out phantom text
+            if !suggestion.isEmpty {
+                Text(suggestion)
+                    .font(.body)
+                    .foregroundColor(Color.gray.opacity(0.8))  // Light gray color for ghost text
+                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
+                    .padding(.top, 10)
+                    .lineLimit(nil)  // Allow wrapping for longer suggestions
+                    .frame(width: UIScreen.main.bounds.width * 0.9, alignment: .leading)
+                    .opacity(0.5) // Makes the suggestion appear faintly
+                    .zIndex(1) // Make sure it's above the TextEditor
+                    .allowsHitTesting(false)  // Ensure the suggestion doesn't interfere with text input
+            }
         }
     }
 }

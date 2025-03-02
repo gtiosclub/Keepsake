@@ -240,26 +240,35 @@ class AIViewModel: ObservableObject {
     }
     
     // function for continuing topics based on where you left off in the text
-        func topicCompletion (journalEntry: JournalEntry) async -> String? {
-            let journalEntryJSON: String = (convertJournalEntryToJson(entry: journalEntry))
+    func topicCompletion (journalText: String) async -> String? {
+            //let journalEntryJSON: String = (convertJournalEntryToJson(entry: journalEntry))
             
+//            let prompt = """
+//               
+//               I have a journal entry of type JounralEntry that is now a JSON file with multiple variables:
+//               
+//               {
+//                   date: <String>
+//                   title: <String>
+//                   text: <String>
+//               }
+//               
+//               I want you to look at where the text ends and return a question that helps the writer think about something else to write past that point based around the same idea. It should be something like "Would you like to talk about...?" relating to an extension of the previous topic. This should not be too long, maybe around 1 line total. 
+//               
+//               This is the JournalEntry: 
+//               
+//               \(journalEntryJSON)
+//               
+//               """
+            
+        if journalText != "" {
             let prompt = """
-               
-               I have a journal entry of type JounralEntry that is now a JSON file with multiple variables:
-               
-               {
-                   date: <String>
-                   title: <String>
-                   text: <String>
-               }
-               
-               I want you to look at where the text ends and return a question that helps the writer think about something else to write past that point based around the same idea. It should be something like "Would you like to talk about...?" relating to an extension of the previous topic. This should not be too long, maybe around 1 line total. 
-               
-               This is the JournalEntry: 
-               
-               \(journalEntryJSON)
-               
-               """
+
+            I have a journal entry with this text. I want you to look at where the text ends and return a question that helps the writer think about something else to write past that point based around the same idea. It should be something like "Would you like to talk about...?" relating to an extension of the previous topic. This should not be too long, maybe around 1 line total. 
+            
+            Here is the text: \(journalText)
+            """
+        
             
             do {
                 let response = try await openAIAPIKey.sendMessage(text: prompt, model: gptModel!)
@@ -269,6 +278,8 @@ class AIViewModel: ObservableObject {
                 return "Error: \(error.localizedDescription)"
             }
         }
+        return ""
+    }
     
     func convertJournalEntryToJson(entry: JournalEntry) -> String {
         guard let jsonData = try? JSONEncoder().encode(entry) else {
@@ -280,7 +291,7 @@ class AIViewModel: ObservableObject {
     }
     
     func summarize(entry: JournalEntry) async -> String? {
-        let prompt = "Summarize the entry in one line. Here is the title: \(entry.title) and text: \(entry.text)"
+        let prompt = "Summarize the entry in one line. Don't mention the writer or the user. Here is the title: \(entry.title) and text: \(entry.text)"
         
         do {
             let response = try await openAIAPIKey.sendMessage(
