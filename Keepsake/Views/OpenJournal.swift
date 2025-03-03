@@ -127,7 +127,7 @@ struct JournalBackPagesView: View {
                 .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
                 .zIndex(-2)
             VStack {
-                if displayPageIndex + 1 < book.pages.count && displayPageIndex - 1 > -1{
+                if displayPageIndex + 1 < book.pages.count && displayPageIndex + 1 > -1{
                     ForEach(book.pages[displayPageIndex + 1].entries.indices, id: \.self) { index in
                         JournalTextWidgetView(entry: $book.pages[displayPageIndex + 1].entries[index])
                             .padding(.top, 10)
@@ -136,7 +136,7 @@ struct JournalBackPagesView: View {
                 Spacer()
                 HStack {
                     Spacer()
-                    Text(displayPageIndex + 1 < book.pages.count && displayPageIndex > -1 ? "\(book.pages[displayPageIndex + 1].number)" : "no more pages")
+                    Text(displayPageIndex + 1 < book.pages.count && displayPageIndex + 1 > -1 ? "\(book.pages[displayPageIndex + 1].number)" : "no more pages")
                         .padding(.trailing, UIScreen.main.bounds.width * 0.025)
                         .opacity(degrees == 0 ? 0 : 1)
                 }.frame(width: UIScreen.main.bounds.width * 0.87)
@@ -179,7 +179,7 @@ struct JournalFrontPagesView: View {
                 Spacer()
                 HStack {
                     Spacer()
-                    Text(displayPageIndex - 1 < book.pages.count && displayPageIndex > -1 ? "\(book.pages[displayPageIndex - 1].number)" : "no more pages")
+                    Text(displayPageIndex - 1 < book.pages.count && displayPageIndex - 1 > -1 ? "\(book.pages[displayPageIndex - 1].number)" : "no more pages")
                         .padding(.trailing, UIScreen.main.bounds.width * 0.025)
                 }
             }
@@ -250,8 +250,8 @@ struct JournalDisplayView: View {
                 .foregroundStyle(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).template.pageColor)
                 .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
             VStack {
-                if displayPageIndex < userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages.count && displayPageIndex > -1 {
-                    ForEach(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages[displayPageIndex].entries.indices, id: \.self) { index in
+                if displayPageIndex < journal.pages.count && displayPageIndex > -1 {
+                    ForEach(journal.pages[displayPageIndex].entries.indices, id: \.self) { index in
                         JournalTextWidgetView(entry: $journal.pages[displayPageIndex].entries[index])
                             .padding(.top, 10)
                             .opacity(displayIsHidden ? 0 : 1)
