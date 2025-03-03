@@ -38,7 +38,7 @@ import SwiftUI
 //}
 
 struct ConversationView: View {
-    @StateObject private var viewModel = AIViewModel()
+    @ObservedObject var viewModel: AIViewModel
     var conversationEntry = ConversationEntry(date: "2/14/25", title: "Midnight Thoughts", conversationLog: [])
     
     var body: some View {
@@ -126,5 +126,5 @@ struct ConversationView: View {
 }
 
 #Preview {
-    ConversationView()
+    ConversationView(viewModel: AIViewModel())
 }
