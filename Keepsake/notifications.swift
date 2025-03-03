@@ -9,7 +9,7 @@
 
 import UIKit
 import UserNotifications
-import FirebaseFirestore
+//import FirebaseFirestore
 
 class ViewController: UIViewController {
 //    var aiViewModel: AIViewModel
@@ -67,8 +67,8 @@ class ViewController: UIViewController {
         
         let calendar = Calendar.current
         var dateComponents = DateComponents(calendar: calendar, timeZone: TimeZone.current)
-        let hour = 18
-        let minute = 15
+        let hour = 12
+        let minute = 12
         dateComponents.hour = hour
         dateComponents.minute = minute
         print("Notification will trigger at: \(calendar.date(from: dateComponents) ?? Date())")

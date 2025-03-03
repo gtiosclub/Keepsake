@@ -109,50 +109,102 @@ struct RemindersView_Previews: PreviewProvider {
     }
 }
 
+//struct RemindersListView: View {
+//    @State private var reminders: [Reminder] = []
+//    @State private var showVoiceRecording = false
+//    
+//    var body: some View {
+//        NavigationStack {
+//            VStack {
+//                List {
+//                    ForEach(reminders) { reminder in
+//                        VStack(alignment: .leading) {
+//                            Text(reminder.title)
+//                                .font(.headline)
+//                            Text("\(reminder.date.formatted(date: .abbreviated, time: .shortened))")
+//                                .font(.subheadline)
+//                                .foregroundColor(.gray)
+//                        }
+//                        .padding(.vertical, 5)
+//                    }
+//                }
+//                .listStyle(PlainListStyle())
+//                .toolbar {
+//                    ToolbarItem(placement: .automatic) {
+//                        Text("Reminders")
+//                            .font(.title3)
+//                            .fontWeight(.bold)
+//                            .foregroundColor(Color(hex: "FFADF4"))
+//                    }
+//                    ToolbarItem(placement: .automatic) {
+//                        Button(action: { showVoiceRecording = true }) {
+//                            Image(systemName: "plus.circle.fill")
+//                                .foregroundColor(Color(hex: "FFADF4"))
+//                                .font(.title2)
+//                        }
+//                        .buttonStyle(PlainButtonStyle())
+//                    }
+//                }
+//                .sheet(isPresented: $showVoiceRecording) {
+//                    VoiceRecordingView { recordedFile in
+//                        reminders.append(recordedFile) // Already contains title and date
+//                        showVoiceRecording = false // Dismiss after adding
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+//
 struct RemindersListView: View {
-    @State private var reminders: [Reminder] = []
+    @State private var reminders: [Reminder] = [
+        Reminder(title: "Sample Reminder", date: Date(), body: "Test Reminder Body")
+    ]
     @State private var showVoiceRecording = false
     
     var body: some View {
         NavigationStack {
             VStack {
-                List {
-                    ForEach(reminders) { reminder in
-                        VStack(alignment: .leading) {
-                            Text(reminder.title)
-                                .font(.headline)
-                            Text("\(reminder.date.formatted(date: .abbreviated, time: .shortened))")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                        }
-                        .padding(.vertical, 5)
-                    }
-                }
-                .listStyle(PlainListStyle())
-                .toolbar {
-                    ToolbarItem(placement: .automatic) {
-                        Text("Reminders")
+                Text("Reminders")
+                    .font(.body)
+                    .foregroundColor(.white)
+                
+                ForEach(reminders) { reminder in
+                    VStack(alignment: .leading) {
+                        Text(reminder.title)
+                            .font(.headline)
+                            .foregroundColor(.white)
+                        Text("\(reminder.date.formatted(date: .abbreviated, time: .shortened))")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                        Text(reminder.body)
                             .font(.title3)
-                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                    }
+                    .padding(.vertical, 5)
+                }
+                
+                Spacer()
+                
+                // Custom button for navigating to Voice Recording
+                NavigationLink(
+                    destination: VoiceRecordingView { recordedFile in
+                        reminders.append(recordedFile)
+                        showVoiceRecording = false
+                    },
+                    label: {
+                        Image(systemName: "plus.circle.fill")
                             .foregroundColor(Color(hex: "FFADF4"))
+                            .font(.title)
+                            .padding()
+                            .background(Circle().fill(Color.white.opacity(0.3)))
+                            .shadow(radius: 10)
                     }
-                    ToolbarItem(placement: .automatic) {
-                        Button(action: { showVoiceRecording = true }) {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundColor(Color(hex: "FFADF4"))
-                                .font(.title2)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                }
-                .sheet(isPresented: $showVoiceRecording) {
-                    VoiceRecordingView { recordedFile in
-                        reminders.append(recordedFile) // Already contains title and date
-                        showVoiceRecording = false // Dismiss after adding
-                    }
-                }
+                )
+                .buttonStyle(PlainButtonStyle()) // To remove default button style
             }
+            .background(Color.black.edgesIgnoringSafeArea(.all)) // Black background
+            .navigationTitle("Reminders")
         }
     }
 }
-

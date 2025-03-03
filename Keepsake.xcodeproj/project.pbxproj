@@ -79,6 +79,16 @@
 		F751BD3F2D50049F00EDB703 /* KeepsakeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeepsakeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5B9D46352D752B1B00383E69 /* Exceptions for "Keepsake" folder in "KeepsakeWatch Watch App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				notificationListener.swift,
+			);
+			target = 5B27A5102D5AB33400327B51 /* KeepsakeWatch Watch App */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5B27A5122D5AB33400327B51 /* KeepsakeWatch Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -97,6 +107,9 @@
 		};
 		F751BD272D50049D00EDB703 /* Keepsake */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5B9D46352D752B1B00383E69 /* Exceptions for "Keepsake" folder in "KeepsakeWatch Watch App" target */,
+			);
 			path = Keepsake;
 			sourceTree = "<group>";
 		};
