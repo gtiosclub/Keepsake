@@ -400,12 +400,7 @@ class AIViewModel: ObservableObject {
     func startConversation(entry: ConversationEntry) async {
         var entryLog = entry.conversationLog
         let startPrompt = """
-        You will be holding a back and forth conversation with a user in their conversation entry. This conversation entry will have fields such as: 
-        
-        
-            date: \(entry.date)
-            title: \(entry.title)
-            conversationLog: <String>
+        You will be holding a back and forth conversation with a user in their conversation entry.
         
         Start off the conversation by asking "What do you want to talk about today?" or maybe a question related to their title to kick things off. Try not to make it too long
         
