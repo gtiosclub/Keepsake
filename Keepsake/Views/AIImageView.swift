@@ -24,7 +24,7 @@ struct AIImageView: View {
             
             Button("Generate Image") {
                 Task {
-                    await viewModel.generateImage(for: JournalEntry(date: "01/01/2025", title: "Sunshines", text: "Rainbows"))
+                    await viewModel.generateImage(for: JournalEntry(date: "01/01/2025", title: "Sunshines", text: "Rainbows", summary: "Summary"))
                 }
             }
         }.padding()
