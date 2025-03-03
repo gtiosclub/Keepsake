@@ -40,7 +40,6 @@ class TextBoxEntity: Entity {
         textEntity.components.set([InputTargetComponent(),
                                    CollisionComponent(shapes: [ShapeResource.generateBox(width: componentWidth, height: componentHeight, depth: 0.05),])])
         
-        
         // Adds entity to parent view --> basically the "return" statement if my understanding is correct
         self.addChild(textEntity)
     }
