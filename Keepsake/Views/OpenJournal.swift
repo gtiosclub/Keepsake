@@ -179,7 +179,7 @@ struct JournalFrontPagesView: View {
                 Spacer()
                 HStack {
                     Spacer()
-                    Text(displayPageIndex - 1 < book.pages.count && displayPageIndex > -1 ? "\(book.pages[displayPageIndex - 1].number)" : "no more pages")
+                    Text(displayPageIndex - 1 < book.pages.count && displayPageIndex - 1 > -1 ? "\(book.pages[displayPageIndex - 1].number)" : "no more pages")
                         .padding(.trailing, UIScreen.main.bounds.width * 0.025)
                 }
             }
