@@ -11,6 +11,8 @@ struct SuggestedPromptsView: View {
     var explorePrompts: [String] = []
     var savedPrompts: [String] = []
     @State private var exploreOrSaved = 0
+    @Binding var selectedPrompt: String?
+    @Binding var isPresented: Bool
     
     var body: some View {
         VStack {
@@ -60,7 +62,8 @@ struct SuggestedPromptsView: View {
                     .listRowBackground(Color.clear)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button {
-                            print("Button clicked")
+                            selectedPrompt = prompt
+                            isPresented = false
                         } label: {
                             Text("choose prompt?")
                                 .font(.title3)
@@ -81,5 +84,5 @@ struct SuggestedPromptsView: View {
 }
 
 #Preview {
-    SuggestedPromptsView(explorePrompts: ["Reflect on your day", "Write about your passion for baseball", "Journal about your gratitude"], savedPrompts: ["Saved1", "Saved2"])
+    SuggestedPromptsView(explorePrompts: ["Reflect on your day", "Write about your passion for baseball", "Journal about your gratitude"], savedPrompts: ["Saved1", "Saved2"], selectedPrompt: .constant("Reflect on your day"), isPresented: .constant(true))
 }
