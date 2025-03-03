@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Scrapbook {
+struct Scrapbook: Book {
     var name: String
     var createdDate: String
     var entries: [ScrapbookEntry]
