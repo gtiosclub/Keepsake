@@ -22,135 +22,110 @@ struct JournalTextInputView: View {
     var textfieldPrompt: String = "Enter Prompt"
     var entry: JournalEntry
     var body: some View {
-        VStack {
-            Button {
-                Task {
-                    var newEntry = JournalEntry(date: date, title: title, text: inputText, summary: entry.summary)
-                    if entry.text != inputText {
-                        newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
-                    }
+        NavigationStack {
+            VStack {
+                Button {
+                    Task {
+                        var newEntry = JournalEntry(date: date, title: title, text: inputText, summary: entry.summary)
+                        if entry.text != inputText {
+                            newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
+                        }
+                        
+                        userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
                     
-                    userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
-                
-                    await MainActor.run {
-                        inTextEntry.toggle()
+                        await MainActor.run {
+                            inTextEntry.toggle()
+                        }
                     }
                 }
-            }
-            label: {
-                Image(systemName: "chevron.left")
-                    .foregroundStyle(.black)
-            }.frame(maxWidth: .infinity, alignment: .leading)
-                .padding(UIScreen.main.bounds.width * 0.025)
-            TextField(textfieldPrompt, text: $title, axis: .vertical)
-                .font(.title)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
-            Text(date).font(.subheadline)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-            DebounceTextField(inputText: $inputText, aiVM: aiVM)
-            Spacer()
-            HStack() {
-                Menu {
-                    Button {
-                        
-                    } label: {
-                        HStack {
-                            Text("Choose Photo")
-                            Spacer()
-                            Image(systemName: "photo")
-                        }
-                    }
-                    Button {
-                        
-                    } label: {
-                        HStack {
-                            Text("Take Photo")
-                            Spacer()
-                            Image(systemName: "camera")
-                        }
-                    }
-                    Button {
-                        
-                    } label: {
-                        HStack {
-                            Text("Voice Memo")
-                            Spacer()
-                            Image(systemName: "waveform")
-                        }
-                    }
-                    Button {
-                        
-                    } label: {
-                        HStack {
-                            Text("Need Suggestions?")
-                            Spacer()
-                            Image(systemName: "lightbulb")
-                        }
-                    }
-                } label: {
-                    Image(systemName: "plus.circle")
-                        .resizable()
-                        .scaledToFit()
+                label: {
+                    Image(systemName: "chevron.left")
                         .foregroundStyle(.black)
-                        .frame(width: UIScreen.main.bounds.width * 0.1)
-                        .contextMenu {
-                            
-                        }
-                }
+                }.frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(UIScreen.main.bounds.width * 0.025)
+                TextField(textfieldPrompt, text: $title, axis: .vertical)
+                    .font(.title)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
+                Text(date).font(.subheadline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                DebounceTextField(inputText: $inputText, aiVM: aiVM)
                 Spacer()
-                Button(action: {
-                    
-                }, label: {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(.black)
-                            .fill(LinearGradient(gradient: Gradient(colors: [.gray, .white]), startPoint: .leading, endPoint: .trailing))
-                            .frame(width: UIScreen.main.bounds.width * 0.5, height: UIScreen.main.bounds.width * 0.1)
-                        Text("Chat with Chatbot")
-                            .foregroundStyle(.black)
+                HStack() {
+                    Menu {
+                        Button {
                             
+                        } label: {
+                            HStack {
+                                Text("Choose Photo")
+                                Spacer()
+                                Image(systemName: "photo")
+                            }
+                        }
+                        Button {
+                            
+                        } label: {
+                            HStack {
+                                Text("Take Photo")
+                                Spacer()
+                                Image(systemName: "camera")
+                            }
+                        }
+                        Button {
+                            
+                        } label: {
+                            HStack {
+                                Text("Voice Memo")
+                                Spacer()
+                                Image(systemName: "waveform")
+                            }
+                        }
+                        Button {
+                            
+                        } label: {
+                            HStack {
+                                Text("Need Suggestions?")
+                                Spacer()
+                                Image(systemName: "lightbulb")
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "plus.circle")
+                            .resizable()
+                            .scaledToFit()
+                            .foregroundStyle(.black)
+                            .frame(width: UIScreen.main.bounds.width * 0.1)
+                            .contextMenu {
+                                
+                            }
                     }
-                })
-            }.padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-                .padding(.bottom, 10)
-        }.onAppear() {
-            title = entry.title
-            inputText = entry.text
-            date = entry.date
+                    Spacer()
+                    NavigationLink(destination: ConversationView(viewModel: aiVM)) {
+                        Text("Chat with Companion")
+                                .font(.system(size: 18))
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.blue, Color.purple]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .cornerRadius(15)
+                                .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                    }
+                }.padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                    .padding(.bottom, 10)
+            }.onAppear() {
+                title = entry.title
+                inputText = entry.text
+                date = entry.date
+            }
         }
     }
 }
-
-//struct DebounceTextField: View {
-//  
-//    @State var publisher = PassthroughSubject<String, Never>()
-//      
-//    @Binding var inputText: String
-//    var valueChanged: ((_ value: String) -> Void)?
-//  
-//    @State var debounceSeconds = 0.7
-//  
-//    var body: some View {
-//        TextEditor(text: $inputText)
-//          .frame(maxWidth: .infinity, alignment: .leading)
-//          .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
-//          .onChange(of: inputText) { inputText in
-//            publisher.send(inputText)
-//          }
-//          .onReceive(
-//            publisher.debounce(
-//              for: .seconds(debounceSeconds),
-//              scheduler: DispatchQueue.main
-//            )
-//          ) { value in
-//            if let valueChanged = valueChanged {
-//              valueChanged(value)
-//            }
-//        }
-//    }
-//}
 
 struct DebounceTextField: View {
     @State var publisher = PassthroughSubject<String, Never>()
