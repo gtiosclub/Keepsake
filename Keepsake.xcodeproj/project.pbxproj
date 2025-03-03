@@ -14,6 +14,8 @@
 		5724A4512D64E87F0012A6F2 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 5724A4502D64E87F0012A6F2 /* FirebaseStorage */; };
 		5B27A50C2D5AB30600327B51 /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B27A50B2D5AB30600327B51 /* WatchConnectivity.framework */; };
 		5B27A5342D5AB33500327B51 /* KeepsakeWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 5B27A5112D5AB33400327B51 /* KeepsakeWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5B942BD12D766A0600F74F51 /* AudioRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B942BD02D766A0600F74F51 /* AudioRecording.swift */; };
+		5B942BD22D766A0600F74F51 /* AudioRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B942BD02D766A0600F74F51 /* AudioRecording.swift */; };
 		F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F71261682D5405C000F65745 /* ChatGPTSwift */; };
 /* End PBXBuildFile section */
 
@@ -74,6 +76,7 @@
 		5B27A5112D5AB33400327B51 /* KeepsakeWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "KeepsakeWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5B27A5202D5AB33500327B51 /* KeepsakeWatch Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KeepsakeWatch Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5B27A52A2D5AB33500327B51 /* KeepsakeWatch Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KeepsakeWatch Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5B942BD02D766A0600F74F51 /* AudioRecording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecording.swift; sourceTree = "<group>"; };
 		F751BD252D50049D00EDB703 /* Keepsake.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Keepsake.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F751BD352D50049F00EDB703 /* KeepsakeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeepsakeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F751BD3F2D50049F00EDB703 /* KeepsakeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeepsakeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -189,6 +192,7 @@
 		F751BD1C2D50049D00EDB703 = {
 			isa = PBXGroup;
 			children = (
+				5B942BD02D766A0600F74F51 /* AudioRecording.swift */,
 				F751BD272D50049D00EDB703 /* Keepsake */,
 				F751BD382D50049F00EDB703 /* KeepsakeTests */,
 				F751BD422D50049F00EDB703 /* KeepsakeUITests */,
@@ -472,6 +476,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B942BD22D766A0600F74F51 /* AudioRecording.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -493,6 +498,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B942BD12D766A0600F74F51 /* AudioRecording.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -554,6 +560,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeepsakeWatch-Watch-App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatch;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Hi ur being recorded";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.nityapotti.Keepsake;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -561,9 +568,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-
 				PRODUCT_BUNDLE_IDENTIFIER = com.app.nityapotti.Keepsake.watchkitapp;
-
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -587,6 +592,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeepsakeWatch-Watch-App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatch;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Hi ur being recorded";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.nityapotti.Keepsake;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -813,6 +819,7 @@
 				DEVELOPMENT_TEAM = 5VM646AGC4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Ur being recorded";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -843,6 +850,7 @@
 				DEVELOPMENT_TEAM = TL893ZWF55;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Ur being recorded";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

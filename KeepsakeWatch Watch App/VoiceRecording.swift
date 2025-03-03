@@ -112,6 +112,7 @@ struct VoiceRecordingView: View {
     @State private var timer: Timer?
     @State private var showDateTimeSelection = false
     @State private var recordedAudio: String? // Placeholder for recorded file name
+    private let audioRecording = AudioRecording()
 
     var onRecordingComplete: (Reminder) -> Void
     @Environment(\.dismiss) private var dismiss  // Dismiss when done
@@ -128,9 +129,11 @@ struct VoiceRecordingView: View {
                 Button(action: {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         isRecording.toggle()
-                        if isRecording {
+                        if audioRecording.isRecording {
+                            audioRecording.stopRecording()
                             startTimer()
                         } else {
+                            audioRecording.startRecording()
                             stopTimer()
                             recordedAudio = "AudioFile123.m4a" // Simulate recorded file name
                             showDateTimeSelection = true  // Show date picker
