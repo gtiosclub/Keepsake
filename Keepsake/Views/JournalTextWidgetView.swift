@@ -13,9 +13,9 @@ struct JournalTextWidgetView: View {
         VStack {
             ZStack {
                 RoundedRectangle(cornerRadius: 20)
-                    .stroke(.black)
-                    .fill(Color.white)
-                    .frame(width: UIScreen.main.bounds.width * 0.8, height: UIScreen.main.bounds.height * 0.15)
+//                    .stroke(.black)
+//                    .fill(Color.white)
+//                    .frame(width: UIScreen.main.bounds.width * 0.8, height: UIScreen.main.bounds.height * 0.15)
                 VStack {
                     Text(entry.title)
                         .font(.headline)

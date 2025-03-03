@@ -104,9 +104,9 @@ struct JournalTextInputView: View {
                 }, label: {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(.black)
-                            .fill(LinearGradient(gradient: Gradient(colors: [.gray, .white]), startPoint: .leading, endPoint: .trailing))
-                            .frame(width: UIScreen.main.bounds.width * 0.5, height: UIScreen.main.bounds.width * 0.1)
+//                            .stroke(.black)
+//                            .fill(LinearGradient(gradient: Gradient(colors: [.gray, .white]), startPoint: .leading, endPoint: .trailing))
+//                            .frame(width: UIScreen.main.bounds.width * 0.5, height: UIScreen.main.bounds.width * 0.1)
                         Text("Chat with Chatbot")
                             .foregroundStyle(.black)
                             

@@ -57,30 +57,30 @@ struct ShelfView: View {
                                         .transition(.identity)
                                         .matchedGeometryEffect(id: "journal_\(index)", in: shelfNamespace, properties: .position, anchor: .center)
                                         .onTapGesture {
-                                            selectedJournal = index
-                                            withAnimation(.linear(duration: 0.7)) {
-                                                show.toggle()
-                                            } completion: {
-                                                withAnimation(.linear(duration: 0.7).delay(0.0)) {
-                                                    scaleEffect = 1
-                                                }
-                                                circleStart = 1
-                                                circleEnd = 1
-                                                showNavBack.toggle()
-                                                withAnimation(.linear(duration: 0.7).delay(0.0)) {
-                                                    circleStart -= 0.25
-                                                    degrees -= 90
-                                                    frontDegrees -= 90
-                                                } completion: {
-                                                    coverZ = -1
-                                                    isHidden = true
-                                                    withAnimation(.linear(duration: 0.7).delay(0)) {
-                                                        circleStart -= 0.25
-                                                        degrees -= 90
-                                                        frontDegrees -= 90
-                                                    }
-                                                }
-                                            }
+//                                            selectedJournal = index
+//                                            withAnimation(.linear(duration: 0.7)) {
+//                                                show.toggle()
+//                                            } completion: {
+//                                                withAnimation(.linear(duration: 0.7).delay(0.0)) {
+//                                                    scaleEffect = 1
+//                                                }
+//                                                circleStart = 1
+//                                                circleEnd = 1
+//                                                showNavBack.toggle()
+//                                                withAnimation(.linear(duration: 0.7).delay(0.0)) {
+//                                                    circleStart -= 0.25
+//                                                    degrees -= 90
+//                                                    frontDegrees -= 90
+//                                                } completion: {
+//                                                    coverZ = -1
+//                                                    isHidden = true
+//                                                    withAnimation(.linear(duration: 0.7).delay(0)) {
+//                                                        circleStart -= 0.25
+//                                                        degrees -= 90
+//                                                        frontDegrees -= 90
+//                                                    }
+//                                                }
+                                            //}
                                         }
                                     VStack(spacing: 10) {
                                         //Journal name, date, created by you
@@ -118,12 +118,12 @@ struct ShelfView: View {
             .frame(maxHeight: .infinity, alignment: .top)
         } else {
             if !inTextEntry {
-                OpenJournal(userVM: userVM, journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal), shelfIndex: shelfIndex, bookIndex: selectedJournal, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPage, coverZ: $coverZ, scaleFactor: $scaleEffect, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, showNavBack: $showNavBack)
-                    .matchedGeometryEffect(id: "journal_\(selectedJournal)", in: shelfNamespace, properties: .position, anchor: .center)
-                    .scaleEffect(scaleEffect)
-                    .transition(.slide)
-                    .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
-                    .navigationBarBackButtonHidden(showNavBack)
+//                OpenJournal(userVM: userVM, journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal), shelfIndex: shelfIndex, bookIndex: selectedJournal, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPage, coverZ: $coverZ, scaleFactor: $scaleEffect, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, showNavBack: $showNavBack)
+//                    .matchedGeometryEffect(id: "journal_\(selectedJournal)", in: shelfNamespace, properties: .position, anchor: .center)
+//                    .scaleEffect(scaleEffect)
+//                    .transition(.slide)
+//                    .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+//                    .navigationBarBackButtonHidden(showNavBack)
             } else {
                 JournalTextInputView(userVM: userVM, aiVM: AIViewModel(), shelfIndex: shelfIndex, journalIndex: selectedJournal, entryIndex: selectedEntry, pageIndex: displayPage, inTextEntry: $inTextEntry, entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
                     .navigationBarBackButtonHidden(true)
