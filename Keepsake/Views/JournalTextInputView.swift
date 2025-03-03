@@ -134,6 +134,8 @@ struct DebounceTextField: View {
     @State var debounceSeconds = 2
     @State private var suggestion: String = ""
     @ObservedObject var aiVM: AIViewModel
+    @State private var loadingDots = ""
+    @State private var isLoading = false
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -157,24 +159,54 @@ struct DebounceTextField: View {
                     // Fetch the suggestion from the AI model
                     if value != "" {
                         Task {
+                            isLoading = true
                             let completion = await aiVM.topicCompletion(journalText: value)
                             suggestion = completion ?? ""
+                            isLoading = false
                         }
+                    } else {
+                        isLoading = false
+                        suggestion = ""
                     }
                 }
             
             // Display the suggestion as grayed-out phantom text
-            if !suggestion.isEmpty {
-                Text(suggestion)
+            if isLoading {
+                Text("Thinking\(loadingDots)")
                     .font(.body)
-                    .foregroundColor(Color.gray.opacity(0.8))  // Light gray color for ghost text
+                    .foregroundColor(Color.gray.opacity(0.8))
                     .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
                     .padding(.top, 10)
-                    .lineLimit(nil)  // Allow wrapping for longer suggestions
-                    .frame(width: UIScreen.main.bounds.width * 0.9, alignment: .leading)
-                    .opacity(0.5) // Makes the suggestion appear faintly
-                    .zIndex(1) // Make sure it's above the TextEditor
-                    .allowsHitTesting(false)  // Ensure the suggestion doesn't interfere with text input
+                    .opacity(0.5)
+                    .italic()
+                    .onAppear {
+                        startLoadingAnimation()
+                    }
+            } else if !suggestion.isEmpty {
+                Text(suggestion)
+                    .font(.body)
+                    .foregroundColor(Color.gray.opacity(0.8))
+                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
+                    .padding(.top, 10)
+                    .opacity(0.5)
+                    .italic()
+                    .zIndex(1)
+                    .allowsHitTesting(false)
+            }
+        }
+    }
+    
+    private func startLoadingAnimation() {
+        loadingDots = ""
+        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
+            if !isLoading {
+                timer.invalidate()
+                return
+            }
+            if loadingDots.count >= 3 {
+                loadingDots = ""
+            } else {
+                loadingDots.append(".")
             }
         }
     }
