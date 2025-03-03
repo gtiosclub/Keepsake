@@ -9,7 +9,7 @@ import SwiftUI
 
 
 struct BookshelfView: View {
-    var shelf: Shelf
+    var shelf: JournalShelf
     var body: some View {
         VStack(alignment: .leading) {
             Text(shelf.name)
@@ -18,7 +18,7 @@ struct BookshelfView: View {
                 .padding(.top, 8)
             
             HStack {
-                if !shelf.books.isEmpty {
+                if !shelf.journals.isEmpty {
                     // Placeholder to maintain height and width
 //                    Rectangle()
 //                        .fill(Color.gray.opacity(0.2))
@@ -26,7 +26,7 @@ struct BookshelfView: View {
 //                        .cornerRadius(8)
 //                        .padding(.horizontal)
 //                        .padding(.vertical)
-                    ForEach(shelf.books.indices, id: \.self) { _ in
+                    ForEach(shelf.journals.indices, id: \.self) { _ in
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
                             .frame(height: 100)

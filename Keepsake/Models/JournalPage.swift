@@ -7,7 +7,12 @@
 
 import Foundation
 
-struct JournalPage {
+class JournalPage {
     var number: Int
     var entries: [JournalEntry]
+    
+    init(number: Int, entries: [JournalEntry]) {
+        self.number = number
+        self.entries = entries
+    }
 }
