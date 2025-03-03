@@ -7,83 +7,7 @@
 
 import Foundation
 import SwiftUI
-//
-//struct VoiceRecordingView: View {
-//    @State private var isRecording = false
-//    @State private var elapsedTime: TimeInterval = 0
-//    @State private var timer: Timer?
-//
-//    var formattedTime: String {
-//        let minutes = Int(elapsedTime) / 60
-//        let seconds = Int(elapsedTime) % 60
-//        return String(format: "%02d:%02d", minutes, seconds)
-//    }
-//
-//    var body: some View {
-//        ZStack {
-//            Color.black.edgesIgnoringSafeArea(.all) // Black background like watchOS faces
-//            
-//            VStack(spacing: 8) {
-//                Text(isRecording ? formattedTime : "Tap to Record")
-//                    .font(.system(size: 20, weight: .bold))
-//                    .foregroundColor(.white)
-//                    .monospacedDigit() // Ensures consistent number width
-//                
-//                Button(action: {
-//                    withAnimation(.easeInOut(duration: 0.2)) {
-//                        isRecording.toggle()
-//                        if isRecording {
-//                            startTimer()
-//                        } else {
-//                            stopTimer()
-//                        }
-//                    }
-//                }) {
-//                    recordingButton
-//                }
-//                .buttonStyle(PlainButtonStyle()) // Keeps the button clean
-//            }
-//        }
-//    }
-//    
-//    /// Separated button logic to improve compiler performance
-//    private var recordingButton: some View {
-//        let baseCircle = Circle()
-//            .fill(isRecording ? Color(hex: "#FFADF4").opacity(0.7) : Color(hex: "#FFADF4"))
-//            .frame(width: 70, height: 70)
-//            .overlay(
-//                Circle()
-//                    .stroke(Color.white, lineWidth: 1)
-//            )
-//
-//        let animatedOverlay = Circle()
-//            .stroke(Color.white.opacity(isRecording ? 0.5 : 0), lineWidth: 5)
-//            .scaleEffect(isRecording ? 1.3 : 1.0)
-//            .opacity(isRecording ? 0 : 1)
-//            .animation(isRecording ? Animation.easeOut(duration: 0.8).repeatForever(autoreverses: true) : .default, value: isRecording)
-//
-//        return ZStack {
-//            baseCircle
-//            animatedOverlay
-//        }
-//        .scaleEffect(isRecording ? 1.1 : 1.0) // Slightly larger when recording
-//        .animation(.easeInOut(duration: 0.2), value: isRecording)
-//    }
-//
-//    private func startTimer() {
-//        elapsedTime = 0
-//        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-//            elapsedTime += 1
-//        }
-//    }
-//
-//    private func stopTimer() {
-//        timer?.invalidate()
-//        timer = nil
-//    }
-//}
-//
-//
+
 extension Color {
     init(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -99,12 +23,6 @@ extension Color {
         self.init(red: red, green: green, blue: blue)
     }
 }
-//
-//struct VoiceRecordingView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        VoiceRecordingView()
-//    }
-//}
 
 struct VoiceRecordingView: View {
     @State private var isRecording = false
@@ -180,40 +98,8 @@ struct VoiceRecordingView: View {
     }
 }
 
-//struct DateTimeSelectionView: View {
-//    @State private var selectedDate = Date()
-//    var recordedAudio: String
-//    var onSave: (Reminder) -> Void
-//    @Environment(\.dismiss) private var dismiss
-//    
-//    var body: some View {
-//        VStack {
-//            Text("Select Reminder Date & Time")
-//                .font(.headline)
-//            
-//            DatePicker("Date & Time", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
-//                .datePickerStyle(WheelDatePickerStyle()) // ✅ Fixed for watchOS
-//                .padding()
-//            
-//            Button(action: {
-//                let newReminder = Reminder(title: "Voice Note", date: selectedDate, body: recordedAudio)
-//                onSave(newReminder)
-//                dismiss()  // Close this view
-//            }) {
-//                Text("Save Reminder")
-//                    .foregroundColor(.white)
-//                    .padding()
-//                    .background(Color(hex: "FFADF4"))
-//                    .cornerRadius(10)
-//            }
-//        }
-//        .padding()
-//    }
-//}
-
-
 struct DateTimeSelectionView: View {
-    let recordedAudio: String?  // Or whatever type it is
+    let recordedAudio: String?  // Placeholder for the recorded file data
     var onComplete: (Reminder) -> Void
     @State private var selectedDate = Date()
     @State private var selectedHour = Calendar.current.component(.hour, from: Date()) % 12
@@ -232,7 +118,6 @@ struct DateTimeSelectionView: View {
                         Text(Calendar.current.shortMonthSymbols[month - 1]).tag(month)
                     }
                 }.pickerStyle(WheelPickerStyle())
-                
                 
                 Picker("Day", selection: Binding(
                     get: { Calendar.current.component(.day, from: selectedDate) },
@@ -273,38 +158,27 @@ struct DateTimeSelectionView: View {
                 }.pickerStyle(WheelPickerStyle())
             }
             
-            //            Button("Confirm") {
-            //                let finalDate = combineDateAndTime()
-            //                print("Final Date Selected: \(finalDate)")
-            //            }
             Button {
                 let finalDate = combineDateAndTime()
-                let formatter = DateFormatter()
-                formatter.dateStyle = .long
-                formatter.timeStyle = .long
-                formatter.timeZone = TimeZone.current
-                print("Final Date Selected: (\(formatter.string(from: finalDate))")
+                
+                // Automatically generate the title for the reminder
+                let title = "Reminder for \(finalDate.formatted(date: .abbreviated, time: .shortened))"
+                
+                let reminder = Reminder(title: title, date: finalDate, body: recordedAudio ?? "")
+                onComplete(reminder)
             } label: {
                 Text("Confirm")
             }
-            //            Button(action: {
-            //                let finalDate = combineDateAndTime()
-            //                print("Final Date Selected: \(finalDate)")
-            //                        }) {
-            //                            Text("Confirm")
-            //                        }
             .padding()
         }
     }
 
-    /// 🛠️ Helper function to update date components safely
     private func updateDateComponent(_ component: Calendar.Component, value: Int) -> Date {
         var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
         components.setValue(value, for: component)
         return Calendar.current.date(from: components) ?? selectedDate
     }
 
-    /// 🛠️ Combines the selected date and time into a full Date object
     private func combineDateAndTime() -> Date {
         var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
         if isAM {
@@ -317,6 +191,7 @@ struct DateTimeSelectionView: View {
         return Calendar.current.date(from: components) ?? Date()
     }
 }
+
 
 
 
