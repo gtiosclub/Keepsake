@@ -64,7 +64,7 @@ struct JournalCover: View {
     }
 }
 #Preview {
-    JournalCover(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .white, titleColor: .black), pages: []), degrees: 0)
+    JournalCover(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .white, titleColor: .black), pages: [], currentPage: 2), degrees: 0)
 }
 
 //Color(red: 0.96, green: 0.5, blue: 0.5)
