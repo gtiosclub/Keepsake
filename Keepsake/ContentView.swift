@@ -70,6 +70,7 @@ struct ContentView: View {
             //>>>>>>> main
         }
     }
+
     
     func sendLocalNotification() {
         // Create the content of the notification
@@ -108,4 +109,5 @@ struct ContentView: View {
     //    ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])))
     //>>>>>>> main
     //}
+
 }

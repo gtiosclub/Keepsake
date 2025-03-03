@@ -19,137 +19,111 @@ struct JournalTextInputView: View {
     @State var date: String = ""
     @State var inputText: String = ""
     @Binding var inTextEntry: Bool
+    var textfieldPrompt: String = "Enter Prompt"
     var entry: JournalEntry
     var body: some View {
-        VStack {
-            Button {
-                Task {
-                    var newEntry = JournalEntry(date: date, title: title, text: inputText, summary: entry.summary)
-                    if entry.text != inputText {
-                        newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
-                    }
+        NavigationStack {
+            VStack {
+                Button {
+                    Task {
+                        var newEntry = JournalEntry(date: date, title: title, text: inputText, summary: entry.summary)
+                        if entry.text != inputText {
+                            newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
+                        }
+                        
+                        userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
                     
-                    userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
-                
-                    await MainActor.run {
-                        inTextEntry.toggle()
+                        await MainActor.run {
+                            inTextEntry.toggle()
+                        }
                     }
                 }
-            }
-            label: {
-                Image(systemName: "chevron.left")
-                    .foregroundStyle(.black)
-            }.frame(maxWidth: .infinity, alignment: .leading)
-                .padding(UIScreen.main.bounds.width * 0.025)
-            TextField("", text: $title, axis: .vertical)
-                .font(.title)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
-            Text(date).font(.subheadline)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-            DebounceTextField(inputText: $inputText, aiVM: aiVM)
-            Spacer()
-            HStack() {
-                Menu {
-                    Button {
-                        
-                    } label: {
-                        HStack {
-                            Text("Choose Photo")
-                            Spacer()
-                            Image(systemName: "photo")
-                        }
-                    }
-                    Button {
-                        
-                    } label: {
-                        HStack {
-                            Text("Take Photo")
-                            Spacer()
-                            Image(systemName: "camera")
-                        }
-                    }
-                    Button {
-                        
-                    } label: {
-                        HStack {
-                            Text("Voice Memo")
-                            Spacer()
-                            Image(systemName: "waveform")
-                        }
-                    }
-                    Button {
-                        
-                    } label: {
-                        HStack {
-                            Text("Need Suggestions?")
-                            Spacer()
-                            Image(systemName: "lightbulb")
-                        }
-                    }
-                } label: {
-                    Image(systemName: "plus.circle")
-                        .resizable()
-                        .scaledToFit()
+                label: {
+                    Image(systemName: "chevron.left")
                         .foregroundStyle(.black)
-                        .frame(width: UIScreen.main.bounds.width * 0.1)
-                        .contextMenu {
-                            
-                        }
-                }
+                }.frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(UIScreen.main.bounds.width * 0.025)
+                TextField(textfieldPrompt, text: $title, axis: .vertical)
+                    .font(.title)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
+                Text(date).font(.subheadline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                DebounceTextField(inputText: $inputText, aiVM: aiVM)
                 Spacer()
-                Button(action: {
-                    
-                }, label: {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-//                            .stroke(.black)
-//                            .fill(LinearGradient(gradient: Gradient(colors: [.gray, .white]), startPoint: .leading, endPoint: .trailing))
-//                            .frame(width: UIScreen.main.bounds.width * 0.5, height: UIScreen.main.bounds.width * 0.1)
-                        Text("Chat with Chatbot")
-                            .foregroundStyle(.black)
+
                             
+                        } label: {
+                            HStack {
+                                Text("Choose Photo")
+                                Spacer()
+                                Image(systemName: "photo")
+                            }
+                        }
+                        Button {
+                            
+                        } label: {
+                            HStack {
+                                Text("Take Photo")
+                                Spacer()
+                                Image(systemName: "camera")
+                            }
+                        }
+                        Button {
+                            
+                        } label: {
+                            HStack {
+                                Text("Voice Memo")
+                                Spacer()
+                                Image(systemName: "waveform")
+                            }
+                        }
+                        Button {
+                            
+                        } label: {
+                            HStack {
+                                Text("Need Suggestions?")
+                                Spacer()
+                                Image(systemName: "lightbulb")
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "plus.circle")
+                            .resizable()
+                            .scaledToFit()
+                            .foregroundStyle(.black)
+                            .frame(width: UIScreen.main.bounds.width * 0.1)
+                            .contextMenu {
+                                
+                            }
                     }
-                })
-            }.padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-                .padding(.bottom, 10)
-        }.onAppear() {
-            title = entry.title
-            inputText = entry.text
-            date = entry.date
+                    Spacer()
+                    NavigationLink(destination: ConversationView(viewModel: aiVM)) {
+                        Text("Chat with Companion")
+                                .font(.system(size: 18))
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.blue, Color.purple]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .cornerRadius(15)
+                                .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                    }
+                }.padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                    .padding(.bottom, 10)
+            }.onAppear() {
+                title = entry.title
+                inputText = entry.text
+                date = entry.date
+            }
         }
     }
 }
-
-//struct DebounceTextField: View {
-//  
-//    @State var publisher = PassthroughSubject<String, Never>()
-//      
-//    @Binding var inputText: String
-//    var valueChanged: ((_ value: String) -> Void)?
-//  
-//    @State var debounceSeconds = 0.7
-//  
-//    var body: some View {
-//        TextEditor(text: $inputText)
-//          .frame(maxWidth: .infinity, alignment: .leading)
-//          .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
-//          .onChange(of: inputText) { inputText in
-//            publisher.send(inputText)
-//          }
-//          .onReceive(
-//            publisher.debounce(
-//              for: .seconds(debounceSeconds),
-//              scheduler: DispatchQueue.main
-//            )
-//          ) { value in
-//            if let valueChanged = valueChanged {
-//              valueChanged(value)
-//            }
-//        }
-//    }
-//}
 
 struct DebounceTextField: View {
     @State var publisher = PassthroughSubject<String, Never>()
@@ -209,11 +183,11 @@ struct DebounceTextField: View {
         @State var inTextEntry = false
         var body: some View {
             JournalTextInputView(userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
-                Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")]), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")]), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")]), JournalPage(number: 5, entries: [])]),
-                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
-                Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])]),
-                Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])])
-            ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), shelfIndex: 0, journalIndex: 0, entryIndex: 0, pageIndex: 2, inTextEntry: $inTextEntry, entry: JournalEntry(date: "01/02/2024", title: "Oh my world", text: "I have started to text", summary: "summary"))
+                Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")]), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")]), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")]), JournalPage(number: 5, entries: [])], currentPage: 3),
+                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0),
+                Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0),
+                Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0)
+            ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), shelfIndex: 0, journalIndex: 0, entryIndex: 0, pageIndex: 2, inTextEntry: $inTextEntry, textfieldPrompt: "Enter Prompt", entry: JournalEntry(date: "01/02/2024", title: "Oh my world", text: "I have started to text", summary: "summary"))
         }
     }
 

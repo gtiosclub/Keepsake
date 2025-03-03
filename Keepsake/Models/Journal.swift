@@ -21,8 +21,9 @@ class Journal: Book, ObservableObject {
     var isShared: Bool
     var template: Template
     var pages: [JournalPage]
+    var currentPage: Int
     
-    init(name: String, createdDate: String, entries: [JournalEntry], category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage]) {
+    init(name: String, createdDate: String, entries: [JournalEntry], category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage], currentPage: Int) {
         self.name = name
         self.createdDate = createdDate
         self.category = category
@@ -30,6 +31,7 @@ class Journal: Book, ObservableObject {
         self.isShared = isShared
         self.template = template
         self.pages = pages
+        self.currentPage = currentPage
     }
     
     init () {
@@ -40,5 +42,6 @@ class Journal: Book, ObservableObject {
         self.isShared = false
         self.template = Template()
         self.pages = []
+        self.currentPage = 0
     }
 }

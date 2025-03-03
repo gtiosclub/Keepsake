@@ -189,7 +189,7 @@ class AIViewModel: ObservableObject {
   
   
     
-    func getSmartPrompts(journal: Journal) async -> String? {
+    func getSmartPrompts(journal: Journal, count: Int) async -> [String]? {
         // Get all entries in journal
         let journalPages: [JournalPage] = journal.pages
         var journalEntries: [JournalEntry] = []
@@ -199,7 +199,7 @@ class AIViewModel: ObservableObject {
         var prompt: String = ""
         if journalEntries.count == 0 {
             print("No journal entries")
-            prompt = "A user of a journal app wants to write a new journal entry. Suggest a one-line prompt that the user can answer when writing their new entry. Respond with only the prompt, no additional text or quotation marks."
+            prompt = "A user of a journal app wants to write a new journal entry. Suggest \(count) one-line prompt\(count == 1 ? "" : "s") that the user can answer when writing their new entry. Respond with only the prompt\(count == 1 ? "" : "s") separated by commas, no additional text or quotation marks."
         } else {
             
             // Convert entries to JSON
@@ -215,7 +215,7 @@ class AIViewModel: ObservableObject {
                     title: <String>
                     text: <String>
                 }
-                A user wants to write a new JournalEntry. Based on these JournalEntry instances, suggest a one-line prompt that the user can answer when writing their new JournalEntry text. Give higher priority to more recent JournalEntry instances. If there are no JournalEntry instances, give a generic journaling prompt. Respond with only the one-line prompt.
+                A user wants to write a new JournalEntry. Based on these JournalEntry instances, suggest \(count) one-line prompt\(count == 1 ? "" : "s") that the user can answer when writing their new JournalEntry text. Create the prompt on your own, and do not include semi-colons in the prompt. Give higher priority to more recent JournalEntry instances. If there are no JournalEntry instances, give a generic journaling prompt. Respond with only the prompt\(count == 1 ? "" : "s") separated by semi-colons, no additional text or quotation marks.
                 Here is the collection of JournalEntry:
                 
                 """
@@ -230,12 +230,12 @@ class AIViewModel: ObservableObject {
                 text: prompt,
                 model: gptModel!)
             
-            print(response)
+            let prompts: [String] = response.split(separator: ";").map { String($0) }
             
-            return response
+            return prompts
         } catch {
             print("Send OpenAI Query Error: \(error.localizedDescription)")
-            return "Unable to generate journal prompt."
+            return ["Unable to generate journal prompt."]
         }
     }
     
@@ -400,12 +400,7 @@ class AIViewModel: ObservableObject {
     func startConversation(entry: ConversationEntry) async {
         var entryLog = entry.conversationLog
         let startPrompt = """
-        You will be holding a back and forth conversation with a user in their conversation entry. This conversation entry will have fields such as: 
-        
-        
-            date: \(entry.date)
-            title: \(entry.title)
-            conversationLog: <String>
+        You will be holding a back and forth conversation with a user in their conversation entry.
         
         Start off the conversation by asking "What do you want to talk about today?" or maybe a question related to their title to kick things off. Try not to make it too long
         
