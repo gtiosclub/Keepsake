@@ -6,6 +6,7 @@ struct TextBoxData: Identifiable {
     var text: String
     var position: SIMD3<Float>
     var entity: TextBoxEntity?
+    var isNew: Bool = true  // Flag to track if this entity needs to be created
 }
 
 struct ScrapbookView: View {
@@ -13,13 +14,18 @@ struct ScrapbookView: View {
     @State private var textInput: String = ""
     @State private var dragPosition: UnitPoint = .zero
     @State private var editingTextBoxId: UUID? = nil
+    @State private var anchor: AnchorEntity? = nil
+    @State private var selectedTextBoxId: UUID? = nil
     
     var body: some View {
         ZStack {
             RealityView { content in
                 content.camera = .spatialTracking
-                let anchor = AnchorEntity(world: SIMD3<Float>(x: 0, y: 0, z: -2))
-                content.add(anchor)
+                
+                // Create the anchor once
+                let newAnchor = AnchorEntity(world: SIMD3<Float>(x: 0, y: 0, z: -2))
+                self.anchor = newAnchor
+                content.add(newAnchor)
                 
                 // Initial text box if none exist
                 if textBoxes.isEmpty {
@@ -27,37 +33,49 @@ struct ScrapbookView: View {
                         let initialText = "Welcome to Scrapbook"
                         let newTextBox = await TextBoxEntity(text: initialText)
                         let initialPosition = SIMD3<Float>(x: 0, y: 0, z: 0)
-                        let newBoxData = TextBoxData(text: initialText, position: initialPosition, entity: newTextBox)
                         
                         // We need to update the state on the main thread
                         await MainActor.run {
+                            let newBoxData = TextBoxData(
+                                text: initialText, 
+                                position: initialPosition, 
+                                entity: newTextBox,
+                                isNew: false
+                            )
                             textBoxes.append(newBoxData)
                         }
                         
-                        anchor.addChild(newTextBox)
-                    }
-                }
-                
-                // Add any new text boxes that don't have entities yet
-                for index in textBoxes.indices {
-                    if textBoxes[index].entity == nil {
-                        Task {
-                            let newTextBox = await TextBoxEntity(text: textBoxes[index].text)
-                            newTextBox.position = textBoxes[index].position
-                            
-                            await MainActor.run {
-                                textBoxes[index].entity = newTextBox
-                            }
-                            
-                            anchor.addChild(newTextBox)
-                        }
+                        newAnchor.addChild(newTextBox)
                     }
                 }
             } update: { content in
-                // Handle updates to existing text boxes
-                for textBoxData in textBoxes {
-                    if let entity = textBoxData.entity {
-                        entity.position = textBoxData.position
+                // Process any new text boxes that need to be created
+                for index in textBoxes.indices {
+                    if textBoxes[index].isNew {
+                        Task {
+                            let text = textBoxes[index].text
+                            let position = textBoxes[index].position
+                            
+                            let newTextBox = await TextBoxEntity(text: text)
+                            newTextBox.position = position
+                            
+                            // Set up tap handler for this entity
+                            newTextBox.name = textBoxes[index].id.uuidString
+                            
+                            await MainActor.run {
+                                // Update our data model with the created entity
+                                textBoxes[index].entity = newTextBox
+                                textBoxes[index].isNew = false
+                            }
+                            
+                            // Add the new entity to the scene
+                            if let anchor = self.anchor {
+                                anchor.addChild(newTextBox)
+                            }
+                        }
+                    } else if let entity = textBoxes[index].entity {
+                        // Update position of existing entities
+                        entity.position = textBoxes[index].position
                     }
                 }
             }
@@ -104,7 +122,9 @@ struct ScrapbookView: View {
                     VStack {
                         TextField("Edit Text", text: Binding(
                             get: { textBoxes[index].text },
-                            set: { textBoxes[index].text = $0 }
+                            set: { 
+                                textBoxes[index].text = $0
+                            }
                         ))
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
@@ -131,7 +151,7 @@ struct ScrapbookView: View {
                 }
             }
         }
-        .onTapGesture { location in
+        .onTapGesture(coordinateSpace: .global) { location in
             // If already editing, save current changes and exit edit mode
             if editingTextBoxId != nil {
                 if let index = textBoxes.firstIndex(where: { $0.id == editingTextBoxId }) {
@@ -141,10 +161,21 @@ struct ScrapbookView: View {
                 return
             }
             
-            // Otherwise try to select a text box to edit based on location
-            // This is simplified and would need hit-testing in a real app
-            if !textBoxes.isEmpty && selectedTextBoxIndex != nil {
-                editingTextBoxId = textBoxes[selectedTextBoxIndex!].id
+            // For direct selection, simulate selecting the text box based on tap location
+            // In a full implementation, you would use proper hit testing here
+            // For now, selecting any text box as a demonstration of the concept
+            // This just cycles through the boxes since we can't do proper hit testing
+            if !textBoxes.isEmpty {
+                if let currentIndex = selectedTextBoxIndex {
+                    let nextIndex = (currentIndex + 1) % textBoxes.count
+                    selectedTextBoxId = textBoxes[nextIndex].id
+                } else {
+                    selectedTextBoxId = textBoxes[0].id
+                }
+                
+                // For demonstration, immediately start editing the selected box
+                editingTextBoxId = selectedTextBoxId
+                dragPosition = .zero
             }
         }
     }
@@ -154,15 +185,39 @@ struct ScrapbookView: View {
         if let editingId = editingTextBoxId {
             return textBoxes.firstIndex(where: { $0.id == editingId })
         }
-        // For now, just use the first text box if none is selected
-        return textBoxes.isEmpty ? nil : 0
+        if let selectedId = selectedTextBoxId {
+            return textBoxes.firstIndex(where: { $0.id == selectedId })
+        }
+        return nil
     }
     
     private func addNewTextBox() {
         let newText = "New Text Box"
-        let newPosition = SIMD3<Float>(x: 0, y: Float(textBoxes.count) * 0.2, z: 0)
-        let newBoxData = TextBoxData(text: newText, position: newPosition)
+        
+        // Position the new text box in the center of the current view
+        // In RealityKit, we'd typically use the camera/view transform to determine this
+        // For now, using a simplified approach with a slight random offset
+        // to better simulate placing them in the center of where the user is looking
+        let randomOffset = Float.random(in: -0.2...0.2)
+        let newPosition = SIMD3<Float>(
+            x: randomOffset,
+            y: randomOffset,
+            z: -0.5  // Slightly in front of the camera
+        )
+        
+        // Create a new text box data with isNew = true
+        let newBoxData = TextBoxData(
+            text: newText, 
+            position: newPosition,
+            isNew: true
+        )
+        
+        // Add it to our array - the update closure will create the actual entity
         textBoxes.append(newBoxData)
+        
+        // Automatically select and edit the new text box
+        selectedTextBoxId = newBoxData.id
+        editingTextBoxId = newBoxData.id
     }
     
     private func updateTextBox(index: Int) {
