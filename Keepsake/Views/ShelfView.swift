@@ -9,6 +9,7 @@ import SwiftUI
 struct ShelfView: View {
     @Namespace private var shelfNamespace
     @ObservedObject var userVM: UserViewModel
+    @ObservedObject var aiVM: AIViewModel
     var shelfIndex: Int
     @State var degrees: CGFloat = 0
     @State var frontDegrees: CGFloat = 0
@@ -59,6 +60,11 @@ struct ShelfView: View {
                                         .onTapGesture {
                                             selectedJournal = index
                                             displayPage = userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).currentPage
+                                    
+                                            Task {
+                                                await aiVM.fetchSmartPrompts(for: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index), count: 5)
+                                            }
+                                            
                                             withAnimation(.linear(duration: 0.7)) {
                                                 show.toggle()
                                             } completion: {
@@ -126,7 +132,7 @@ struct ShelfView: View {
                     .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                     .navigationBarBackButtonHidden(showNavBack)
             } else {
-                JournalTextInputView(userVM: userVM, aiVM: AIViewModel(), shelfIndex: shelfIndex, journalIndex: selectedJournal, entryIndex: selectedEntry, pageIndex: displayPage, inTextEntry: $inTextEntry, entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                JournalTextInputView(userVM: userVM, aiVM: aiVM, shelfIndex: shelfIndex, journalIndex: selectedJournal, entryIndex: selectedEntry, pageIndex: displayPage, inTextEntry: $inTextEntry, entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
                     .navigationBarBackButtonHidden(true)
             }
             
@@ -149,5 +155,5 @@ struct ShelfView: View {
         Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0),
         Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0),
         Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0)
-    ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), shelfIndex: 0)
+    ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), shelfIndex: 0)
 }

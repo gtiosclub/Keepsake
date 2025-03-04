@@ -21,6 +21,8 @@ struct JournalTextInputView: View {
     @Binding var inTextEntry: Bool
     var textfieldPrompt: String = "Enter Prompt"
     var entry: JournalEntry
+    @State var showPromptSheet: Bool = false
+    @State var selectedPrompt: String? = ""
     var body: some View {
         NavigationStack {
             VStack {
@@ -50,6 +52,14 @@ struct JournalTextInputView: View {
                 Text(date).font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                if selectedPrompt != nil {
+                    if !selectedPrompt!.isEmpty {
+                        let trimmedPrompt: String = selectedPrompt!.trimmingCharacters(in: .whitespacesAndNewlines)
+                        Text(trimmedPrompt).font(.subheadline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                    }
+                }
                 DebounceTextField(inputText: $inputText, aiVM: aiVM)
                 Spacer()
                 HStack() {
@@ -82,7 +92,7 @@ struct JournalTextInputView: View {
                             }
                         }
                         Button {
-                            
+                            showPromptSheet = true
                         } label: {
                             HStack {
                                 Text("Need Suggestions?")
@@ -90,6 +100,7 @@ struct JournalTextInputView: View {
                                 Image(systemName: "lightbulb")
                             }
                         }
+                        
                     } label: {
                         Image(systemName: "plus.circle")
                             .resizable()
@@ -123,6 +134,9 @@ struct JournalTextInputView: View {
                 inputText = entry.text
                 date = entry.date
             }
+            .sheet(isPresented: $showPromptSheet) {
+                SuggestedPromptsView(aiVM: aiVM, selectedPrompt: $selectedPrompt, isPresented: $showPromptSheet)
+            }
         }
     }
 }
@@ -144,7 +158,7 @@ struct DebounceTextField: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
                 .background(Color.clear)
-                .onChange(of: inputText) { newValue in
+                .onChange(of: inputText) { _, newValue in
                     publisher.send(newValue)
                 }
                 .onReceive(
@@ -221,7 +235,7 @@ struct DebounceTextField: View {
                 Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0),
                 Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0),
                 Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0)
-            ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), shelfIndex: 0, journalIndex: 0, entryIndex: 0, pageIndex: 2, inTextEntry: $inTextEntry, textfieldPrompt: "Enter Prompt", entry: JournalEntry(date: "01/02/2024", title: "Oh my world", text: "I have started to text", summary: "summary"))
+            ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), shelfIndex: 0, journalIndex: 0, entryIndex: 0, pageIndex: 2, inTextEntry: $inTextEntry, textfieldPrompt: "Enter Prompt", entry: JournalEntry(date: "01/02/2024", title: "Oh my world", text: "I have started to text", summary: "summary"), selectedPrompt: "Summarize the highlights of your day and any moments of learning")
         }
     }
 
