@@ -296,19 +296,84 @@ class AIViewModel: ObservableObject {
     }
     
     func summarize(entry: JournalEntry) async -> String? {
-        let prompt = "Summarize the entry in one line. Don't mention the writer or the user. Here is the title: \(entry.title) and text: \(entry.text)"
+        let inputText = entry.text
+            if inputText.isEmpty {
+                return nil
+            }
+        let prompt = "Summarize the entry in one to two lines. Don't mention the writer or the user and make it sound personable. Here is text: \(entry.text)"
         
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: prompt,
                 model: .gpt_hyphen_4
             )
-            
             return response
         } catch {
             print("Error: \(error.localizedDescription)")
         }
         return nil
+    }
+    
+    func stickers(entry: JournalEntry) async -> String? {
+        let inputText = entry.text
+        if inputText.isEmpty {
+            return nil
+        }
+
+        let prompt = "Give one word to describe this entry so I can find a sticker associated with it. Here is text: \(inputText)"
+        
+        do {
+            let response = try await openAIAPIKey.sendMessage(
+                text: prompt,
+                model: .gpt_hyphen_4
+            )
+            let description = response.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !description.isEmpty {
+                return await fetchStickerFromGiphy(query: description)
+            }
+            
+        } catch {
+            print("Error fetching description from OpenAI: \(error.localizedDescription)")
+        }
+        
+        return nil
+    }
+
+    func fetchStickerFromGiphy(query: String) async -> String? {
+        let urlString = "https://api.giphy.com/v1/stickers/search?api_key=\(giphyKey)&q=\(query)&limit=1"
+        
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            return nil
+        }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            
+            let decoder = JSONDecoder()
+            if let response = try? decoder.decode(GiphyResponse.self, from: data),
+               let stickerUrl = response.data.first?.images.original.url {
+                return stickerUrl
+            }
+        } catch {
+            print("Error fetching stickers from Giphy: \(error.localizedDescription)")
+        }
+        
+        return nil
+    }
+
+    struct GiphyResponse: Codable {
+        struct StickerData: Codable {
+            struct Images: Codable {
+                struct Original: Codable {
+                    let url: String
+                }
+                let original: Original
+            }
+            let images: Images
+        }
+        
+        let data: [StickerData]
     }
     
     @Published var categorizedImages: [String: [UIImage]] = [:]
