@@ -98,7 +98,12 @@ struct VoiceRecordingView: View {
             .animation(isRecording ? Animation.easeOut(duration: 0.8).repeatForever(autoreverses: true) : .default, value: isRecording)
 
         return ZStack {
-            baseCircle
+            Circle()
+                .fill(isRecording ? Color(hex: "#FFADF4").opacity(0.7) : Color(hex: "#FFADF4"))
+                .overlay(
+                    Circle()
+                        .stroke(Color.white, lineWidth: 1)
+                )
             animatedOverlay
         }
         .scaleEffect(isRecording ? 1.1 : 1.0) // Slightly larger when recording
