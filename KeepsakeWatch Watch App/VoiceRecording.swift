@@ -57,6 +57,7 @@ struct VoiceRecordingView: View {
                         isRecording.toggle()
                         if audioRecording.isRecording {
                             audioRecording.stopRecording()
+                            showDateTimeSelection = true
                             stopTimer()
 
                         } else {
@@ -72,7 +73,7 @@ struct VoiceRecordingView: View {
             }
         }
         .fullScreenCover(isPresented: $showDateTimeSelection) {
-            if let recordedAudio = recordedAudio {
+            if let recordedAudio = audioRecording.recordedAudio {
                 DateTimeSelectionView(recordedAudio: recordedAudio) { newReminder in
                     onRecordingComplete(newReminder)
                     dismiss() // Close everything
@@ -130,36 +131,6 @@ struct VoiceRecordingView: View {
     }
 }
 
-//struct DateTimeSelectionView: View {
-//    @State private var selectedDate = Date()
-//    var recordedAudio: String
-//    var onSave: (Reminder) -> Void
-//    @Environment(\.dismiss) private var dismiss
-//
-//    var body: some View {
-//        VStack {
-//            Text("Select Reminder Date & Time")
-//                .font(.headline)
-//
-//            DatePicker("Date & Time", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
-//                .datePickerStyle(WheelDatePickerStyle()) // ✅ Fixed for watchOS
-//                .padding()
-//
-//            Button(action: {
-//                let newReminder = Reminder(title: "Voice Note", date: selectedDate, body: recordedAudio)
-//                onSave(newReminder)
-//                dismiss()  // Close this view
-//            }) {
-//                Text("Save Reminder")
-//                    .foregroundColor(.white)
-//                    .padding()
-//                    .background(Color(hex: "FFADF4"))
-//                    .cornerRadius(10)
-//            }
-//        }
-//        .padding()
-//    }
-//}
 
 
 struct DateTimeSelectionView: View {
@@ -223,10 +194,6 @@ struct DateTimeSelectionView: View {
                 }.pickerStyle(WheelPickerStyle())
             }
             
-            //            Button("Confirm") {
-            //                let finalDate = combineDateAndTime()
-            //                print("Final Date Selected: \(finalDate)")
-            //            }
             Button {
                 let finalDate = combineDateAndTime()
                 let formatter = DateFormatter()
@@ -237,12 +204,7 @@ struct DateTimeSelectionView: View {
             } label: {
                 Text("Confirm")
             }
-            //            Button(action: {
-            //                let finalDate = combineDateAndTime()
-            //                print("Final Date Selected: \(finalDate)")
-            //                        }) {
-            //                            Text("Confirm")
-            //                        }
+            
             .padding()
         }
     }
