@@ -42,17 +42,13 @@ struct ConversationView: View {
     var conversationEntry = ConversationEntry(date: "2/14/25", title: "Midnight Thoughts", conversationLog: [])
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(viewModel.conversationHistory, id: \.self) { message in
-                    if message.starts(with: "User:") {
-                        HStack {
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Image(systemName: "circle.fill")
-                                    .font(.system(size: 30))
-                                    .foregroundColor(.gray)
-                                    .padding(.bottom, 5)
-                                
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 30) {
+                    ForEach(viewModel.conversationHistory, id: \.self) { message in
+                        let messageID = UUID()
+                        if message.starts(with: "User:") {
+                            HStack {
                                 HStack (spacing: 5){
                                     Image(systemName: "pencil")
                                         .foregroundColor(.gray)
@@ -61,41 +57,51 @@ struct ConversationView: View {
                                         .padding()
                                         .background(Color.gray.opacity(0.2))
                                         .cornerRadius(15)
-                                }.frame(maxWidth: .infinity, alignment: .trailing)
+                                    Image(systemName: "person.fill")
+                                        .font(.system(size: 30))
+                                        .foregroundColor(.gray)
+                                        .padding(.bottom, 5)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                .id(messageID)
+                                
+                                
                             }
                             
-                        }
-                    
-        
-                    } else {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Image(systemName: "circle")
-                                    .font(.system(size: 30))
-                                    .foregroundColor(.gray)
-                                    .padding(.bottom, 5)
+                            
+                        } else {
+                            HStack {
                                 HStack {
+                                    Image(systemName: "person.wave.2")
+                                        .font(.system(size: 30))
+                                        .foregroundColor(.gray)
+                                        .padding(.bottom, 5)
                                     Text(message.replacingOccurrences(of: "GPT: ", with: ""))
                                         .padding()
                                         .background(Color.gray.opacity(0.2))
                                         .cornerRadius(15)
                                     Spacer()
                                 }
+                                .id(messageID)
                             }
                         }
                     }
                 }
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
+            .onChange(of: viewModel.conversationHistory) { _ in
+                if let lastMessage = viewModel.conversationHistory.last {
+                    proxy.scrollTo(lastMessage, anchor: .bottom)
+                }
+            }
+            .background(Color.white)
         }
-        .background(Color.white)
         .onAppear {
             Task {
                 await viewModel.startConversation(entry: conversationEntry)
             }
         }
         
-        // Input Area
         HStack {
             TextField("Type to chat...", text: $viewModel.userInput)
                 .textFieldStyle(PlainTextFieldStyle())

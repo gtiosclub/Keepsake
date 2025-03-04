@@ -15,6 +15,7 @@ class AIViewModel: ObservableObject {
     var giphyKey: String = "<PUT API KEY HERE>"
     @Published var uiImage: UIImage? = nil
     @Published var isLoading = false
+    @Published var generatedPrompts: [String] = []
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
     
     let FirebaseVM: FirebaseViewModel = FirebaseViewModel.vm
@@ -36,6 +37,12 @@ class AIViewModel: ObservableObject {
                 print("Failed to fetch API keys: \(error)")
             }
         }
+    }
+    
+    @MainActor
+    func fetchSmartPrompts(for journal: Journal, count: Int) async {
+        let prompts = await getSmartPrompts(journal: journal, count: count) ?? []
+        self.generatedPrompts = prompts
     }
     
     func getRelevantScrapbookEntries(scrapbook: Scrapbook, query: String, numHighlights: Int) async -> [ScrapbookEntry] {
@@ -188,8 +195,7 @@ class AIViewModel: ObservableObject {
     }
   
   
-    
-    func getSmartPrompts(journal: Journal) async -> String? {
+    func getSmartPrompts(journal: Journal, count: Int) async -> [String]? {
         // Get all entries in journal
         let journalPages: [JournalPage] = journal.pages
         var journalEntries: [JournalEntry] = []
@@ -199,7 +205,7 @@ class AIViewModel: ObservableObject {
         var prompt: String = ""
         if journalEntries.count == 0 {
             print("No journal entries")
-            prompt = "A user of a journal app wants to write a new journal entry. Suggest a one-line prompt that the user can answer when writing their new entry. Respond with only the prompt, no additional text or quotation marks."
+            prompt = "A user of a journal app wants to write a new journal entry. Suggest \(count) one-line prompt\(count == 1 ? "" : "s") that the user can answer when writing their new entry. Respond with only the prompt\(count == 1 ? "" : "s") separated by commas, no additional text or quotation marks."
         } else {
             
             // Convert entries to JSON
@@ -215,7 +221,7 @@ class AIViewModel: ObservableObject {
                     title: <String>
                     text: <String>
                 }
-                A user wants to write a new JournalEntry. Based on these JournalEntry instances, suggest a one-line prompt that the user can answer when writing their new JournalEntry text. Give higher priority to more recent JournalEntry instances. If there are no JournalEntry instances, give a generic journaling prompt. Respond with only the one-line prompt.
+                A user wants to write a new JournalEntry. Based on these JournalEntry instances, suggest \(count) one-line prompt\(count == 1 ? "" : "s") that the user can answer when writing their new JournalEntry text. Create the prompt on your own, and do not include semi-colons in the prompt. Give higher priority to more recent JournalEntry instances. If there are no JournalEntry instances, give a generic journaling prompt. Respond with only the prompt\(count == 1 ? "" : "s") separated by semi-colons, no additional text or quotation marks.
                 Here is the collection of JournalEntry:
                 
                 """
@@ -230,12 +236,11 @@ class AIViewModel: ObservableObject {
                 text: prompt,
                 model: gptModel!)
             
-            print(response)
-            
-            return response
+            let prompts: [String] = response.split(separator: ";").map { String($0) }
+            return prompts
         } catch {
             print("Send OpenAI Query Error: \(error.localizedDescription)")
-            return "Unable to generate journal prompt."
+            return ["Unable to generate journal prompt."]
         }
     }
     
@@ -291,19 +296,84 @@ class AIViewModel: ObservableObject {
     }
     
     func summarize(entry: JournalEntry) async -> String? {
-        let prompt = "Summarize the entry in one line. Don't mention the writer or the user. Here is the title: \(entry.title) and text: \(entry.text)"
+        let inputText = entry.text
+            if inputText.isEmpty {
+                return nil
+            }
+        let prompt = "Summarize the entry in one to two lines. Don't mention the writer or the user and make it sound personable. Here is text: \(entry.text)"
         
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: prompt,
                 model: .gpt_hyphen_4
             )
-            
             return response
         } catch {
             print("Error: \(error.localizedDescription)")
         }
         return nil
+    }
+    
+    func stickers(entry: JournalEntry) async -> String? {
+        let inputText = entry.text
+        if inputText.isEmpty {
+            return nil
+        }
+
+        let prompt = "Give one word to describe this entry so I can find a sticker associated with it. Here is text: \(inputText)"
+        
+        do {
+            let response = try await openAIAPIKey.sendMessage(
+                text: prompt,
+                model: .gpt_hyphen_4
+            )
+            let description = response.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !description.isEmpty {
+                return await fetchStickerFromGiphy(query: description)
+            }
+            
+        } catch {
+            print("Error fetching description from OpenAI: \(error.localizedDescription)")
+        }
+        
+        return nil
+    }
+
+    func fetchStickerFromGiphy(query: String) async -> String? {
+        let urlString = "https://api.giphy.com/v1/stickers/search?api_key=\(giphyKey)&q=\(query)&limit=1"
+        
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            return nil
+        }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            
+            let decoder = JSONDecoder()
+            if let response = try? decoder.decode(GiphyResponse.self, from: data),
+               let stickerUrl = response.data.first?.images.original.url {
+                return stickerUrl
+            }
+        } catch {
+            print("Error fetching stickers from Giphy: \(error.localizedDescription)")
+        }
+        
+        return nil
+    }
+
+    struct GiphyResponse: Codable {
+        struct StickerData: Codable {
+            struct Images: Codable {
+                struct Original: Codable {
+                    let url: String
+                }
+                let original: Original
+            }
+            let images: Images
+        }
+        
+        let data: [StickerData]
     }
     
     @Published var categorizedImages: [String: [UIImage]] = [:]

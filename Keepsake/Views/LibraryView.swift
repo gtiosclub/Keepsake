@@ -10,12 +10,13 @@ import SwiftUI
 
 struct LibraryView: View {
     @ObservedObject var userVM: UserViewModel
+    @ObservedObject var aiVM: AIViewModel
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     ForEach(userVM.user.getJournalShelves().indices, id: \.self) { index in
-                        NavigationLink(destination: ShelfView(userVM: userVM, shelfIndex: index)) {
+                        NavigationLink(destination: ShelfView(userVM: userVM, aiVM: aiVM, shelfIndex: index)) {
                             BookshelfView(shelf: userVM.getJournalShelves()[index])
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -49,7 +50,7 @@ struct LibraryView_Previews: PreviewProvider {
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0)
         ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])
         
-        return LibraryView(userVM: UserViewModel(user: sampleUser))
+        return LibraryView(userVM: UserViewModel(user: sampleUser), aiVM: AIViewModel())
     }
 }
 
