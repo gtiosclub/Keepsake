@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SuggestedPromptsView: View {
-    @State var explorePrompts: [String] = []
+    @ObservedObject var aiVM: AIViewModel
     @State var savedPrompts: [String] = []
     @State private var exploreOrSaved = 0
     @Binding var selectedPrompt: String?
@@ -42,7 +42,7 @@ struct SuggestedPromptsView: View {
                 Spacer()
             }
             List{
-                let prompts = exploreOrSaved == 0 ? explorePrompts : savedPrompts
+                let prompts = exploreOrSaved == 0 ? aiVM.generatedPrompts : savedPrompts
                 ForEach(prompts, id: \.self) { prompt in
                     VStack (alignment: .leading) {
                         HStack {
@@ -84,5 +84,5 @@ struct SuggestedPromptsView: View {
 }
 
 #Preview {
-    SuggestedPromptsView(explorePrompts: ["Reflect on your day", "Write about your passion for baseball", "Journal about your gratitude"], savedPrompts: ["Saved1", "Saved2"], selectedPrompt: .constant("Reflect on your day"), isPresented: .constant(true))
+    SuggestedPromptsView(aiVM: AIViewModel(), savedPrompts: ["Saved1", "Saved2"], selectedPrompt: .constant("Reflect on your day"), isPresented: .constant(true))
 }

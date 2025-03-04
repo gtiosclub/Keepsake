@@ -21,6 +21,9 @@ struct JournalTextInputView: View {
     @Binding var inTextEntry: Bool
     var textfieldPrompt: String = "Enter Prompt"
     var entry: JournalEntry
+    @State var showPromptSheet: Bool = false
+    @State var selectedPrompt: String? = ""
+    @State var explorePrompts: [String] = []
     var body: some View {
         NavigationStack {
             VStack {
@@ -82,7 +85,7 @@ struct JournalTextInputView: View {
                             }
                         }
                         Button {
-                            
+                            showPromptSheet = true
                         } label: {
                             HStack {
                                 Text("Need Suggestions?")
@@ -90,6 +93,7 @@ struct JournalTextInputView: View {
                                 Image(systemName: "lightbulb")
                             }
                         }
+                        
                     } label: {
                         Image(systemName: "plus.circle")
                             .resizable()
@@ -123,6 +127,9 @@ struct JournalTextInputView: View {
                 inputText = entry.text
                 date = entry.date
             }
+            .sheet(isPresented: $showPromptSheet) {
+                SuggestedPromptsView(aiVM: aiVM, selectedPrompt: $selectedPrompt, isPresented: $showPromptSheet)
+            }
         }
     }
 }
@@ -142,7 +149,7 @@ struct DebounceTextField: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
                 .background(Color.clear)
-                .onChange(of: inputText) { newValue in
+                .onChange(of: inputText) { _, newValue in
                     publisher.send(newValue)
                 }
                 .onReceive(

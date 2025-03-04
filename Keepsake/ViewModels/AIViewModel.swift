@@ -15,6 +15,7 @@ class AIViewModel: ObservableObject {
     var giphyKey: String = "<PUT API KEY HERE>"
     @Published var uiImage: UIImage? = nil
     @Published var isLoading = false
+    @Published var generatedPrompts: [String] = []
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
     
     let FirebaseVM: FirebaseViewModel = FirebaseViewModel.vm
@@ -36,6 +37,12 @@ class AIViewModel: ObservableObject {
                 print("Failed to fetch API keys: \(error)")
             }
         }
+    }
+    
+    @MainActor
+    func fetchSmartPrompts(for journal: Journal, count: Int) async {
+        let prompts = await getSmartPrompts(journal: journal, count: count) ?? []
+        self.generatedPrompts = prompts
     }
     
     func getRelevantScrapbookEntries(scrapbook: Scrapbook, query: String, numHighlights: Int) async -> [ScrapbookEntry] {
@@ -188,7 +195,6 @@ class AIViewModel: ObservableObject {
     }
   
   
-    
     func getSmartPrompts(journal: Journal, count: Int) async -> [String]? {
         // Get all entries in journal
         let journalPages: [JournalPage] = journal.pages
@@ -231,7 +237,6 @@ class AIViewModel: ObservableObject {
                 model: gptModel!)
             
             let prompts: [String] = response.split(separator: ";").map { String($0) }
-            
             return prompts
         } catch {
             print("Send OpenAI Query Error: \(error.localizedDescription)")
