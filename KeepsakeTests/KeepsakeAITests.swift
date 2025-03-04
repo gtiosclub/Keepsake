@@ -54,7 +54,7 @@ final class KeepsakeAITests {
         let isSaved: Bool = false
         let isShared: Bool = false
         let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .leather)
-        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: [])
+        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: [], currentPage: 1)
         
         // Query AI for prompt
         let prompt = await vm.getSmartPrompts(journal: journal, count: 1)
@@ -75,7 +75,7 @@ final class KeepsakeAITests {
         let isSaved: Bool = false
         let isShared: Bool = false
         let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .leather)
-        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: [])
+        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: [], currentPage: 1)
         
         // Query AI for prompt
         let prompt = await vm.getSmartPrompts(journal: journal, count: 1)
@@ -85,6 +85,23 @@ final class KeepsakeAITests {
         }
         print(prompt)
     }
+    @Test
+    func testStickers() async {
+        let entry: JournalEntry = .init(
+            date: "2/6/2025, 7:45 AM",
+            title: "Morning Reflections",
+            text: "Woke up early today and watched the sunrise. There's something peaceful about the quiet moments before the world wakes up. Hoping to carry this calmness throughout the day.",
+            summary: ""
+        )
+        
+        if let stickerUrl = await vm.stickers(entry: entry) {
+            print("Sticker URL for entry titled \(entry.title): \(stickerUrl)")
+            #expect(!stickerUrl.isEmpty)
+        } else {
+            print("No sticker found for entry titled \(entry.title).")
+            Bool(false)
+        }
+    }
     
     @Test
     func multipleSmartPromptForJournal() async {
@@ -92,17 +109,20 @@ final class KeepsakeAITests {
         let entry1: JournalEntry = .init(
             date: "2/6/2025, 7:45 AM",
             title: "Morning Reflections",
-            text: "Woke up early today and watched the sunrise. There's something peaceful about the quiet moments before the world wakes up. Hoping to carry this calmness throughout the day."
+            text: "Woke up early today and watched the sunrise. There's something peaceful about the quiet moments before the world wakes up. Hoping to carry this calmness throughout the day.",
+            summary: "Woke up early and watched the sunrise."
         )
         let entry2: JournalEntry = .init(
             date: "2/6/2025, 2:15 PM",
             title: "Afternoon Thoughts",
-            text: "Work has been overwhelming, but I managed to step outside for a quick walk. The fresh air helped clear my mind. Reminding myself to take small breaks and breathe."
+            text: "Work has been overwhelming, but I managed to step outside for a quick walk. The fresh air helped clear my mind. Reminding myself to take small breaks and breathe.",
+            summary: "Worked outside for a walk after feeling overwhelmed."
         )
         let entry3: JournalEntry = .init(
             date: "2/6/2025, 10:30 PM",
             title: "End of the Day",
-            text: "Reflecting on today, I feel grateful for the little moments. Even when things felt stressful, I found time to appreciate the beauty around me. Looking forward to a fresh start tomorrow. I would like to journal about my passion for baseball tomorrow, please prompt me to do so."
+            text: "Reflecting on today, I feel grateful for the little moments. Even when things felt stressful, I found time to appreciate the beauty around me. Looking forward to a fresh start tomorrow. I would like to journal about my passion for baseball tomorrow, please prompt me to do so.",
+            summary: "Reflected on the day and expressed gratitude."
         )
         
         // Create journal
@@ -112,8 +132,8 @@ final class KeepsakeAITests {
         let category: String = "Test"
         let isSaved: Bool = false
         let isShared: Bool = false
-        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black)
-        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: [])
+        let template: Template = .init(name: "Test Template", coverColor: .blue, pageColor: .white, titleColor: .black, texture: Texture.leather)
+        let journal: Journal = .init(name: name, createdDate: createdDate, entries: entries, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: [], currentPage: 1)
         
         // Query AI for prompt
         let prompt = await vm.getSmartPrompts(journal: journal, count: 3)
