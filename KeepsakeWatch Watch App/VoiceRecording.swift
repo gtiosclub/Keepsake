@@ -7,83 +7,9 @@
 
 import Foundation
 import SwiftUI
-//
-//struct VoiceRecordingView: View {
-//    @State private var isRecording = false
-//    @State private var elapsedTime: TimeInterval = 0
-//    @State private var timer: Timer?
-//
-//    var formattedTime: String {
-//        let minutes = Int(elapsedTime) / 60
-//        let seconds = Int(elapsedTime) % 60
-//        return String(format: "%02d:%02d", minutes, seconds)
-//    }
-//
-//    var body: some View {
-//        ZStack {
-//            Color.black.edgesIgnoringSafeArea(.all) // Black background like watchOS faces
-//            
-//            VStack(spacing: 8) {
-//                Text(isRecording ? formattedTime : "Tap to Record")
-//                    .font(.system(size: 20, weight: .bold))
-//                    .foregroundColor(.white)
-//                    .monospacedDigit() // Ensures consistent number width
-//                
-//                Button(action: {
-//                    withAnimation(.easeInOut(duration: 0.2)) {
-//                        isRecording.toggle()
-//                        if isRecording {
-//                            startTimer()
-//                        } else {
-//                            stopTimer()
-//                        }
-//                    }
-//                }) {
-//                    recordingButton
-//                }
-//                .buttonStyle(PlainButtonStyle()) // Keeps the button clean
-//            }
-//        }
-//    }
-//    
-//    /// Separated button logic to improve compiler performance
-//    private var recordingButton: some View {
-//        let baseCircle = Circle()
-//            .fill(isRecording ? Color(hex: "#FFADF4").opacity(0.7) : Color(hex: "#FFADF4"))
-//            .frame(width: 70, height: 70)
-//            .overlay(
-//                Circle()
-//                    .stroke(Color.white, lineWidth: 1)
-//            )
-//
-//        let animatedOverlay = Circle()
-//            .stroke(Color.white.opacity(isRecording ? 0.5 : 0), lineWidth: 5)
-//            .scaleEffect(isRecording ? 1.3 : 1.0)
-//            .opacity(isRecording ? 0 : 1)
-//            .animation(isRecording ? Animation.easeOut(duration: 0.8).repeatForever(autoreverses: true) : .default, value: isRecording)
-//
-//        return ZStack {
-//            baseCircle
-//            animatedOverlay
-//        }
-//        .scaleEffect(isRecording ? 1.1 : 1.0) // Slightly larger when recording
-//        .animation(.easeInOut(duration: 0.2), value: isRecording)
-//    }
-//
-//    private func startTimer() {
-//        elapsedTime = 0
-//        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-//            elapsedTime += 1
-//        }
-//    }
-//
-//    private func stopTimer() {
-//        timer?.invalidate()
-//        timer = nil
-//    }
-//}
-//
-//
+
+import AVFoundation
+
 extension Color {
     init(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -99,20 +25,20 @@ extension Color {
         self.init(red: red, green: green, blue: blue)
     }
 }
-//
-//struct VoiceRecordingView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        VoiceRecordingView()
-//    }
-//}
+
+
 
 struct VoiceRecordingView: View {
+//    @ObservedObject private var audioRecorder = AudioRecorder()
     @State private var isRecording = false
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
+
+    private let audioRecording = AudioRecording()
+
     @State private var showDateTimeSelection = false
     @State private var recordedAudio: String? // Placeholder for recorded file name
-    private let audioRecording = AudioRecording()
+
 
     var onRecordingComplete: (Reminder) -> Void
     @Environment(\.dismiss) private var dismiss  // Dismiss when done
@@ -131,12 +57,12 @@ struct VoiceRecordingView: View {
                         isRecording.toggle()
                         if audioRecording.isRecording {
                             audioRecording.stopRecording()
-                            startTimer()
+                            stopTimer()
+
                         } else {
                             audioRecording.startRecording()
-                            stopTimer()
-                            recordedAudio = "AudioFile123.m4a" // Simulate recorded file name
-                            showDateTimeSelection = true  // Show date picker
+                            startTimer()
+
                         }
                     }
                 }) {
@@ -159,9 +85,30 @@ struct VoiceRecordingView: View {
         Circle()
             .fill(isRecording ? Color(hex: "FFADF4").opacity(0.7) : Color(hex: "FFADF4"))
             .frame(width: 70, height: 70)
-            .overlay(Circle().stroke(Color.white, lineWidth: 1))
-            .scaleEffect(isRecording ? 1.1 : 1.0)
-            .animation(.easeInOut(duration: 0.2), value: isRecording)
+
+            .overlay(
+                Circle()
+                    .stroke(Color.white, lineWidth: 1)
+            )
+
+        let animatedOverlay = Circle()
+            .stroke(Color.white.opacity(audioRecording.isRecording ? 0.5 : 0), lineWidth: 5)
+            .scaleEffect(isRecording ? 1.3 : 1.0)
+            .opacity(isRecording ? 0 : 1)
+            .animation(isRecording ? Animation.easeOut(duration: 0.8).repeatForever(autoreverses: true) : .default, value: isRecording)
+
+        return ZStack {
+            Circle()
+                .fill(isRecording ? Color(hex: "#FFADF4").opacity(0.7) : Color(hex: "#FFADF4"))
+                .overlay(
+                    Circle()
+                        .stroke(Color.white, lineWidth: 1)
+                )
+            animatedOverlay
+        }
+        .scaleEffect(isRecording ? 1.1 : 1.0) // Slightly larger when recording
+        .animation(.easeInOut(duration: 0.2), value: isRecording)
+
     }
 
     private func startTimer() {
@@ -188,16 +135,16 @@ struct VoiceRecordingView: View {
 //    var recordedAudio: String
 //    var onSave: (Reminder) -> Void
 //    @Environment(\.dismiss) private var dismiss
-//    
+//
 //    var body: some View {
 //        VStack {
 //            Text("Select Reminder Date & Time")
 //                .font(.headline)
-//            
+//
 //            DatePicker("Date & Time", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
 //                .datePickerStyle(WheelDatePickerStyle()) // ✅ Fixed for watchOS
 //                .padding()
-//            
+//
 //            Button(action: {
 //                let newReminder = Reminder(title: "Voice Note", date: selectedDate, body: recordedAudio)
 //                onSave(newReminder)
@@ -320,6 +267,3 @@ struct DateTimeSelectionView: View {
         return Calendar.current.date(from: components) ?? Date()
     }
 }
-
-
-
