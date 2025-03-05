@@ -12,17 +12,15 @@ class ImageEntity: Entity {
     
     init(image: UIImage) async {
         super.init()
+        // determines scaling of image
         let width: Float = 0.6
-        
         let aspectRatio = image.size.width / image.size.height
         let height = width / Float(aspectRatio)
         
-        
+        // creates a mesh out of the image
         let mesh = MeshResource.generatePlane(width: width, height: height)
-        
-        // Use UnlitMaterial for full brightness
+        // use UnlitMaterial for a bright picture
         var material = UnlitMaterial()
-        
         let fixedImage = fixedOrientationImage(from: image)
         if let cgImage = fixedImage.cgImage {
             do {
@@ -33,8 +31,10 @@ class ImageEntity: Entity {
             }
         }
         
+        // creates an entity to attach the mesh to
         let modelEntity = ModelEntity(mesh: mesh, materials: [material])
         
+        // gives the entity the ability to be interacted with
         modelEntity.components.set([InputTargetComponent(),
                                    CollisionComponent(shapes: [ShapeResource.generateBox(width: width, height: height, depth: 0.2)])])
 
@@ -46,6 +46,7 @@ class ImageEntity: Entity {
     }
 }
 
+// to rotate image --> done by chat so not sure about the specifics
 func fixedOrientationImage(from image: UIImage) -> UIImage {
     if image.imageOrientation == .up {
         return image
