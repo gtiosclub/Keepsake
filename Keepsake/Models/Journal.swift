@@ -24,6 +24,7 @@ class Journal: Book, ObservableObject {
     var pages: [JournalPage]
     var currentPage: Int
     
+    //Full Constructor
     init(name: String, id: UUID, createdDate: String, category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage], currentPage: Int) {
         self.name = name
         self.id = id
@@ -36,15 +37,31 @@ class Journal: Book, ObservableObject {
         self.currentPage = currentPage
     }
     
-    init () {
-        self.name = "Default Journal"
-        self.id = UUID()
-        self.createdDate = Date().description
-        self.category = ""
-        self.isSaved = false
-        self.isShared = false
-        self.template = Template()
-        self.pages = []
-        self.currentPage = 0
+    convenience init(name: String, id: UUID, createdDate: String, entries: [JournalEntry], category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage], currentPage: Int) {
+        self.init(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: pages, currentPage: currentPage)
+    }
+    
+    convenience init(name: String, createdDate: String, entries: [JournalEntry], category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage], currentPage: Int) {
+        self.init(name: name, id: UUID(), createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: pages, currentPage: currentPage)
+    }
+    
+    convenience init () {
+        self.init(name: "Default Journal", id: UUID(), createdDate: Date().description, category: "", isSaved: false, isShared: false, template: Template(), pages: [], currentPage: 0)
+    }
+}
+
+extension Journal {
+    func toDictionary() -> [String: Any] {
+        return [
+            "name": name,
+            "id": id.uuidString,
+            "createdDate": createdDate,
+            "category": category,
+            "isSaved": isSaved,
+            "isShared": isShared,
+            "template": template.toDictionary(),
+            "pages": pages.map { $0.toDictionary() },
+            "currentPage": currentPage
+        ]
     }
 }

@@ -13,3 +13,14 @@ struct JournalEntry: Encodable {
     var text: String
     var summary: String
 }
+
+extension JournalEntry {
+    func toDictionary() -> [String: Any] {
+        return [
+            "date": date,
+            "title": title,
+            "text": text,
+            "summary": summary
+        ]
+    }
+}
