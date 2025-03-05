@@ -10,9 +10,7 @@ import UserNotifications
 @main
 struct KeepsakeWatch_Watch_AppApp: App {
     @WKExtensionDelegateAdaptor(AppDelegate.self) var appDelegate  // This is for watchOS instead of iOS
-    init() {
-            _ = WatchSessionManager.shared
-    }
+    
     var body: some Scene {
         WindowGroup {
             RemindersListView()

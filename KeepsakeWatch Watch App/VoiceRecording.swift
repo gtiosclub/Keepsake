@@ -211,7 +211,7 @@ struct DateTimeSelectionView: View {
                         "audioFilePath": audioFilePath,
                         "reminderDate": finalDate
                     ]
-                    WatchSessionManager.shared.sendMessageToPhone(data: reminderData)
+//                    WatchSessionManager.shared.sendMessageToPhone(data: reminderData)
                 } else {
                     print("No audio file path available!")
                 }

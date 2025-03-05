@@ -89,7 +89,16 @@ struct TextReminder: View {
                     formatter.timeStyle = .long
                     formatter.timeZone = TimeZone.current
                     print("Final Date Selected: (\(formatter.string(from: finalDate))")
-                    
+                    let reminder = Reminder(title: reminderText, date: finalDate, body: reminderText)
+                    do {
+                        let data = try JSONEncoder().encode(reminder)
+                        print("Encoded data: \(data)")  // Check if data is correctly encoded
+                    } catch {
+                        print("Error encoding reminder: \(error)")
+                    }
+                                        // Send the reminder using Connectivity
+                    Connectivity.shared.send(reminder: reminder)
+                    reminderText = ""
                     
                 } label: {
                     Text("Confirm")

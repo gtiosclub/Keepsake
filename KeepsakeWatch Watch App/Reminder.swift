@@ -9,11 +9,12 @@ import Foundation
 import SwiftUI
 //
 //// Reminder Model
-struct Reminder: Identifiable {
+struct Reminder: Identifiable, Codable {
     let id = UUID()
     var title: String
     var date: Date
     var body: String
+    
 }
 
 //// Reminders View
@@ -187,6 +188,7 @@ struct RemindersListView: View {
                 Spacer()
                 
                 // Custom button for navigating to Voice Recording
+#if os(watchOS)
                 NavigationLink(
                     destination: Choice(reminders: reminders, showVoiceRecording: showVoiceRecording),
                     label: {
@@ -198,9 +200,11 @@ struct RemindersListView: View {
                             .shadow(radius: 10)
                     }
                 )
-                
+
                 .buttonStyle(PlainButtonStyle()) // To remove default button style
+#endif
             }
+
             .background(Color.black.edgesIgnoringSafeArea(.all)) // Black background
             .navigationTitle("Reminders")
             
