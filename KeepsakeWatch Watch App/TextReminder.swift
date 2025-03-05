@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TextReminder: View {
-    
     var onComplete: (Reminder) -> Void
     @State private var selectedDate = Date()
     @State private var selectedHour = Calendar.current.component(.hour, from: Date()) % 12
@@ -31,7 +30,6 @@ struct TextReminder: View {
                     }.pickerStyle(WheelPickerStyle())
                         .frame(width: 60)
                     
-                    
                     Picker("Day", selection: Binding(
                         get: { Calendar.current.component(.day, from: selectedDate) },
                         set: { day in selectedDate = updateDateComponent(.day, value: day) }
@@ -51,7 +49,6 @@ struct TextReminder: View {
                         }
                     }.pickerStyle(WheelPickerStyle())
                         .frame(width: 60, height: 40)
-                    
                 }
                 
                 // Time Selection: Hour, Minute, AM/PM
@@ -76,49 +73,28 @@ struct TextReminder: View {
                     }.pickerStyle(WheelPickerStyle())
                         .frame(width: 60, height: 40)
                 }
-            }
+                
                 TextField("Enter Reminder Text", text: $reminderText)
                 Button {
                     let finalDate = combineDateAndTime()
-                    
-                    // Create a dictionary with the reminder details
-                    
-                    
-                    let formatter = DateFormatter()
-                    formatter.dateStyle = .long
-                    formatter.timeStyle = .long
-                    formatter.timeZone = TimeZone.current
-                    print("Final Date Selected: (\(formatter.string(from: finalDate))")
                     let reminder = Reminder(title: reminderText, date: finalDate, body: reminderText)
-                    do {
-                        let data = try JSONEncoder().encode(reminder)
-                        print("Encoded data: \(data)")  // Check if data is correctly encoded
-                    } catch {
-                        print("Error encoding reminder: \(error)")
-                    }
-                                        // Send the reminder using Connectivity
-                    Connectivity.shared.send(reminder: reminder)
-                    reminderText = ""
-                    
+                    onComplete(reminder) //sending to choice
                 } label: {
                     Text("Confirm")
                         .cornerRadius(25)
                 }
-                
-                
                 .padding()
-            
+            }
         }
     }
 
-    /// 🛠️ Helper function to update date components safely
+    // Helper functions for updating date and combining date & time
     private func updateDateComponent(_ component: Calendar.Component, value: Int) -> Date {
         var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
         components.setValue(value, for: component)
         return Calendar.current.date(from: components) ?? selectedDate
     }
 
-    /// 🛠️ Combines the selected date and time into a full Date object
     private func combineDateAndTime() -> Date {
         var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
         if isAM {
@@ -126,9 +102,7 @@ struct TextReminder: View {
         } else {
             components.hour = (selectedHour == 12) ? 12 : selectedHour + 12
         }
-       
         components.minute = selectedMinute
         return Calendar.current.date(from: components) ?? Date()
     }
 }
-

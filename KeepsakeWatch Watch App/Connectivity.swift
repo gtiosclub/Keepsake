@@ -169,7 +169,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
         
             print("watchOS WCSession activation state: \(WCSession.default.activationState.rawValue)") // On watchOS side
 
-                WCSession.default.sendMessage(message, replyHandler: { response in
+            WCSession.default.sendMessage(message, replyHandler: { response in
                         print("Message sent successfully")
                     }) { error in
                         print("Error sending message: \(error.localizedDescription)")

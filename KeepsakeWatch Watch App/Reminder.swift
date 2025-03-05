@@ -190,7 +190,15 @@ struct RemindersListView: View {
                 // Custom button for navigating to Voice Recording
 #if os(watchOS)
                 NavigationLink(
-                    destination: Choice(reminders: reminders, showVoiceRecording: showVoiceRecording),
+                                    destination: Choice(
+                                        reminders: reminders,
+                                        showVoiceRecording: showVoiceRecording,
+                                        onComplete: { newReminder in
+                                            // Send reminder to Connectivity after it's added
+                                            Connectivity.shared.send(reminder: newReminder)
+                                            reminders.append(newReminder)
+                                        }
+                                    ),
                     label: {
                         Image(systemName: "plus.circle.fill")
                             .foregroundColor(Color(hex: "FFADF4"))
@@ -211,3 +219,53 @@ struct RemindersListView: View {
         }
     }
 }
+//struct RemindersListView: View {
+//    @State var reminders: [Reminder] = [
+//        Reminder(title: "Sample Reminder", date: Date(), body: "Test Reminder Body")
+//    ]
+//    @State private var showVoiceRecording = false
+//    
+//    var body: some View {
+//        NavigationStack {
+//            VStack {
+//                List {
+//                    ForEach(reminders) { reminder in
+//                        VStack(alignment: .leading) {
+//                            Text(reminder.title)
+//                                .font(.headline)
+//                            Text("\(reminder.date.formatted(date: .abbreviated, time: .shortened))")
+//                                .font(.subheadline)
+//                                .foregroundColor(.gray)
+//                        }
+//                        .padding(.vertical, 5)
+//                    }
+//                }
+//                .listStyle(PlainListStyle())
+//                .toolbar {
+//                    ToolbarItem(placement: .automatic) {
+//                        Text("Reminders")
+//                            .font(.title3)
+//                            .fontWeight(.bold)
+//                            
+//                    }
+//#if os(watchOS)
+//                    ToolbarItem(placement: .automatic) {
+//
+//                        NavigationLink(
+//                            destination: Choice(reminders: $reminders),
+//                            label: {
+//                                Image(systemName: "plus.circle.fill")
+//                                    .foregroundColor(Color(hex: "FFADF4"))
+//                                    .font(.title2)
+//                            })
+//  
+//                        
+//                    }
+//                }
+//                #endif
+//            }
+//            .background(Color.black.edgesIgnoringSafeArea(.all)) // Black background
+//            .navigationTitle("Reminders")
+//        }
+//    }
+//}
