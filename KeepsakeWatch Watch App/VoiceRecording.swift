@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 
 import AVFoundation
+import WatchConnectivity
 
 extension Color {
     init(hex: String) {
@@ -196,14 +197,29 @@ struct DateTimeSelectionView: View {
             
             Button {
                 let finalDate = combineDateAndTime()
+                
+                // Create a dictionary with the reminder details
+                
+                    
                 let formatter = DateFormatter()
                 formatter.dateStyle = .long
                 formatter.timeStyle = .long
                 formatter.timeZone = TimeZone.current
                 print("Final Date Selected: (\(formatter.string(from: finalDate))")
+                if let audioFilePath = recordedAudio {
+                    let reminderData: [String: Any] = [
+                        "audioFilePath": audioFilePath,
+                        "reminderDate": finalDate
+                    ]
+                    WatchSessionManager.shared.sendMessageToPhone(data: reminderData)
+                } else {
+                    print("No audio file path available!")
+                }
+
             } label: {
                 Text("Confirm")
             }
+
             
             .padding()
         }
