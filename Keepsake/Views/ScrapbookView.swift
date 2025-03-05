@@ -7,6 +7,7 @@
 
 import SwiftUI
 import RealityKit
+import PhotosUI
 
 struct ScrapbookView: View {
     @State var currentScale: CGFloat = 1.0
@@ -14,11 +15,16 @@ struct ScrapbookView: View {
     @State var currentRotation: Angle = .zero
     @State var finalRotation: Angle = .zero
     @GestureState private var dragOffset: CGPoint = .zero
-    @State var isClicked: Bool = false
+    @State var isTextClicked: Bool = false
+    @State var isImageClicked: Bool = false
     @State var anchor: AnchorEntity? = nil
     @State var selectedEntity: Entity? = nil
     @State var counter: Int = 0
     @State var entityPos: [UnitPoint] = []
+    
+    @State var selectedItem: PhotosPickerItem?
+    @State var currImage: UIImage?
+    @State var images: [UIImage] = []
 
 
     var body: some View {
@@ -32,19 +38,33 @@ struct ScrapbookView: View {
                 content.add(newAnchor)
 
             } update: { content in
-                if isClicked {
+                if isTextClicked {
                     Task {
-                        let newTextbox = await TextBoxEntity(text: "Hello World Again")
+                        let newTextbox = await TextBoxEntity(text: "[Enter text]")
                         newTextbox.name = "\(counter)"
                         entityPos.append(.zero)
                         counter += 1
                         self.anchor?.addChild(newTextbox)
                     }
                 }
+                if isImageClicked {
+                    Task {
+                        await loadImage()
+                        if let validImage = currImage {
+                            let newImage = await ImageEntity(image: validImage)
+                            newImage.name = "\(counter)"
+                            entityPos.append(.zero)
+                            counter += 1
+                            self.anchor?.addChild(newImage)
+                            isImageClicked = false
+                        } else {
+                            print("No image loaded")
+                        }
+                    }
+                }
             }
             .gesture(SpatialTapGesture(coordinateSpace: .local).targetedToAnyEntity()
                 .onEnded{ value in
-                    print("tapped")
                     if let selected = value.hitTest(point: value.location, in: .local).first?.entity.parent {
                         selectedEntity = selected
                     }
@@ -89,29 +109,36 @@ struct ScrapbookView: View {
                     }
             )
 
-            // Floating Toolbar at the Bottom
             VStack {
+//                HStack {
+//                    Spacer()
+//                    Button {
+//                        
+//                    } label : {
+//                        Text("Edit \(selectedEntity?.name ?? "")")
+//                    }.disabled(selectedEntity == nil)
+//                }
                 Spacer() // Push toolbar to the bottom
                 
                 HStack {
-                    Button {
-
-                    } label: {
+                    PhotosPicker (selection: $selectedItem, matching: .images){
                         Image(systemName: "photo")
                             .font(.title)
                             .padding()
                             .background(Color.white)
                             .clipShape(Circle())
+                    }.onChange(of: selectedItem) { _, _ in
+                        isImageClicked = true
                     }
                     Spacer()
                     Button {
-                        isClicked = true
+                        isTextClicked = true
                         Task {
                             try await Task.sleep(nanoseconds: 10_000)
-                            isClicked = false
+                            isTextClicked = false
                         }
                     } label: {
-                        Image(systemName: "doc.text")
+                        Image(systemName: "note.text.badge.plus")
                             .font(.title)
                             .padding()
                             .background(Color.white)
@@ -126,5 +153,13 @@ struct ScrapbookView: View {
             }
         }
         .edgesIgnoringSafeArea(.all) // Ensures toolbar overlays the RealityView
+    }
+    
+    private func loadImage() async {
+        if let data = try? await selectedItem?.loadTransferable(type: Data.self) {
+            if let uiImage = UIImage(data: data) {
+                currImage = uiImage
+            }
+        }
     }
 }

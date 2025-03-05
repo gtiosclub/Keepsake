@@ -27,7 +27,7 @@ class TextBoxEntity: Entity {
         textComponent.cornerRadius = 100
         
         // Set insets for now, need to figure out how to center text later
-        textComponent.edgeInsets = UIEdgeInsets(top: 100, left: 200, bottom: 100, right: 200)
+        textComponent.edgeInsets = UIEdgeInsets(top: 300, left: 500, bottom: 100, right: 200)
         
         // TextComponent takes in a Attributed String instead of a normal string so needs extra work to instantiate
         var attributedtext = AttributedString(text)
