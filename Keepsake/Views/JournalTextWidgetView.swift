@@ -25,7 +25,9 @@ struct JournalTextWidgetView: View {
                     Rectangle()
                         .opacity(0)
                         .overlay{
-                            Text("Summary: \(entry.summary)")
+                            Text("\(entry.summary)")
+                                .italic()
+                                .lineLimit(nil)
                                 .multilineTextAlignment(.leading)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                         }.padding(.leading, 10)
