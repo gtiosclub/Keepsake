@@ -23,7 +23,7 @@ struct JournalCover: View {
                 .shadow(radius: 3)
                 .zIndex(-3)
                 .overlay(
-                    Image("leather") // Load texture image from assets
+                    Image("\(book.template.texture)") // Load texture image from assets
                         .resizable()
                         .frame(width: UIScreen.main.bounds.width * 0.1, height: UIScreen.main.bounds.height * 0.56)
                         .offset(x: UIScreen.main.bounds.width * -0.42)
@@ -45,7 +45,7 @@ struct JournalCover: View {
                     .fill(book.template.coverColor)
                     .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
                     .overlay(
-                        Image("leather") // Load texture image from assets
+                        Image("\(book.template.texture)") // Load texture image from assets
                             .resizable()
                             .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -64,7 +64,7 @@ struct JournalCover: View {
     }
 }
 #Preview {
-    JournalCover(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .white, titleColor: .black), pages: []), degrees: 0)
+    JournalCover(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .white, titleColor: .black), pages: [], currentPage: 2), degrees: 0)
 }
 
 //Color(red: 0.96, green: 0.5, blue: 0.5)

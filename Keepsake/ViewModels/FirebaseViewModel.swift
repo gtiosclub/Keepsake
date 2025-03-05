@@ -50,4 +50,17 @@ class FirebaseViewModel: ObservableObject {
     
     // Add an entry into Firebase
     
+    func getAPIKeys() async throws -> [String: String] {
+        var apimap: [String: String] = [:]
+        
+        let getdocs = try await db.collection("API_KEYS").getDocuments()
+        
+        for doc in getdocs.documents {
+            if let key = doc.data()["key"] as? String {
+                apimap[doc.documentID] = key
+            }
+        }
+        
+        return apimap
+    }
 }
