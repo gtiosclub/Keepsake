@@ -157,7 +157,7 @@ struct RemindersView_Previews: PreviewProvider {
 //}
 //
 struct RemindersListView: View {
-    @State private var reminders: [Reminder] = [
+    @State var reminders: [Reminder] = [
         Reminder(title: "Sample Reminder", date: Date(), body: "Test Reminder Body")
     ]
     @State private var showVoiceRecording = false
@@ -165,9 +165,9 @@ struct RemindersListView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                Text("Reminders")
-                    .font(.body)
-                    .foregroundColor(.white)
+//                Text("Reminders")
+//                    .font(.body)
+//                    .foregroundColor(.white)
                 
                 ForEach(reminders) { reminder in
                     VStack(alignment: .leading) {
@@ -177,9 +177,9 @@ struct RemindersListView: View {
                         Text("\(reminder.date.formatted(date: .abbreviated, time: .shortened))")
                             .font(.subheadline)
                             .foregroundColor(.gray)
-                        Text(reminder.body)
-                            .font(.title3)
-                            .foregroundColor(.white)
+//                        Text(reminder.body)
+//                            .font(.title3)
+//                            .foregroundColor(.white)
                     }
                     .padding(.vertical, 5)
                 }
@@ -188,10 +188,7 @@ struct RemindersListView: View {
                 
                 // Custom button for navigating to Voice Recording
                 NavigationLink(
-                    destination: VoiceRecordingView { recordedFile in
-                        reminders.append(recordedFile)
-                        showVoiceRecording = false
-                    },
+                    destination: Choice(reminders: reminders, showVoiceRecording: showVoiceRecording),
                     label: {
                         Image(systemName: "plus.circle.fill")
                             .foregroundColor(Color(hex: "FFADF4"))
@@ -201,10 +198,12 @@ struct RemindersListView: View {
                             .shadow(radius: 10)
                     }
                 )
+                
                 .buttonStyle(PlainButtonStyle()) // To remove default button style
             }
             .background(Color.black.edgesIgnoringSafeArea(.all)) // Black background
             .navigationTitle("Reminders")
+            
         }
     }
 }

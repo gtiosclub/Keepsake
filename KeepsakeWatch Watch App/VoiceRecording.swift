@@ -135,7 +135,7 @@ struct VoiceRecordingView: View {
 
 
 struct DateTimeSelectionView: View {
-    let recordedAudio: String?  // Or whatever type it is
+    let recordedAudio: String?
     var onComplete: (Reminder) -> Void
     @State private var selectedDate = Date()
     @State private var selectedHour = Calendar.current.component(.hour, from: Date()) % 12
