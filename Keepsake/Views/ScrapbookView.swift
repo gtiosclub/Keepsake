@@ -10,22 +10,32 @@ import RealityKit
 import PhotosUI
 
 struct ScrapbookView: View {
+    // variables for editing entity positions
     @State var currentScale: CGFloat = 1.0
     @State var finalScale: CGFloat = 1.0
     @State var currentRotation: Angle = .zero
     @State var finalRotation: Angle = .zero
-    @GestureState private var dragOffset: CGPoint = .zero
+    
+    // connects the buttons in tool bar to functionality in RealityKit's update closure
     @State var isTextClicked: Bool = false
     @State var isImageClicked: Bool = false
+    
+    // anchor for all entities in RealityView
     @State var anchor: AnchorEntity? = nil
+    
+    // entity that is tapped on and currently "selected"
     @State var selectedEntity: Entity? = nil
+    
+    // counter value is used to identify entities
     @State var counter: Int = 0
+    
+    // array that holds the drag positions for each entity
     @State var entityPos: [UnitPoint] = []
     
+    // for adding images
     @State var selectedItem: PhotosPickerItem?
     @State var currImage: UIImage?
     @State var images: [UIImage] = []
-
 
     var body: some View {
         ZStack {
@@ -33,11 +43,13 @@ struct ScrapbookView: View {
             RealityView { content in
                 content.camera = .spatialTracking
                 
+                // creates new anchor and makes that "global" anchor
                 let newAnchor = AnchorEntity(world: SIMD3<Float>(x: 0, y: 0, z: -2))
                 self.anchor = newAnchor
                 content.add(newAnchor)
 
             } update: { content in
+                // creates a new textbox when the button in toolbar is pressed
                 if isTextClicked {
                     Task {
                         let newTextbox = await TextBoxEntity(text: "[Enter text]")
@@ -47,6 +59,7 @@ struct ScrapbookView: View {
                         self.anchor?.addChild(newTextbox)
                     }
                 }
+                // creates a new image when the button in toolbar is pressed
                 if isImageClicked {
                     Task {
                         await loadImage()
@@ -63,17 +76,28 @@ struct ScrapbookView: View {
                     }
                 }
             }
+            // Tap gesture that changes the selectedEntity to the entity you click on
             .gesture(SpatialTapGesture(coordinateSpace: .local).targetedToAnyEntity()
                 .onEnded{ value in
+                    /*
+                     hitTest creates a ray at value.location and returns a list of CollisionCastHits that it encounters
+                     We then use the first CollisionCastHit and get it's entity's parent
+                     We get the parent instead of just the entity because
+                     the entity will be the collsion shape attached to the entity instead of the entity itself
+                     */
                     if let selected = value.hitTest(point: value.location, in: .local).first?.entity.parent {
                         selectedEntity = selected
                     }
                     print(selectedEntity?.name ?? "No Entity Selected")
                 })
 
-            
+            // drag gesture to move the entities around in a sphere-like shape
+            // gets change in 2D drag distance and converts that into 3D transformations
             .gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
                 .onChanged { value in
+                    // Gets the last known position for the selected entity and edits from there
+                    // note the position is not its 3D position, its the 2D location of where the dragGesture ended
+                    // the name of an entity is its index in the position array
                     let position = entityPos[Int(selectedEntity?.name ?? "0") ?? 0]
                     let dy = Float(value.translation.height + position.y) * 0.002
                     let maxAngle: Float = .pi / 2.5  // 45 degrees in radians
@@ -110,6 +134,7 @@ struct ScrapbookView: View {
             )
 
             VStack {
+//                This is for the future to create an edit button based on what entity is selected
 //                HStack {
 //                    Spacer()
 //                    Button {
@@ -118,7 +143,7 @@ struct ScrapbookView: View {
 //                        Text("Edit \(selectedEntity?.name ?? "")")
 //                    }.disabled(selectedEntity == nil)
 //                }
-                Spacer() // Push toolbar to the bottom
+                Spacer()
                 
                 HStack {
                     PhotosPicker (selection: $selectedItem, matching: .images){
@@ -128,11 +153,15 @@ struct ScrapbookView: View {
                             .background(Color.white)
                             .clipShape(Circle())
                     }.onChange(of: selectedItem) { _, _ in
+                        // this is what makes the ImageEntity created in the update closure of RealityView
                         isImageClicked = true
                     }
                     Spacer()
                     Button {
+                        // this is what makes the TextBoxEntity created in the update closure of RealityView
                         isTextClicked = true
+                        
+                        // essentially toggles isTextClicked very fast, theres probably a more elegent way to do this
                         Task {
                             try await Task.sleep(nanoseconds: 10_000)
                             isTextClicked = false
@@ -155,6 +184,7 @@ struct ScrapbookView: View {
         .edgesIgnoringSafeArea(.all) // Ensures toolbar overlays the RealityView
     }
     
+    // function to get a UIImage out of a PhotosPickerItem
     private func loadImage() async {
         if let data = try? await selectedItem?.loadTransferable(type: Data.self) {
             if let uiImage = UIImage(data: data) {
