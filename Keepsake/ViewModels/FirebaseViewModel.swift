@@ -41,16 +41,8 @@ class FirebaseViewModel: ObservableObject {
     
     // Add a Journal Model into Firebase
     func addJournal(journal: Journal) async -> Bool {
-        let docRef = db.collection("USERS").document("Test")
-        var data: [String: Any] = [:]
-        data["id"] = journal.id
-        data["title"] = journal.title
-        data["entries"] = journal.entries
-        do {
-            try await docRef.setData(data)
-        } catch {
-            
-        }
+        let journal_reference = db.collection("Journals").document()
+        return false
     }
     
     // Get a Journal Document from Firebase and load it into a Journal Model
