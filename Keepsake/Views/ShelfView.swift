@@ -32,7 +32,7 @@ struct ShelfView: View {
         if !show {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("Welcome back, Name")
+                    Text("Welcome back, Rik")
                         .font(.title3)
                         .foregroundColor(.gray)
                         .bold()
@@ -40,10 +40,12 @@ struct ShelfView: View {
                     Text("What is on your mind today?")
                         .font(.largeTitle)
                         .bold()
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(nil) // Allow multiple lines
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.horizontal, 30)
                 .padding(.top, 20)
-                .padding(.bottom, 20)
                 
                 //Journals
                 ScrollView(.horizontal, showsIndicators: false) {
