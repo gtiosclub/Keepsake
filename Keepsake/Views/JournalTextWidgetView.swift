@@ -30,6 +30,7 @@ struct JournalTextWidgetView: View {
                                 .lineLimit(nil)
                                 .multilineTextAlignment(.leading)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                                .fixedSize(horizontal: false, vertical: true)
                         }.padding(.leading, 10)
                         .padding(.trailing, 2)
                     Spacer()
