@@ -8,19 +8,10 @@
 import SwiftUI
 
 struct WidgetView: View {
-    var width: CGFloat = UIScreen.main.bounds.width * 0.2
-    var padding: CGFloat = UIScreen.main.bounds.width * 0.02
-    var entries: [JournalEntry] = [
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 2, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: true, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 2, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: true, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 2, height: 2, isFake: false, color: [0.5,0.5,0.5]),
-    ]
+    var width: CGFloat
+    var height: CGFloat
+    var padding: CGFloat
+    var entries: [JournalEntry]
     var body: some View {
         let gridItems = [GridItem(.fixed(width), spacing: 10, alignment: .leading),
                          GridItem(.fixed(width), spacing: UIScreen.main.bounds.width * 0.02, alignment: .leading),]
@@ -28,7 +19,7 @@ struct WidgetView: View {
         LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
             ForEach(Array(zip(entries.indices, entries)), id: \.0) { index, widget in
                 
-                EntryView(entry: widget, sideLen: width).opacity(widget.isFake ? 0 : 1)
+                EntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
                 
             }
         }
@@ -38,7 +29,8 @@ struct WidgetView: View {
 
 struct EntryView: View {
     var entry: JournalEntry
-    var sideLen: CGFloat
+    var width: CGFloat
+    var height: CGFloat
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 10)
@@ -46,7 +38,7 @@ struct EntryView: View {
                 .fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]))
                 .frame(width: entry.frameWidth, height: entry.frameHeight)
                 .opacity(entry.isFake ? 0 : 1)
-                .frame(height: sideLen, alignment: .top)
+                .frame(height: height, alignment: .top)
             VStack {
                 Text(entry.title)
                     .frame(width: entry.frameWidth - 10)
@@ -68,5 +60,15 @@ struct EntryView: View {
 }
 
 #Preview {
-    WidgetView()
+    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, entries: [
+        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
+        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
+        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 2, height: 1, isFake: false, color: [0.5,0.5,0.5]),
+        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: true, color: [0.5,0.5,0.5]),
+        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
+        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 2, isFake: false, color: [0.5,0.5,0.5]),
+        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
+        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: true, color: [0.5,0.5,0.5]),
+        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 2, height: 2, isFake: false, color: [0.5,0.5,0.5]),
+    ])
 }
