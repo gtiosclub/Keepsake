@@ -36,6 +36,10 @@ struct ScrapbookView: View {
     @State var selectedItem: PhotosPickerItem?
     @State var currImage: UIImage?
     @State var images: [UIImage] = []
+    
+    // for editing text
+    @State private var textInput: String = "[Enter text]"
+    @State var isEditing: Bool = false
 
     var body: some View {
         ZStack {
@@ -134,16 +138,35 @@ struct ScrapbookView: View {
             )
 
             VStack {
-//                This is for the future to create an edit button based on what entity is selected
-//                HStack {
-//                    Spacer()
-//                    Button {
-//                        
-//                    } label : {
-//                        Text("Edit \(selectedEntity?.name ?? "")")
-//                    }.disabled(selectedEntity == nil)
-//                }
                 Spacer()
+                if isEditing {
+                    VStack {
+                        TextField("Edit Text", text: $textInput)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding()
+                            .background(Color.white.opacity(0.8))
+                            .cornerRadius(10)
+                            .onSubmit {
+                                updateTextBox()
+                                isEditing = false
+                                textInput = "[Enter text]"
+                            }
+    
+                        Button("Done") {
+                            updateTextBox()
+                            isEditing = false
+                            textInput = "[Enter text]"
+                        }
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
+                    .frame(maxWidth: 250)
+                    .background(Color.black.opacity(0.6))
+                    .cornerRadius(15)
+                    .padding()
+                }
                 
                 HStack {
                     PhotosPicker (selection: $selectedItem, matching: .images){
@@ -173,15 +196,26 @@ struct ScrapbookView: View {
                             .background(Color.white)
                             .clipShape(Circle())
                     }
+                    Spacer()
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10.0)
+                            .frame(width: 80, height: 40)
+                        Button {
+                            isEditing = true
+                            print("pressed")
+                        } label : {
+                            Text("Edit \(selectedEntity?.name ?? "")")
+                                .foregroundStyle(.black)
+                        }.disabled(selectedEntity == nil)
+                    }
                 }
                 .padding()
                 .frame(width: 250, height: 100)
                 .background(Color.white.opacity(0.5)) // Semi-transparent background
                 .clipShape(RoundedRectangle(cornerRadius: 20))
-                .padding(.bottom, 100) // Lifted up slightly
+                .padding(.bottom, 20) // Lifted up slightly
             }
         }
-        .edgesIgnoringSafeArea(.all) // Ensures toolbar overlays the RealityView
     }
     
     // function to get a UIImage out of a PhotosPickerItem
@@ -190,6 +224,13 @@ struct ScrapbookView: View {
             if let uiImage = UIImage(data: data) {
                 currImage = uiImage
             }
+        }
+    }
+    
+    
+    private func updateTextBox() {
+        if let editingTextEntity = selectedEntity as? TextBoxEntity {
+            editingTextEntity.updateText(textInput)
         }
     }
 }
