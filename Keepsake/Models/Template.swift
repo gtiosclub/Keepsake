@@ -10,6 +10,17 @@ import SwiftUICore
 
 enum Texture {
     case leather
+    case bears
+    case blackLeather
+    case cat
+    case flower1
+    case flower2
+    case flower3
+    case garden
+    case green
+    case redLeather
+    case snoopy
+    case stars
 }
 
 struct Template {
