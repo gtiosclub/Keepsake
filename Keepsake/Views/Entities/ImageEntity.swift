@@ -21,8 +21,10 @@ class ImageEntity: Entity {
         let mesh = MeshResource.generatePlane(width: width, height: height)
         // use UnlitMaterial for a bright picture
         var material = UnlitMaterial()
+        material.blending = .transparent(opacity: PhysicallyBasedMaterial.Opacity.init(floatLiteral: 1))
         let fixedImage = fixedOrientationImage(from: image)
-        if let cgImage = fixedImage.cgImage {
+        let roundedImage = roundedImage(from: fixedImage, cornerRadius: 500)
+        if let cgImage = roundedImage.cgImage {
             do {
                 let textureResource = try await TextureResource(image: cgImage, options: .init(semantic: .color))
                 material.color = .init(texture: MaterialParameters.Texture(textureResource))
@@ -58,4 +60,23 @@ func fixedOrientationImage(from image: UIImage) -> UIImage {
     UIGraphicsEndImageContext()
     
     return normalizedImage ?? image
+}
+
+func roundedImage(from image: UIImage, cornerRadius: CGFloat) -> UIImage {
+    // Begin a graphics context
+    UIGraphicsBeginImageContextWithOptions(image.size, false, image.scale)
+    let rect = CGRect(origin: .zero, size: image.size)
+    
+    // Create a path with desired rounded corners and clip to it
+    let path = UIBezierPath(roundedRect: rect, cornerRadius: cornerRadius)
+    path.addClip()
+    
+    // Draw the image into the context
+    image.draw(in: rect)
+    
+    // Get the new image
+    let rounded = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+    
+    return rounded ?? image
 }
