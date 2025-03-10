@@ -7,7 +7,7 @@
 
 import Foundation
 
-class JournalPage {
+class JournalPage: Encodable {
     var number: Int
     var entries: [JournalEntry]
     var realEntryCount: Int
@@ -25,4 +25,13 @@ class JournalPage {
         self.realEntryCount = 0
     }
     
+}
+
+extension JournalPage {
+    func toDictionary() -> [String: Any] {
+        return [
+            "number": number,
+            "entries": entries.map { $0.toDictionary() } // Assuming JournalEntry has toDictionary()
+        ]
+    }
 }

@@ -68,3 +68,14 @@ struct JournalEntry: Encodable {
         self.color = color
     }
 }
+
+extension JournalEntry {
+    func toDictionary() -> [String: Any] {
+        return [
+            "date": date,
+            "title": title,
+            "text": text,
+            "summary": summary
+        ]
+    }
+}

@@ -39,6 +39,26 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    // Add a Journal Model into Firebase
+    func addJournal(journal: Journal) async -> Bool {
+        let journal_reference = db.collection("JOURNALS").document(journal.id.uuidString)
+        do {
+            let journalData = journal.toDictionary()
+            try await journal_reference.setData(journalData)
+            return true
+        } catch {
+            print("Error adding journal: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    // Get a Journal Document from Firebase and load it into a Journal Model
+    func getJounralFromFirebase() async -> Journal {
+        return Journal()
+    }
+    
+    // Add an entry into Firebase
+    
     func getAPIKeys() async throws -> [String: String] {
         var apimap: [String: String] = [:]
         
@@ -52,5 +72,4 @@ class FirebaseViewModel: ObservableObject {
         
         return apimap
     }
-    
 }
