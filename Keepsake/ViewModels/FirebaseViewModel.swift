@@ -53,7 +53,9 @@ class FirebaseViewModel: ObservableObject {
     }
     
     // Get a Journal Document from Firebase and load it into a Journal Model
-    
+    func getJounralFromFirebase() async -> Journal {
+        return Journal()
+    }
     
     // Add an entry into Firebase
     

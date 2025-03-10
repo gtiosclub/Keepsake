@@ -32,7 +32,7 @@ final class ViewModelUnitTests: XCTestCase {
     }
     
     func testAddJournalToFirebase() async {
-        let test_journal = Journal(name: "Journal 1", id: UUID(), createdDate: "2/2/25", category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .red, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 2)
+        let test_journal = Journal(name: "Connor Test Journal", id: UUID(), createdDate: "2/2/25", category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .red, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 2)
         
         let result = await vm.addJournal(journal: test_journal)
         XCTAssertTrue(result)
