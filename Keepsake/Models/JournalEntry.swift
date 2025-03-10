@@ -65,6 +65,6 @@ struct JournalEntry: Encodable {
         self.width = width
         self.height = height
         self.isFake = false
-        self.color = [0.5, 0.5, 0.5]
+        self.color = color
     }
 }
