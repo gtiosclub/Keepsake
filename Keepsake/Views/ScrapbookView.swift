@@ -198,14 +198,15 @@ struct ScrapbookView: View {
                     }
                     Spacer()
                     ZStack {
-                        RoundedRectangle(cornerRadius: 10.0)
-                            .frame(width: 80, height: 40)
+//                        RoundedRectangle(cornerRadius: 10.0)
+//                            .frame(width: 80, height: 40)
+//                            .background(Color.white)
                         Button {
                             isEditing = true
                             print("pressed")
                         } label : {
                             Text("Edit \(selectedEntity?.name ?? "")")
-                                .foregroundStyle(.black)
+//                                .foregroundStyle(.black)
                         }.disabled(selectedEntity == nil)
                     }
                 }
