@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct AddEntryButtonView: View {
     @State var isExpanded: Bool = false
@@ -14,27 +15,34 @@ struct AddEntryButtonView: View {
     @ObservedObject var userVM: UserViewModel
     @Binding var displayPage: Int
     @Binding var selectedEntry: Int
+    @State var selectedItems = [PhotosPickerItem]()
+    @State var selectedImages = [UIImage]()
     var body: some View {
         VStack {
             if !isExpanded {
-                Button(action: {
-                    withAnimation {
-                        isExpanded.toggle()
+                if selectedImages.count == 0 {
+                    Button(action: {
+                        withAnimation {
+                            isExpanded.toggle()
+                        }
+                    }) {
+                        Image(systemName: "plus.circle.fill")
+                            .resizable()
+                            .frame(width: 45, height: 45)
+                            .foregroundColor(.red)
+                        
                     }
-                }) {
-                    Image(systemName: "plus.circle.fill")
-                        .resizable()
-                        .frame(width: 45, height: 45)
-                        .foregroundColor(.red)
-
+                } else {
+                    SelectedPhotoView(journal: journal, displayPage: displayPage, selectedEntry: selectedEntry, userVM: userVM, selectedImages: $selectedImages, selectedItems: $selectedItems)
                 }
             }
             if isExpanded {
+                
                 HStack {
                     Button(action: {
                         
                         if journal.pages[journal.currentPage].entries.count <= 8 {
-                            selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                            selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
                         } else {
                             //handle too many entries
                         }
@@ -45,25 +53,44 @@ struct AddEntryButtonView: View {
                             .resizable()
                             .frame(width: 45, height: 45)
                         .foregroundColor(.black)}
-                    Button(action: {}) {Image(systemName: "photo.fill")
+                    PhotosPicker(selection: $selectedItems, label: {
+                        Image(systemName: "photo.fill")
                             .resizable()
                             .frame(width: 45, height: 45)
-                        .foregroundColor(.blue)}
-                    Button(action:{}) {Image(systemName: "face.smiling.inverse")
+                            .foregroundColor(.blue)
+                    }).onChange(of: selectedItems) {
+                        Task {
+                            selectedImages.removeAll()
+                            for item in selectedItems {
+                                if let data = try? await item.loadTransferable(type: Data.self),
+                                   let uiImage = UIImage(data: data) {
+                                    selectedImages.append(uiImage)
+                                }
+                            }
+                        }
+                        withTransaction(Transaction(animation: .none)) {
+                            isExpanded.toggle()
+                        }
+                    }
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "face.smiling.inverse")
                             .resizable()
                             .frame(width: 45, height: 45)
-                        .foregroundColor(.yellow)}
+                            .foregroundColor(.yellow)
+                    }
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.3)) {
-                                        isExpanded.toggle()
-                                    }
+                            isExpanded.toggle()
+                        }
                     }) {
                         Image(systemName: "xmark.circle.fill")
                             .resizable()
                             .frame(width: 45, height: 45)
                         .foregroundColor(.red)}
                 }.transition(.move(edge: .trailing).combined(with: .opacity))
-                .padding(.trailing, 10)
+                    .padding(.trailing, 10)
             }
         }
     }
@@ -90,6 +117,61 @@ struct ToastView: View {
     }
 }
 
+struct SelectedPhotoView: View {
+    @State var journal: Journal
+    @State var displayPage: Int
+    @State var selectedEntry: Int
+    @ObservedObject var userVM: UserViewModel
+    @Binding var selectedImages: [UIImage]
+    @Binding var selectedItems: [PhotosPickerItem]
+    var body: some View {
+        HStack {
+            Button {
+                if journal.pages[journal.currentPage].entries.count <= 8 {
+                    print(selectedImages)
+                    selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }, images: selectedImages))
+                    selectedImages = []
+                    selectedItems = []
+                } else {
+                    //handle too many entries
+                }
+                print(journal.pages[journal.currentPage].entries)
+            } label: {
+                ZStack {
+                    Text("Add widget with \(selectedImages.count) photos")
+                        .font(.caption)
+                        .foregroundStyle(.black)
+                        .padding(5)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(.black)
+                        )
+                }
+            }
+            Button {
+                selectedImages = []
+                selectedItems = []
+            } label: {
+                ZStack {
+                    Text("Dismiss")
+                        .font(.caption)
+                        .padding(5)
+                        .foregroundStyle(.black)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(.black)
+                        )
+                }
+            }
+            
+        }.frame(height: UIScreen.main.bounds.height * 0.05)
+    }
+    
+}
+
+
+
+
 #Preview {
     struct Preview: View {
         @State var inTextEntry = false
@@ -112,3 +194,4 @@ struct ToastView: View {
 
     return Preview()
 }
+

@@ -11,15 +11,17 @@ struct WidgetView: View {
     var width: CGFloat
     var height: CGFloat
     var padding: CGFloat
-    var entries: [JournalEntry]
+    var pageNum: Int
+    @ObservedObject var page: JournalPage
+    var isDisplay: Bool
     var body: some View {
         let gridItems = [GridItem(.fixed(width), spacing: 10, alignment: .leading),
                          GridItem(.fixed(width), spacing: UIScreen.main.bounds.width * 0.02, alignment: .leading),]
 
         LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
-            ForEach(Array(zip(entries.indices, entries)), id: \.0) { index, widget in
+            ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
+                createView(for: widget, width: width, height: height, isDisplay: isDisplay)
                 
-                EntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
                 
             }
         }
@@ -27,7 +29,7 @@ struct WidgetView: View {
     }
 }
 
-struct EntryView: View {
+struct TextEntryView: View {
     var entry: JournalEntry
     var width: CGFloat
     var height: CGFloat
@@ -59,16 +61,107 @@ struct EntryView: View {
     }
 }
 
-#Preview {
-    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, entries: [
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 2, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: true, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 2, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: true, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 2, height: 2, isFake: false, color: [0.5,0.5,0.5]),
-    ])
+@ViewBuilder
+func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool) -> some View {
+    switch widget.type {
+    case .written:
+        TextEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
+    default:
+        PictureEntryView(entry: widget, width: width, height: height, isDisplay: isDisplay).opacity(widget.isFake ? 0 : 1)
+    }
 }
+
+struct PictureEntryView: View {
+    var entry: JournalEntry
+    var width: CGFloat
+    var height: CGFloat
+    @State private var timer: Timer?
+    @State var selected: Int = 0
+    var isDisplay: Bool
+    @State var isActive: Bool = true
+    var body: some View {
+            ZStack {
+                // Background Color
+                Color.secondary
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .ignoresSafeArea()
+
+                // Carousel
+                TabView(selection: $selected) {
+                    ForEach(0..<entry.images.count, id: \.self) { index in
+                        ZStack {
+                            if let uiImage = UIImage(data: entry.images[index]) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: entry.frameWidth, height: entry.frameHeight)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    .tag(index)
+                            } else {
+                                Image(systemName: "photo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 350, height: 200)
+                                    .tag(index)
+                            }
+
+                            // Navigation Dots (Stacked on top of images)
+                            VStack {
+                                Spacer()
+                                Spacer()
+                                Spacer()
+                                HStack {
+                                    ForEach(entry.images.indices, id: \.self) { dotIndex in
+                                        Capsule()
+                                            .fill(Color.white.opacity(selected == dotIndex ? 1 : 0.33))
+                                            .frame(width: UIScreen.main.bounds.width * 0.07, height: UIScreen.main.bounds.height * 0.005)
+                                            .onTapGesture {
+                                                selected = dotIndex
+                                            }
+                                    }
+                                }
+                                
+                                .background(RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.3)))
+                                 // Adjust dot position
+                                Spacer()
+                            }.frame(width: entry.frameWidth, height: entry.frameHeight)
+                        }
+                    }
+                }
+                .frame(width: entry.frameWidth, height: entry.frameHeight)
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never)) // Hides default dots
+                .ignoresSafeArea()
+            }.frame(height: height, alignment: .top)
+            .onAppear {
+                isActive = true
+                selected = 0
+                // Create a new timer instance for each carousel
+                timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+                    guard isActive else {
+                        selected = 0
+                        return
+                    }
+                    
+                    selected = (selected + 1) % entry.images.count
+                }
+            }
+            .onDisappear {
+                isActive = false
+                timer?.invalidate() // Stop the timer when the view disappears
+                timer = nil
+            }
+        }
+}
+
+#Preview {
+    struct Preview: View {
+        @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1)
+        @State var selectedImageIndex: Int = 0
+        var body: some View {
+            WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: 10, pageNum: 2, page: page, isDisplay: true)
+        }
+    }
+
+    return Preview()
+}
+

@@ -89,13 +89,39 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    // Get a Journal Document from Firebase and load it into a Journal Model
-    func getJounralFromFirebase() async -> Journal {
-        return Journal()
+    
+    func addJournalShelf(journalShelf: JournalShelf) async -> Bool {
+        let journal_reference = db.collection("JOURNAL_SHELVES").document(journalShelf.id.uuidString)
+        do {
+            // Chains together each Model's "toDictionary()" method for simplicity in code and scalability in editing each Model
+            let journalShelfData = journalShelf.toDictionary()
+            try await journal_reference.setData(journalShelfData)
+            return true
+        } catch {
+            print("Error adding Journal Shelf: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    // Get a JournalShelf Document from Firebase and load it into a Journal Model
+    func getJournalShelfFromFirebase(id: String) async -> JournalShelf? {
+        let journalReference = db.collection("JOURNAL_SHELVES").document(id)
+        do {
+            let document = try await journalReference.getDocument()
+            if let data = document.data() {
+                // Chains together each Model's "fromDictionary()" method for simplicity in code and scalability in editing each Model
+                return JournalShelf.fromDictionary(data)
+            } else {
+                print("No document found")
+                return nil
+            }
+        } catch {
+            print("Error fetching Journal Shelf: \(error.localizedDescription)")
+            return nil
+        }
     }
     
     // Add an entry into Firebase
-    
     func getAPIKeys() async throws -> [String: String] {
         var apimap: [String: String] = [:]
         
