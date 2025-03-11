@@ -26,26 +26,41 @@ struct JournalTextInputView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                Button {
-                    Task {
-                        var newEntry = JournalEntry(date: date, title: title, text: inputText, summary: entry.summary, width: entry.width, height: entry.height, isFake: false, color: entry.color)
-                        if entry.text != inputText {
-                            newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
-                        }
-                        print(entry)
-                        
-                        userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
-                    
-                        await MainActor.run {
-                            inTextEntry.toggle()
+                HStack {
+                    Button {
+                        Task {
+                            if entry.summary == "***" {
+                                userVM.removeJournalEntry(journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex), pageNum: pageIndex, index: entryIndex)
+                            }
+                            await MainActor.run {
+                                inTextEntry.toggle()
+                            }
                         }
                     }
+                    label: {
+                        Image(systemName: "chevron.left")
+                            .foregroundStyle(.black)
+                    }.padding(UIScreen.main.bounds.width * 0.025)
+                    Spacer()
+                    Button {
+                        Task {
+                            var newEntry = JournalEntry(date: date, title: title, text: inputText, summary: entry.summary, width: entry.width, height: entry.height, isFake: false, color: entry.color)
+                            if entry.text != inputText {
+                                newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
+                            }
+                            
+                            userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
+                            
+                            await MainActor.run {
+                                inTextEntry.toggle()
+                            }
+                        }
+                    }
+                    label: {
+                        Image(systemName: "checkmark")
+                            .foregroundStyle(.black)
+                    }.padding(UIScreen.main.bounds.width * 0.025)
                 }
-                label: {
-                    Image(systemName: "chevron.left")
-                        .foregroundStyle(.black)
-                }.frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(UIScreen.main.bounds.width * 0.025)
                 TextField(textfieldPrompt, text: $title, axis: .vertical)
                     .font(.title)
                     .frame(maxWidth: .infinity, alignment: .leading)
