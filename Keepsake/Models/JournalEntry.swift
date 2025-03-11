@@ -8,6 +8,10 @@
 import Foundation
 import SwiftUI
 
+enum EntryType: Encodable {
+    case written, chat, image
+}
+
 struct JournalEntry: Encodable {
     var date: String
     var title: String
@@ -17,12 +21,14 @@ struct JournalEntry: Encodable {
     var height: Int
     var isFake: Bool
     var color: [Double]
+    var images: [Data]
     var frameWidth: CGFloat {
         return UIScreen.main.bounds.width * 0.38 * CGFloat(width) + UIScreen.main.bounds.width * 0.02 * CGFloat(width - 1)
     }
     var frameHeight: CGFloat {
         return UIScreen.main.bounds.height * 0.12 * CGFloat(height) + UIScreen.main.bounds.width * 0.02 * CGFloat(height - 1)
     }
+    var type: EntryType
     
     init(date: String, title: String, text: String, summary: String) {
         self.date = date
@@ -33,6 +39,8 @@ struct JournalEntry: Encodable {
         self.height = 1
         self.isFake = false
         self.color = [0.5,0.5,0.5]
+        self.images = []
+        self.type = .written
     }
     
     init(date: String, title: String, text: String, summary: String, width: Int, height: Int, isFake: Bool, color: [Double]) {
@@ -44,6 +52,26 @@ struct JournalEntry: Encodable {
         self.height = height
         self.isFake = isFake
         self.color = color
+        self.images = []
+        self.type = .written
+    }
+    
+    init(date: String, title: String, text: String, summary: String, width: Int, height: Int, isFake: Bool, color: [Double], images: [UIImage]) {
+        self.date = date
+        self.text = text
+        self.title = title
+        self.summary = summary
+        self.width = width
+        self.height = height
+        self.isFake = isFake
+        self.color = color
+        self.images = []
+        for image in images {
+            if let imageData = image.pngData() {
+                    self.images.append(imageData)
+            }
+        }
+        self.type = .image
     }
     
     init() {
@@ -55,9 +83,11 @@ struct JournalEntry: Encodable {
         self.height = 1
         self.isFake = true
         self.color = [0.5, 0.5, 0.5]
+        self.images = []
+        self.type = .written
     }
     
-    init(entry: JournalEntry, width: Int, height: Int, color: [Double]) {
+    init(entry: JournalEntry, width: Int, height: Int, color: [Double], images: [Data], type: EntryType) {
         self.date = entry.date
         self.title = entry.title
         self.text = entry.text
@@ -66,6 +96,8 @@ struct JournalEntry: Encodable {
         self.height = height
         self.isFake = false
         self.color = color
+        self.images = images
+        self.type = type
     }
 }
 

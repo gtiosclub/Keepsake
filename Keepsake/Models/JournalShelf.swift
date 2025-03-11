@@ -10,7 +10,7 @@ import Foundation
 class JournalShelf {
     var name: String
     var id: UUID
-    var journals: [Journal]
+    @Published var journals: [Journal]
     
     init(name: String, id: UUID, journals: [Journal]) {
         self.name = name

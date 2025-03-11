@@ -7,9 +7,9 @@
 
 import Foundation
 
-class JournalPage: Encodable {
+class JournalPage: ObservableObject {
     var number: Int
-    var entries: [JournalEntry]
+    @Published var entries: [JournalEntry]
     var realEntryCount: Int
     
     init(number: Int, entries: [JournalEntry], realEntryCount: Int) {

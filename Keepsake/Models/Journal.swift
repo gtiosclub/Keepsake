@@ -21,7 +21,7 @@ class Journal: Book, ObservableObject {
     var isSaved: Bool
     var isShared: Bool
     var template: Template
-    var pages: [JournalPage]
+    @Published var pages: [JournalPage]
     var currentPage: Int
     
     //Full Constructor
