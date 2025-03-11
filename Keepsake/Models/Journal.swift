@@ -50,7 +50,7 @@ class Journal: Book, ObservableObject {
     }
 }
 
-extension Journal {
+extension Journal: CustomStringConvertible {
     func toDictionary() -> [String: Any] {
         return [
             "name": name,
@@ -63,5 +63,29 @@ extension Journal {
             "pages": pages.map { $0.toDictionary() },
             "currentPage": currentPage
         ]
+    }
+    
+    static func fromDictionary(_ dict: [String: Any]) -> Journal? {
+        guard let name = dict["name"] as? String,
+              let idString = dict["id"] as? String,
+              let id = UUID(uuidString: idString),
+              let createdDate = dict["createdDate"] as? String,
+              let category = dict["category"] as? String,
+              let isSaved = dict["isSaved"] as? Bool,
+              let isShared = dict["isShared"] as? Bool,
+              let templateDict = dict["template"] as? [String: Any],
+              let template = Template.fromDictionary(templateDict),
+              let pagesArray = dict["pages"] as? [[String: Any]],
+              let currentPage = dict["currentPage"] as? Int else {
+            return nil
+        }
+
+        let pages = pagesArray.compactMap { JournalPage.fromDictionary($0) }
+        
+        return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: pages, currentPage: currentPage)
+    }
+    
+    var description: String {
+        return "Journal(name: \(name), id: \(id), createdDate: \(createdDate), category: \(category), isSaved: \(isSaved), isShared: \(isShared), template: \(template), pages: \(pages), currentPage: \(currentPage))"
     }
 }
