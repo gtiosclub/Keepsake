@@ -49,19 +49,19 @@ class UserViewModel: ObservableObject {
             page.entries[1] = JournalEntry(entry: entry, width: 1, height: 2, color: entry.color, images: entry.images, type: entry.type)
             entrySelection = 1
         case 3:
-            page.entries[1] = JournalEntry(entry: page.entries[1], width: 1, height: 1, color: page.entries[1].color, images: page.entries[1].images, type: page.entries[0].type)
+            page.entries[1] = JournalEntry(entry: page.entries[1], width: 1, height: 1, color: page.entries[1].color, images: page.entries[1].images, type: page.entries[1].type)
             page.entries[3] = JournalEntry(entry: entry, width: 1, height: 1, color: entry.color, images: entry.images, type: entry.type)
             entrySelection = 3
         case 4:
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[0].type)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
             page.entries[6] = JournalEntry(entry: entry, width: 2, height: 1, color: entry.color, images: entry.images, type: entry.type)
             entrySelection = 6
         case 5:
-            page.entries[6] = JournalEntry(entry: page.entries[6], width: 1, height: 1, color: page.entries[6].color, images: page.entries[6].images, type: page.entries[0].type)
+            page.entries[6] = JournalEntry(entry: page.entries[6], width: 1, height: 1, color: page.entries[6].color, images: page.entries[6].images, type: page.entries[6].type)
             page.entries[7] = JournalEntry(entry: entry, width: 1, height: 1, color: entry.color, images: entry.images, type: entry.type)
             entrySelection = 7
         case 6:
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 1, height: 1, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[0].type)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 1, height: 1, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
             page.entries[5] = JournalEntry(entry: entry, width: 1, height: 1, color: entry.color, images: entry.images, type: entry.type)
             entrySelection = 5
         default:

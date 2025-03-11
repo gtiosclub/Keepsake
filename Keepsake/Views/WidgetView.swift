@@ -79,13 +79,14 @@ struct PictureEntryView: View {
             ZStack {
                 // Background Color
                 Color.secondary
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
                     .ignoresSafeArea()
 
                 // Carousel
                 TabView(selection: $selectedImageIndex) {
-                    ForEach(entry.images.indices, id: \.self) { index in
+                    ForEach(0..<entry.images.count + 1, id: \.self) { index in
                         ZStack {
-                            if let uiImage = UIImage(data: entry.images[index]) {
+                            if let uiImage = UIImage(data: entry.images[index == entry.images.count ? 0 : index]) {
                                 Image(uiImage: uiImage)
                                     .resizable()
                                     .scaledToFill()
@@ -108,7 +109,7 @@ struct PictureEntryView: View {
                                 HStack {
                                     ForEach(entry.images.indices, id: \.self) { dotIndex in
                                         Capsule()
-                                            .fill(Color.white.opacity(selectedImageIndex == dotIndex ? 1 : 0.33))
+                                            .fill(Color.white.opacity((selectedImageIndex % entry.images.count) == dotIndex ? 1 : 0.33))
                                             .frame(width: 35, height: 8)
                                             .onTapGesture {
                                                 selectedImageIndex = dotIndex
@@ -126,10 +127,17 @@ struct PictureEntryView: View {
                 .frame(width: entry.frameWidth, height: entry.frameHeight)
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never)) // Hides default dots
                 .ignoresSafeArea()
-            }.frame(width: entry.frameWidth, height: entry.frameHeight)
+            }.frame(height: height, alignment: .top)
             .onReceive(timer) { _ in
-                withAnimation(.easeInOut) {
-                    selectedImageIndex = (selectedImageIndex + 1) % entry.images.count
+                withAnimation(.linear(duration: 0.5)) {
+                    if selectedImageIndex == entry.images.count {
+                        // Instantly reset to 0 after animation
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            selectedImageIndex = 0
+                        }
+                    } else {
+                        selectedImageIndex += 1
+                    }
                 }
             }
         }
@@ -137,10 +145,10 @@ struct PictureEntryView: View {
 
 #Preview {
     WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, entries: [
+        JournalEntry(date: "", title: "Title", text: "Text", summary: "summary", width: 1, height: 2, isFake: false, color: [0.5, 0.5, 0.5], images: [UIImage(systemName: "photo")!, UIImage(systemName: "face.smiling")!]),
         JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 2, height: 1, isFake: false, color: [0.5,0.5,0.5]),
         JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: true, color: [0.5,0.5,0.5]),
+        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
         JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
         JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 2, isFake: false, color: [0.5,0.5,0.5]),
         JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
@@ -148,3 +156,7 @@ struct PictureEntryView: View {
         JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 2, height: 2, isFake: false, color: [0.5,0.5,0.5]),
     ])
 }
+
+//#Preview {
+//    PictureEntryView(entry: JournalEntry(date: "", title: "Title", text: "Text", summary: "summary", width: 1, height: 1, isFake: false, color: [0.5, 0.5, 0.5], images: [UIImage(systemName: "photo")!, UIImage(systemName: "face.smiling")!]), width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12)
+//}
