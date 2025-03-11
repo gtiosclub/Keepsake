@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct JournalEntry: Encodable {
+struct JournalEntry: Encodable, Hashable {
     var date: String
     var title: String
     var text: String

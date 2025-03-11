@@ -6,15 +6,52 @@
 //
 
 import Foundation
+import Observation
 import FirebaseFirestore
+import FirebaseAuth
+import FirebaseFunctions
 
 class FirebaseViewModel: ObservableObject {
     let db = Firestore.firestore()
+    private lazy var functions: Functions = Functions.functions()
     var onSetupCompleted: ((FirebaseViewModel) -> Void)?
     
+    @Published var searchedEntries: [JournalEntry] = []
+    
+    let auth = Auth.auth()
     static let vm = FirebaseViewModel()
     func configure() {
         self.onSetupCompleted?(self)
+    }
+    
+    private struct QueryRequest: Codable {
+      var query: String
+      var limit: Int?
+      var prefilters: [QueryFilter]?
+    }
+
+    private struct QueryFilter: Codable {
+      var field: String
+      var `operator`: String
+      var value: String
+
+    }
+    
+    private struct QueryResponse: Codable {
+      var ids: [String]
+    }
+    
+    
+    private lazy var vectorSearchQueryCallable: Callable<QueryRequest, QueryResponse> = functions.httpsCallable("ext-firestore-vector-search-queryCallable")
+    
+    init() {
+        auth.signIn(withEmail: "royankit11@gmail.com", password: "test123") { [weak self] authResult, error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                return
+            }
+        }
     }
     
     func testRead() async -> Int {
@@ -71,5 +108,61 @@ class FirebaseViewModel: ObservableObject {
         }
         
         return apimap
+    }
+    
+    func performVectorSearch(searchTerm: String, journal_id: String) async {
+        do {
+            let prefilters: [QueryFilter] = [QueryFilter(field: "journal_id", operator: "==", value: journal_id)]
+            let queryRequest = QueryRequest(query: searchTerm,
+                                                  limit: 2,
+                                                  prefilters: prefilters)
+            
+            let result = try await vectorSearchQueryCallable(queryRequest)
+            print(result)
+            
+            await fetchEntries(ids: result.ids)
+            
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+    
+    private func fetchEntries(ids: [String]) async {
+        do {
+            var entries: [JournalEntry] = []
+            for id in ids {
+                let entry = try await fetchEntryById(id: id)
+                if let entry = entry {
+                    entries.append(entry)
+                }
+            }
+
+            // Update the searchedEntries on the main thread
+            await MainActor.run {
+                searchedEntries = entries
+            }
+        } catch {
+            print("Error fetching entries: \(error.localizedDescription)")
+        }
+    }
+    
+    private func fetchEntryById(id: String) async throws -> JournalEntry? {
+        let docRef = db.collection("JOURNAL_ENTRIES").document(id)
+        let document = try await docRef.getDocument()
+        if document.exists {
+            guard let data = document.data() else {
+                print("Document data is nil")
+                return nil
+            }
+            return JournalEntry(
+                date: data["date"] as? String ?? "",
+                title: data["title"] as? String ?? "",
+                text: data["text"] as? String ?? "",
+                summary: data["summary"] as? String ?? ""
+            )
+        } else {
+            print("Document does not exist")
+            return nil
+        }
     }
 }
