@@ -32,68 +32,90 @@ struct OpenJournal: View {
     @State var scaleFactor2 = 0
     @Binding var selectedEntry: Int
     @Binding var showNavBack: Bool
+    @State private var showSearch = false
+    
     var body: some View {
-        ZStack {
-            JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees)
-            JournalDisplayView(displayIsHidden: $displayIsHidden, userVM: userVM, journal: journal, shelfIndex: shelfIndex, bookIndex: bookIndex, displayPageIndex: $displayPageIndex, zIndex: $zIndex, displayDegrees: $displayDegrees, circleStart: $circleStart, circleEnd: $circleEnd, frontIsHidden: $frontIsHidden, frontDegrees: $frontDegrees, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+        VStack {
+            Button(action: {
+                withAnimation(.spring()) {
+                    showSearch = true
+                }
+            }) {
+                Image(systemName: "magnifyingglass")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(.black)
+            }
+            .padding()
             
-            JournalFrontPagesView(book: journal, degrees: $degrees, frontIsHidden: $frontIsHidden, displayPageIndex: $displayPageIndex, frontDegrees: $frontDegrees, isHidden: $isHidden, coverZ: $coverZ)
-            VStack {
-                ForEach(0..<9, id: \.self) { i in
-                    VStack(spacing: 0) {
-                        ZStack {
-                            Circle()
-                                .trim(from: circleStart, to: circleEnd)
-                                .stroke(lineWidth: 2)
-                                .frame(width: UIScreen.main.bounds.width * 0.08)
-                                .opacity(isHidden ? 1 : 0)
+            ZStack {
+                JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees)
+                JournalDisplayView(displayIsHidden: $displayIsHidden, userVM: userVM, journal: journal, shelfIndex: shelfIndex, bookIndex: bookIndex, displayPageIndex: $displayPageIndex, zIndex: $zIndex, displayDegrees: $displayDegrees, circleStart: $circleStart, circleEnd: $circleEnd, frontIsHidden: $frontIsHidden, frontDegrees: $frontDegrees, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+                
+                JournalFrontPagesView(book: journal, degrees: $degrees, frontIsHidden: $frontIsHidden, displayPageIndex: $displayPageIndex, frontDegrees: $frontDegrees, isHidden: $isHidden, coverZ: $coverZ)
+                VStack {
+                    ForEach(0..<9, id: \.self) { i in
+                        VStack(spacing: 0) {
+                            ZStack {
+                                Circle()
+                                    .trim(from: circleStart, to: circleEnd)
+                                    .stroke(lineWidth: 2)
+                                    .frame(width: UIScreen.main.bounds.width * 0.08)
+                                    .opacity(isHidden ? 1 : 0)
+                                
+                            }.frame(width: UIScreen.main.bounds.width * 0.08, height: UIScreen.main.bounds.height * 0.04)
                             
-                        }.frame(width: UIScreen.main.bounds.width * 0.08, height: UIScreen.main.bounds.height * 0.04)
+                        }
+                        
                         
                     }
-                    
-                    
-                }
-            }.offset(x: UIScreen.main.bounds.width * -0.45)
-            HStack {
-                Button(action: {
-                    circleStart = 0.5
-                    circleEnd = 1
-                    withAnimation(.linear(duration: 1).delay(0.5)) {
-                        circleStart += 0.25
-                        degrees += 90
-                        frontDegrees += 90
-                    } completion: {
-                        coverZ = 0
-                        isHidden = false
-                        withAnimation {
+                }.offset(x: UIScreen.main.bounds.width * -0.45)
+                HStack {
+                    Button(action: {
+                        circleStart = 0.5
+                        circleEnd = 1
+                        withAnimation(.linear(duration: 1).delay(0.5)) {
                             circleStart += 0.25
                             degrees += 90
                             frontDegrees += 90
                         } completion: {
-                            withAnimation(.linear(duration: 0.7)) {
-                                scaleFactor = 0.6
+                            coverZ = 0
+                            isHidden = false
+                            withAnimation {
+                                circleStart += 0.25
+                                degrees += 90
+                                frontDegrees += 90
                             } completion: {
-                                showNavBack.toggle()
-                                withAnimation {
-                                    show.toggle()
+                                withAnimation(.linear(duration: 0.7)) {
+                                    scaleFactor = 0.6
+                                } completion: {
+                                    showNavBack.toggle()
+                                    withAnimation {
+                                        show.toggle()
+                                    }
                                 }
                             }
                         }
-                    }
-                }, label: {
-                    Image(systemName: "return")
-                        .resizable()
-                        .scaledToFit()
-                        .foregroundStyle(.black)
-                        .frame(width: UIScreen.main.bounds.width * 0.1)
-                }).opacity(degrees == -180 ? 1 : 0)
-                Spacer()
-                AddEntryButtonView(journal: journal, inTextEntry: $inTextEntry, userVM: userVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry)
-                    .opacity(degrees == -180 ? 1 : 0)
-            }.padding(.horizontal, 20).offset(y: UIScreen.main.bounds.height * 0.33)
+                    }, label: {
+                        Image(systemName: "return")
+                            .resizable()
+                            .scaledToFit()
+                            .foregroundStyle(.black)
+                            .frame(width: UIScreen.main.bounds.width * 0.1)
+                    }).opacity(degrees == -180 ? 1 : 0)
+                    Spacer()
+                    AddEntryButtonView(journal: journal, inTextEntry: $inTextEntry, userVM: userVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry)
+                        .opacity(degrees == -180 ? 1 : 0)
+                }.padding(.horizontal, 20).offset(y: UIScreen.main.bounds.height * 0.33)
+                
+                if showSearch {
+                    SearchOverlayView(isPresented: $showSearch, firebaseVM: FirebaseViewModel.vm)
+                        .transition(.opacity.combined(with: .scale(scale: 1.1)))
+                        .zIndex(1) // Ensure the search overlay is on top
+                }
+            }
         }
- 
     }
 }
 //

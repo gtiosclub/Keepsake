@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct JournalTextWidgetView: View {
-    @Binding var entry: JournalEntry
+    var entry: JournalEntry
     var body: some View {
         VStack {
             ZStack {
@@ -44,7 +44,7 @@ struct JournalTextWidgetView: View {
     struct Preview: View {
         @State var entry = JournalEntry(date: "01/01/2000", title: "Title", text: "written text", summary: "recipe for great protein shake")
         var body: some View {
-            JournalTextWidgetView(entry: $entry)
+            JournalTextWidgetView(entry: entry)
         }
     }
 
