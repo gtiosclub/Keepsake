@@ -18,8 +18,8 @@ struct WidgetView: View {
 
         LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
             ForEach(Array(zip(entries.indices, entries)), id: \.0) { index, widget in
+                createView(for: widget, width: width, height: height)
                 
-                EntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
                 
             }
         }
@@ -27,7 +27,7 @@ struct WidgetView: View {
     }
 }
 
-struct EntryView: View {
+struct TextEntryView: View {
     var entry: JournalEntry
     var width: CGFloat
     var height: CGFloat
@@ -57,6 +57,82 @@ struct EntryView: View {
             }.padding(.horizontal, 10)
         }
     }
+}
+
+@ViewBuilder
+func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat) -> some View {
+    switch widget.type {
+    case .written:
+        TextEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
+    default:
+        PictureEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
+    }
+}
+
+struct PictureEntryView: View {
+    var entry: JournalEntry
+    var width: CGFloat
+    var height: CGFloat
+    let timer = Timer.publish(every: 3.0, on: .main, in: .common).autoconnect()
+    @State var selectedImageIndex: Int = 0
+    var body: some View {
+            ZStack {
+                // Background Color
+                Color.secondary
+                    .ignoresSafeArea()
+
+                // Carousel
+                TabView(selection: $selectedImageIndex) {
+                    ForEach(entry.images.indices, id: \.self) { index in
+                        ZStack {
+                            if let uiImage = UIImage(data: entry.images[index]) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: entry.frameWidth, height: entry.frameHeight)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    .tag(index)
+                            } else {
+                                Image(systemName: "photo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 350, height: 200)
+                                    .tag(index)
+                            }
+
+                            // Navigation Dots (Stacked on top of images)
+                            VStack {
+                                Spacer()
+                                Spacer()
+                                Spacer()
+                                HStack {
+                                    ForEach(entry.images.indices, id: \.self) { dotIndex in
+                                        Capsule()
+                                            .fill(Color.white.opacity(selectedImageIndex == dotIndex ? 1 : 0.33))
+                                            .frame(width: 35, height: 8)
+                                            .onTapGesture {
+                                                selectedImageIndex = dotIndex
+                                            }
+                                    }
+                                }
+                                
+                                .background(RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.3)))
+                                 // Adjust dot position
+                                Spacer()
+                            }.frame(width: entry.frameWidth, height: entry.frameHeight)
+                        }
+                    }
+                }
+                .frame(width: entry.frameWidth, height: entry.frameHeight)
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never)) // Hides default dots
+                .ignoresSafeArea()
+            }.frame(width: entry.frameWidth, height: entry.frameHeight)
+            .onReceive(timer) { _ in
+                withAnimation(.easeInOut) {
+                    selectedImageIndex = (selectedImageIndex + 1) % entry.images.count
+                }
+            }
+        }
 }
 
 #Preview {

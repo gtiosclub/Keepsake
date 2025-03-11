@@ -32,7 +32,6 @@ struct JournalTextInputView: View {
                         if entry.text != inputText {
                             newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
                         }
-                        print(entry)
                         
                         userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
                     

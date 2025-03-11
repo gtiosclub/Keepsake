@@ -7,7 +7,7 @@
 
 import Foundation
 
-class JournalPage: Encodable {
+class JournalPage: Encodable, ObservableObject {
     var number: Int
     var entries: [JournalEntry]
     var realEntryCount: Int
