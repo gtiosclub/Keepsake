@@ -33,7 +33,7 @@ struct AddEntryButtonView: View {
                         
                     }
                 } else {
-                    SelectedPhotoView(journal: journal, displayPage: displayPage, selectedEntry: selectedEntry, userVM: userVM, selectedImages: $selectedImages)
+                    SelectedPhotoView(journal: journal, displayPage: displayPage, selectedEntry: selectedEntry, userVM: userVM, selectedImages: $selectedImages, selectedItems: $selectedItems)
                 }
             }
             if isExpanded {
@@ -123,6 +123,7 @@ struct SelectedPhotoView: View {
     @State var selectedEntry: Int
     @ObservedObject var userVM: UserViewModel
     @Binding var selectedImages: [UIImage]
+    @Binding var selectedItems: [PhotosPickerItem]
     var body: some View {
         HStack {
             Button {
@@ -130,6 +131,7 @@ struct SelectedPhotoView: View {
                     print(selectedImages)
                     selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }, images: selectedImages))
                     selectedImages = []
+                    selectedItems = []
                 } else {
                     //handle too many entries
                 }
@@ -148,6 +150,7 @@ struct SelectedPhotoView: View {
             }
             Button {
                 selectedImages = []
+                selectedItems = []
             } label: {
                 ZStack {
                     Text("Dismiss")

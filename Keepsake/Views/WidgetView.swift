@@ -11,14 +11,17 @@ struct WidgetView: View {
     var width: CGFloat
     var height: CGFloat
     var padding: CGFloat
-    var entries: [JournalEntry]
+    var pageNum: Int
+    @ObservedObject var page: JournalPage
+    var isDisplay: Bool
+    @Binding var selectedImageIndex: Int
     var body: some View {
         let gridItems = [GridItem(.fixed(width), spacing: 10, alignment: .leading),
                          GridItem(.fixed(width), spacing: UIScreen.main.bounds.width * 0.02, alignment: .leading),]
 
         LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
-            ForEach(Array(zip(entries.indices, entries)), id: \.0) { index, widget in
-                createView(for: widget, width: width, height: height)
+            ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
+                createView(for: widget, width: width, height: height, isDisplay: isDisplay, selectedImageIndex: $selectedImageIndex)
                 
                 
             }
@@ -60,12 +63,12 @@ struct TextEntryView: View {
 }
 
 @ViewBuilder
-func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat) -> some View {
+func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool, selectedImageIndex: Binding<Int>) -> some View {
     switch widget.type {
     case .written:
         TextEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
     default:
-        PictureEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
+        PictureEntryView(entry: widget, width: width, height: height, selectedImageIndex: selectedImageIndex, isDisplay: isDisplay).opacity(widget.isFake ? 0 : 1)
     }
 }
 
@@ -74,7 +77,9 @@ struct PictureEntryView: View {
     var width: CGFloat
     var height: CGFloat
     let timer = Timer.publish(every: 3.0, on: .main, in: .common).autoconnect()
-    @State var selectedImageIndex: Int = 0
+    @Binding var selectedImageIndex: Int
+    var isDisplay: Bool
+    @State var isActive: Bool = true
     var body: some View {
             ZStack {
                 // Background Color
@@ -129,6 +134,10 @@ struct PictureEntryView: View {
                 .ignoresSafeArea()
             }.frame(height: height, alignment: .top)
             .onReceive(timer) { _ in
+                guard isDisplay else {
+                    selectedImageIndex = 0 // Keep carousel on the first image
+                    return
+                }
                 withAnimation(.linear(duration: 0.5)) {
                     if selectedImageIndex == entry.images.count {
                         // Instantly reset to 0 after animation
@@ -144,19 +153,14 @@ struct PictureEntryView: View {
 }
 
 #Preview {
-    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, entries: [
-        JournalEntry(date: "", title: "Title", text: "Text", summary: "summary", width: 1, height: 2, isFake: false, color: [0.5, 0.5, 0.5], images: [UIImage(systemName: "photo")!, UIImage(systemName: "face.smiling")!]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: true, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 2, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: false, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 1, height: 1, isFake: true, color: [0.5,0.5,0.5]),
-        JournalEntry(date: "01/01/2000", title: "Entry Title", text: "Entry Text", summary: "Summary Text", width: 2, height: 2, isFake: false, color: [0.5,0.5,0.5]),
-    ])
+    struct Preview: View {
+        @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1)
+        @State var selectedImageIndex: Int = 0
+        var body: some View {
+            WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: 10, pageNum: 2, page: page, isDisplay: true, selectedImageIndex: $selectedImageIndex)
+        }
+    }
+
+    return Preview()
 }
 
-//#Preview {
-//    PictureEntryView(entry: JournalEntry(date: "", title: "Title", text: "Text", summary: "summary", width: 1, height: 1, isFake: false, color: [0.5, 0.5, 0.5], images: [UIImage(systemName: "photo")!, UIImage(systemName: "face.smiling")!]), width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12)
-//}
