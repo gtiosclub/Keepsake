@@ -90,7 +90,7 @@ struct JournalEntry: Encodable {
     init(entry: JournalEntry, width: Int, height: Int, color: [Double], images: [Data], type: EntryType) {
         self.date = entry.date
         self.title = entry.title
-        self.text = entry.title
+        self.text = entry.text
         self.summary = entry.summary
         self.width = width
         self.height = height
@@ -101,13 +101,37 @@ struct JournalEntry: Encodable {
     }
 }
 
-extension JournalEntry {
+extension JournalEntry: CustomStringConvertible {
     func toDictionary() -> [String: Any] {
         return [
             "date": date,
             "title": title,
             "text": text,
-            "summary": summary
+            "summary": summary,
+            "width": width,
+            "height": height,
+            "isFake": isFake,
+            "color": color
         ]
     }
+
+    static func fromDictionary(_ dict: [String: Any]) -> JournalEntry? {
+        guard let date = dict["date"] as? String,
+              let title = dict["title"] as? String,
+              let text = dict["text"] as? String,
+              let summary = dict["summary"] as? String,
+              let width = dict["width"] as? Int,
+              let height = dict["height"] as? Int,
+              let isFake = dict["isFake"] as? Bool,
+              let color = dict["color"] as? [Double] else {
+            return nil
+        }
+        
+        return JournalEntry(date: date, title: title, text: text, summary: summary, width: width, height: height, isFake: isFake, color: color)
+    }
+    
+    var description: String {
+        return "JournalEntry(date: \(date), title: \(title), text: \(text), summary: \(summary), width: \(width), height: \(height), isFake: \(isFake), color: \(color))"
+    }
+    
 }

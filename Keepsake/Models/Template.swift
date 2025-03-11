@@ -9,7 +9,7 @@ import Foundation
 import SwiftUICore
 import UIKit
 
-enum Texture {
+enum Texture: String {
     case leather
     case bears
     case blackLeather
@@ -48,6 +48,11 @@ enum Texture {
             return ["type": "stars"]
         }
     }
+
+    static func fromDictionary(_ dict: [String: Any]) -> Texture? {
+        guard let type = dict["type"] as? String else { return nil }
+        return Texture(rawValue: type)
+    }
 }
 
 struct Template {
@@ -74,7 +79,9 @@ struct Template {
     init() {
         self.init(name: "Default", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .leather)
     }
-    
+}
+
+extension Template: CustomStringConvertible {
     // Convert Color to Hex string
     private func colorToHex(color: Color) -> String {
         // Convert Color to RGBA values
@@ -88,6 +95,29 @@ struct Template {
         return String(format: "#%02X%02X%02X%02X", Int(red * 255), Int(green * 255), Int(blue * 255), Int(alpha * 255))
     }
     
+    // Convert Hex string to Color
+        private static func hexToColor(hex: String) -> Color {
+            var hexSanitized = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+            var int: UInt64 = 0
+            Scanner(string: hexSanitized).scanHexInt64(&int)
+            let a, r, g, b: Double
+            switch hexSanitized.count {
+            case 8: // ARGB
+                a = Double((int >> 24) & 0xff) / 255.0
+                r = Double((int >> 16) & 0xff) / 255.0
+                g = Double((int >> 8) & 0xff) / 255.0
+                b = Double(int & 0xff) / 255.0
+            case 6: // RGB
+                a = 1.0
+                r = Double((int >> 16) & 0xff) / 255.0
+                g = Double((int >> 8) & 0xff) / 255.0
+                b = Double(int & 0xff) / 255.0
+            default:
+                return .black
+            }
+            return Color(.sRGB, red: r, green: g, blue: b, opacity: a)
+        }
+    
     // Convert Template to a dictionary
     func toDictionary() -> [String: Any] {
         return [
@@ -95,7 +125,30 @@ struct Template {
             "coverColor": colorToHex(color: coverColor),
             "pageColor": colorToHex(color: pageColor),
             "titleColor": colorToHex(color: titleColor),
-            "texture": texture.toDictionary() // Assuming Texture has a `toDictionary()` method
+            "texture": texture.toDictionary()
         ]
+    }
+    
+    static func fromDictionary(_ dict: [String: Any]) -> Template? {
+        guard let name = dict["name"] as? String,
+              let coverColorHex = dict["coverColor"] as? String,
+              let pageColorHex = dict["pageColor"] as? String,
+              let titleColorHex = dict["titleColor"] as? String,
+              let textureDict = dict["texture"] as? [String: Any],
+              let texture = Texture.fromDictionary(textureDict) else {
+            return nil
+        }
+
+        return Template(
+            name: name,
+            coverColor: hexToColor(hex: coverColorHex),
+            pageColor: hexToColor(hex: pageColorHex),
+            titleColor: hexToColor(hex: titleColorHex),
+            texture: texture
+        )
+    }
+    
+    var description: String {
+        return "Template(name: \(name), coverColor: \(coverColor), pageColor: \(pageColor), titleColor: \(titleColor), texture: \(texture))"
     }
 }

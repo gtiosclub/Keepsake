@@ -27,11 +27,27 @@ class JournalPage: ObservableObject {
     
 }
 
-extension JournalPage {
+extension JournalPage: CustomStringConvertible {
     func toDictionary() -> [String: Any] {
         return [
             "number": number,
             "entries": entries.map { $0.toDictionary() } // Assuming JournalEntry has toDictionary()
         ]
+    }
+    
+    static func fromDictionary(_ dict: [String: Any]) -> JournalPage? {
+        guard let number = dict["number"] as? Int,
+              let entriesArray = dict["entries"] as? [[String: Any]],
+              let realEntryCount = dict["realEntryCount"] as? Int else {
+            return nil
+        }
+
+        let entries = entriesArray.compactMap { JournalEntry.fromDictionary($0) }
+
+        return JournalPage(number: number, entries: entries, realEntryCount: realEntryCount)
+    }
+    
+    var description: String {
+        return "JournalPage(number: \(number), entries: \(entries), realEntryCount: \(realEntryCount))"
     }
 }
