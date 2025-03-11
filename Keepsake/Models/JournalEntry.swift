@@ -12,7 +12,7 @@ enum EntryType: Encodable {
     case written, chat, image
 }
 
-struct JournalEntry: Encodablee, Hashable  {
+struct JournalEntry: Encodable, Hashable  {
     var date: String
     var title: String
     var text: String
