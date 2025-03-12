@@ -12,7 +12,6 @@ struct LibraryView: View {
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var aiVM: AIViewModel
     @State private var showBookshelfView = true
-
     var body: some View {
         NavigationView {
             VStack {
@@ -40,7 +39,7 @@ struct LibraryBookshelfView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(userVM.user.getJournalShelves().indices, id: \.self) { index in
-                    NavigationLink(destination: ShelfView(userVM: userVM, aiVM: aiVM, shelfIndex: index)) {
+                    NavigationLink(destination: ShelfView(userVM: userVM, shelf: userVM.getJournalShelves()[index], aiVM: aiVM, shelfIndex: index)) {
                         BookshelfView(shelf: userVM.user.getJournalShelves()[index])
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -70,7 +69,7 @@ struct LibraryScrapbookView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(userVM.user.getScrapbookShelves().indices, id: \.self) { index in
-                    NavigationLink(destination: ShelfView(userVM: userVM, aiVM: aiVM, shelfIndex: index)) {
+                    NavigationLink(destination: ShelfView(userVM: userVM, shelf: userVM.getJournalShelves()[index], aiVM: aiVM, shelfIndex: index)) {
                         BookshelfForScrapbookView(shelf: userVM.user.getScrapbookShelves()[index])
                     }
                     .buttonStyle(PlainButtonStyle())

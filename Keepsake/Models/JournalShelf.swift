@@ -7,7 +7,7 @@
 
 import Foundation
 
-class JournalShelf {
+class JournalShelf: ObservableObject {
     var name: String
     var id: UUID
     @Published var journals: [Journal]
