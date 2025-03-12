@@ -10,15 +10,16 @@ import SwiftUI
 struct TemplateCommunityView: View {
     @State var scaleEffect = 0.4
     @State private var searchText: String = ""
-    @State private var selectedJournal: Journal?
+    @State private var selectedTemplate: Int? = nil
     @State private var showDetail = false
+    @State var templates: [Template]
 
     let screenWidth = UIScreen.main.bounds.width
     let screenHeight = UIScreen.main.bounds.height
 
     // Precompute total rows to avoid heavy calculations inside ForEach
     var totalRows: Int {
-        (journals.count / 2) + (journals.count % 2)
+        (templates.count / 2) + (templates.count % 2)
     }
 
     var body: some View {
@@ -50,15 +51,15 @@ struct TemplateCommunityView: View {
                     HStack(spacing: 25) {
                         ForEach(0..<2, id: \.self) { column in
                             let index = row * 2 + column
-                            if index < journals.count {
+                            if index < templates.count {
                                 JournalItemView(
-                                    journal: journals[index],
+                                    template: templates[index],
                                     scaleEffect: scaleEffect,
                                     screenWidth: screenWidth,
                                     screenHeight: screenHeight
                                 )
                                 .onTapGesture {
-                                    selectedJournal = journals[index]
+                                    selectedTemplate = index
                                     showDetail = true
                                 }
                             } else {
@@ -70,9 +71,12 @@ struct TemplateCommunityView: View {
                 }
             }
         }
-        .sheet(isPresented: $showDetail) {
-            if let journal = selectedJournal {
-                JournalDetailView(journal: journal)
+        .sheet(isPresented: Binding(
+            get: { selectedTemplate != nil },
+            set: { if !$0 { selectedTemplate = nil } }
+        )) {
+            if let index = selectedTemplate {
+                JournalDetailView(template: templates[index])
             }
         }
     }
@@ -80,7 +84,7 @@ struct TemplateCommunityView: View {
 
 // EXTRACTED JOURNAL ITEM VIEW (Fixes Compiler Struggles)
 struct JournalItemView: View {
-    let journal: Journal
+    @State var template: Template
     let scaleEffect: CGFloat
     let screenWidth: CGFloat
     let screenHeight: CGFloat
@@ -90,12 +94,12 @@ struct JournalItemView: View {
         let adjustedHeight = screenHeight * 0.56 * scaleEffect
 
         VStack(alignment: .leading) {
-            JournalCover(book: journal, degrees: 0)
+            JournalCover(template: template, degrees: 0, title: template.name)
                 .scaleEffect(scaleEffect)
                 .frame(width: adjustedWidth, height: adjustedHeight)
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(journal.name)
+                Text(template.name)
                     .font(.headline)
                     .fontWeight(.medium)
                     .foregroundColor(.primary)
@@ -114,17 +118,17 @@ struct JournalItemView: View {
 
 // JOURNAL DETAIL VIEW
 struct JournalDetailView: View {
-    var journal: Journal
+    @State var template: Template
     let screenWidth = UIScreen.main.bounds.width
     let screenHeight = UIScreen.main.bounds.height
 
     var body: some View {
         VStack(spacing: 20) {
-            Text(journal.name)
+            Text(template.name)
                 .font(.title)
                 .fontWeight(.bold)
 
-            JournalCover(book: journal, degrees: 0)
+            JournalCover(template: template, degrees: 0, title: template.name)
                 .scaleEffect(0.8)
                 .frame(width: screenWidth * 0.8, height: screenHeight * 0.5)
 
@@ -133,7 +137,6 @@ struct JournalDetailView: View {
                 .foregroundColor(.gray)
 
             Button(action: {
-                // Handle template selection logic
             }) {
                 Text("Use Template")
                     .padding()
@@ -148,6 +151,6 @@ struct JournalDetailView: View {
 }
 
 #Preview {
-    TemplateCommunityView()
+    TemplateCommunityView(templates: [Template(coverColor: .red, pageColor: .white, titleColor: .black), Template(coverColor: .blue, pageColor: .white, titleColor: .black), Template(coverColor: .green, pageColor: .white, titleColor: .black)])
 }
 
