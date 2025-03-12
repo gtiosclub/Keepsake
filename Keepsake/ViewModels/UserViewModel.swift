@@ -11,6 +11,14 @@ class UserViewModel: ObservableObject {
     @Published var user: User
     
     init(user: User) {
+        if user.savedTemplates.isEmpty {
+            user.savedTemplates = [
+                Template(name: "Classic", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather),
+                Template(name: "Minimalist", coverColor: .gray, pageColor: .white, titleColor: .black, texture: .blackLeather),
+                Template(name: "Creative", coverColor: .blue, pageColor: .yellow, titleColor: .white, texture: .flower1),
+                Template(name: "Snoopy", coverColor: .black, pageColor: .white, titleColor: .white, texture: .snoopy)
+            ]
+        }
         self.user = user
     }
     
@@ -19,7 +27,7 @@ class UserViewModel: ObservableObject {
     }
     
     func getJournalShelves() -> [JournalShelf] {
-        return user.getJournalShelves()
+        return user.journalShelves
     }
     
     func getJournal(shelfIndex: Int, bookIndex: Int) -> Journal {
@@ -71,6 +79,11 @@ class UserViewModel: ObservableObject {
         }
         page.realEntryCount += 1
         return entrySelection
+    }
+    
+    func addJournalToShelf(journal: Journal, shelfIndex: Int) {
+//        user.journalShelves[shelfIndex].journals.append(journal)
+        user.getJournalShelves()[shelfIndex].journals.append(journal)
     }
     
     func removeJournalEntry(journal: Journal, pageNum: Int, index: Int) {

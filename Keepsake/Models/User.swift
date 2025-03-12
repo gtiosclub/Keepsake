@@ -12,20 +12,25 @@ class User: Identifiable, ObservableObject {
     var name: String
     @Published var journalShelves: [JournalShelf]
     @Published var scrapbookShelves: [ScrapbookShelf]
+    @Published var savedTemplates: [Template]
     
-    init(id: String, name: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf]) {
+    init(id: String, name: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
         self.id = id
         self.name = name
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
+        self.savedTemplates = savedTemplates
+
     }
     
     // Provide default values for id and name
-    init(journalShelves: [JournalShelf] = [], scrapbookShelves: [ScrapbookShelf] = []) {
+    init(journalShelves: [JournalShelf] = [], scrapbookShelves: [ScrapbookShelf] = [], savedTemplates: [Template] = []) {
         self.id = UUID().uuidString
         self.name = "Default User"
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
+        self.savedTemplates = []
+
     }
     
     func updateJournalEntry(shelfNum: Int, bookNum: Int, pageNum: Int, entryNum: Int, newEntry: JournalEntry) {
