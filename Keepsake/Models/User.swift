@@ -38,7 +38,15 @@ class User: Identifiable, ObservableObject {
         self.journalShelves.append(shelf)
     }
     
+    func addScrapbookShelf(shelf: ScrapbookShelf) {
+        self.scrapbookShelves.append(shelf)
+    }
+    
     func getJournalShelves() -> [JournalShelf] {
         return self.journalShelves
+    }
+    
+    func getScrapbookShelves() -> [ScrapbookShelf] {
+        return self.scrapbookShelves
     }
 }
