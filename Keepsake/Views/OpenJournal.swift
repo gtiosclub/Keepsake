@@ -32,68 +32,90 @@ struct OpenJournal: View {
     @State var scaleFactor2 = 0
     @Binding var selectedEntry: Int
     @Binding var showNavBack: Bool
+    @State private var showSearch = false
+    
     var body: some View {
-        ZStack {
-            JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees)
-            JournalDisplayView(displayIsHidden: $displayIsHidden, userVM: userVM, journal: journal, shelfIndex: shelfIndex, bookIndex: bookIndex, displayPageIndex: $displayPageIndex, zIndex: $zIndex, displayDegrees: $displayDegrees, circleStart: $circleStart, circleEnd: $circleEnd, frontIsHidden: $frontIsHidden, frontDegrees: $frontDegrees, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+        VStack {
+            Button(action: {
+                withAnimation(.spring()) {
+                    showSearch = true
+                }
+            }) {
+                Image(systemName: "magnifyingglass")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(.black)
+            }
+            .padding()
             
-            JournalFrontPagesView(book: journal, degrees: $degrees, frontIsHidden: $frontIsHidden, displayPageIndex: $displayPageIndex, frontDegrees: $frontDegrees, isHidden: $isHidden, coverZ: $coverZ)
-            VStack {
-                ForEach(0..<9, id: \.self) { i in
-                    VStack(spacing: 0) {
-                        ZStack {
-                            Circle()
-                                .trim(from: circleStart, to: circleEnd)
-                                .stroke(lineWidth: 2)
-                                .frame(width: UIScreen.main.bounds.width * 0.08)
-                                .opacity(isHidden ? 1 : 0)
+            ZStack {
+                JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees)
+                JournalDisplayView(displayIsHidden: $displayIsHidden, userVM: userVM, journal: journal, shelfIndex: shelfIndex, bookIndex: bookIndex, displayPageIndex: $displayPageIndex, zIndex: $zIndex, displayDegrees: $displayDegrees, circleStart: $circleStart, circleEnd: $circleEnd, frontIsHidden: $frontIsHidden, frontDegrees: $frontDegrees, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+                
+                JournalFrontPagesView(book: journal, degrees: $degrees, frontIsHidden: $frontIsHidden, displayPageIndex: $displayPageIndex, frontDegrees: $frontDegrees, isHidden: $isHidden, coverZ: $coverZ)
+                VStack {
+                    ForEach(0..<9, id: \.self) { i in
+                        VStack(spacing: 0) {
+                            ZStack {
+                                Circle()
+                                    .trim(from: circleStart, to: circleEnd)
+                                    .stroke(lineWidth: 2)
+                                    .frame(width: UIScreen.main.bounds.width * 0.08)
+                                    .opacity(isHidden ? 1 : 0)
+                                
+                            }.frame(width: UIScreen.main.bounds.width * 0.08, height: UIScreen.main.bounds.height * 0.04)
                             
-                        }.frame(width: UIScreen.main.bounds.width * 0.08, height: UIScreen.main.bounds.height * 0.04)
+                        }
+                        
                         
                     }
-                    
-                    
-                }
-            }.offset(x: UIScreen.main.bounds.width * -0.45)
-            HStack {
-                Button(action: {
-                    circleStart = 0.5
-                    circleEnd = 1
-                    withAnimation(.linear(duration: 1).delay(0.5)) {
-                        circleStart += 0.25
-                        degrees += 90
-                        frontDegrees += 90
-                    } completion: {
-                        coverZ = 0
-                        isHidden = false
-                        withAnimation {
+                }.offset(x: UIScreen.main.bounds.width * -0.45)
+                HStack {
+                    Button(action: {
+                        circleStart = 0.5
+                        circleEnd = 1
+                        withAnimation(.linear(duration: 1).delay(0.5)) {
                             circleStart += 0.25
                             degrees += 90
                             frontDegrees += 90
                         } completion: {
-                            withAnimation(.linear(duration: 0.7)) {
-                                scaleFactor = 0.6
+                            coverZ = 0
+                            isHidden = false
+                            withAnimation {
+                                circleStart += 0.25
+                                degrees += 90
+                                frontDegrees += 90
                             } completion: {
-                                showNavBack.toggle()
-                                withAnimation {
-                                    show.toggle()
+                                withAnimation(.linear(duration: 0.7)) {
+                                    scaleFactor = 0.6
+                                } completion: {
+                                    showNavBack.toggle()
+                                    withAnimation {
+                                        show.toggle()
+                                    }
                                 }
                             }
                         }
-                    }
-                }, label: {
-                    Image(systemName: "return")
-                        .resizable()
-                        .scaledToFit()
-                        .foregroundStyle(.black)
-                        .frame(width: UIScreen.main.bounds.width * 0.1)
-                }).opacity(degrees == -180 ? 1 : 0)
-                Spacer()
-                AddEntryButtonView(journal: journal, inTextEntry: $inTextEntry, userVM: userVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry)
-                    .opacity(degrees == -180 ? 1 : 0)
-            }.padding(.horizontal, 20).offset(y: UIScreen.main.bounds.height * 0.33)
+                    }, label: {
+                        Image(systemName: "return")
+                            .resizable()
+                            .scaledToFit()
+                            .foregroundStyle(.black)
+                            .frame(width: UIScreen.main.bounds.width * 0.1)
+                    }).opacity(degrees == -180 ? 1 : 0)
+                    Spacer()
+                    AddEntryButtonView(journal: journal, inTextEntry: $inTextEntry, userVM: userVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry)
+                        .opacity(degrees == -180 ? 1 : 0)
+                }.padding(.horizontal, 20).offset(y: UIScreen.main.bounds.height * 0.33)
+                
+                if showSearch {
+                    SearchOverlayView(isPresented: $showSearch, firebaseVM: FirebaseViewModel.vm)
+                        .transition(.opacity.combined(with: .scale(scale: 1.1)))
+                        .zIndex(1) // Ensure the search overlay is on top
+                }
+            }
         }
- 
     }
 }
 //
@@ -128,10 +150,9 @@ struct JournalBackPagesView: View {
                 .zIndex(-2)
             VStack {
                 if displayPageIndex + 1 < book.pages.count && displayPageIndex + 1 > -1{
-                    ForEach(book.pages[displayPageIndex + 1].entries.indices, id: \.self) { index in
-                        JournalTextWidgetView(entry: $book.pages[displayPageIndex + 1].entries[index])
-                            .padding(.top, 10)
-                    }
+                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex + 1, page: book.pages[displayPageIndex + 1], isDisplay: false)
+                        .frame(width: UIScreen.main.bounds.width * 0.87)
+                        .padding(.top, 10)
                 }
                 Spacer()
                 HStack {
@@ -170,11 +191,10 @@ struct JournalFrontPagesView: View {
                 .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
             VStack {
                 if displayPageIndex - 1 < book.pages.count && displayPageIndex - 1 > -1 {
-                    ForEach(book.pages[displayPageIndex - 1].entries.indices, id: \.self) { index in
-                        JournalTextWidgetView(entry: $book.pages[displayPageIndex - 1].entries[index])
-                            .padding(.top, 10)
-                            .opacity(frontIsHidden ? 0 : 1)
-                    }
+                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex - 1, page: book.pages[displayPageIndex - 1], isDisplay: false)
+                        .frame(width: UIScreen.main.bounds.width * 0.87)
+                        .padding(.top, 10)
+                        .opacity(frontIsHidden ? 0 : 1)
                 }
                 Spacer()
                 HStack {
@@ -251,16 +271,10 @@ struct JournalDisplayView: View {
                 .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
             VStack {
                 if displayPageIndex < journal.pages.count && displayPageIndex > -1 {
-                    ForEach(journal.pages[displayPageIndex].entries.indices, id: \.self) { index in
-                        JournalTextWidgetView(entry: $journal.pages[displayPageIndex].entries[index])
-                            .padding(.top, 10)
-                            .opacity(displayIsHidden ? 0 : 1)
-                            .onTapGesture {
-                                selectedEntry = index
-                                inTextEntry.toggle()
-                            }
-                      
-                    }
+                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex, page: journal.pages[displayPageIndex], isDisplay: true)
+                        .frame(width: UIScreen.main.bounds.width * 0.87)
+                        .padding(.top, 10)
+                        .opacity(displayIsHidden ? 0 : 1)
                 }
                 Spacer()
                 HStack {
@@ -268,7 +282,7 @@ struct JournalDisplayView: View {
                     Text(displayPageIndex < userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages.count && displayPageIndex > -1 ? "\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).pages[displayPageIndex].number)" : "no more pages")
                         .padding(.trailing, UIScreen.main.bounds.width * 0.025)
                 }
-            }
+            }.frame(width: UIScreen.main.bounds.width * 0.87, height: UIScreen.main.bounds.height * 0.55)
             
         }.frame(width: UIScreen.main.bounds.width * 0.87, height: UIScreen.main.bounds.height * 0.55)
             .rotation3DEffect(.degrees(displayDegrees), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint(x: UnitPoint.leading.x - 0.011, y: UnitPoint.leading.y), anchorZ: 0, perspective: 0.2)
@@ -336,13 +350,13 @@ struct JournalDisplayView: View {
         @State var mainCircleStart: CGFloat = 0.5
         @State var inTextEntry = false
         @State var selectedEntry: Int = 0
-        @State var displayPageIndex: Int = 2
+        @State var displayPageIndex: Int = 0
         @State var showNavBack: Bool = false
         @ObservedObject var userVM: UserViewModel = UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
-            Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")]), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")]), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")]), JournalPage(number: 5, entries: [])], currentPage: 3),
-            Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0),
-            Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0),
-            Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1, entries: []), JournalPage(number: 2, entries: []), JournalPage(number: 3, entries: []), JournalPage(number: 4, entries: []), JournalPage(number: 5, entries: [])], currentPage: 0)
+            Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
+            Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
+            Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
+            Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: []))
         var body: some View {
             OpenJournal(userVM: userVM, journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), shelfIndex: 0, bookIndex: 0, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPageIndex, coverZ: $cover, scaleFactor: $scaleFactor, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, showNavBack: $showNavBack)

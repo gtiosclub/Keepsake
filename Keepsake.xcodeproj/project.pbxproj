@@ -15,6 +15,7 @@
 		5B27A50C2D5AB30600327B51 /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B27A50B2D5AB30600327B51 /* WatchConnectivity.framework */; };
 		5B27A5342D5AB33500327B51 /* KeepsakeWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 5B27A5112D5AB33400327B51 /* KeepsakeWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F71261682D5405C000F65745 /* ChatGPTSwift */; };
+		F731D16D2D80AAD900356CCE /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = F731D16C2D80AAD900356CCE /* FirebaseFunctions */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -154,6 +155,7 @@
 				F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */,
 				5724A44D2D64E87F0012A6F2 /* FirebaseCore in Frameworks */,
 				5724A4492D64E87F0012A6F2 /* FirebaseAuth in Frameworks */,
+				F731D16D2D80AAD900356CCE /* FirebaseFunctions in Frameworks */,
 				5B27A50C2D5AB30600327B51 /* WatchConnectivity.framework in Frameworks */,
 				5724A4512D64E87F0012A6F2 /* FirebaseStorage in Frameworks */,
 				5724A44B2D64E87F0012A6F2 /* FirebaseAuthCombine-Community in Frameworks */,
@@ -309,6 +311,7 @@
 				5724A44C2D64E87F0012A6F2 /* FirebaseCore */,
 				5724A44E2D64E87F0012A6F2 /* FirebaseFirestore */,
 				5724A4502D64E87F0012A6F2 /* FirebaseStorage */,
+				F731D16C2D80AAD900356CCE /* FirebaseFunctions */,
 			);
 			productName = Keepsake;
 			productReference = F751BD252D50049D00EDB703 /* Keepsake.app */;
@@ -554,13 +557,13 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatch;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.rikroy.Keepsake;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.rik.Keepsake;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rikroy.Keepsake.watch;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake.watch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -584,13 +587,13 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatch;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.rikroy.Keepsake;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.rik.Keepsake;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rikroy.Keepsake.watch;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake.watch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -811,6 +814,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Keepsake/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires camera access";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone access required in order to record audio.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -823,7 +827,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rikroy.Keepsake;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -844,6 +848,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Keepsake/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires camera access";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone access required in order to record audio.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -856,7 +861,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rikroy.Keepsake;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -1057,6 +1062,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F71261672D5405C000F65745 /* XCRemoteSwiftPackageReference "ChatGPTSwift" */;
 			productName = ChatGPTSwift;
+		};
+		F731D16C2D80AAD900356CCE /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
