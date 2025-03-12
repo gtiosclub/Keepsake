@@ -119,15 +119,33 @@ struct JournalItemView: View {
 // JOURNAL DETAIL VIEW
 struct JournalDetailView: View {
     @State var template: Template
+    @Environment(\.dismiss) var dismiss
     let screenWidth = UIScreen.main.bounds.width
     let screenHeight = UIScreen.main.bounds.height
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text(template.name)
-                .font(.title)
-                .fontWeight(.bold)
-
+        VStack(spacing: 15) {
+            HStack {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .padding()
+                    .foregroundColor(.blue)
+                }
+                
+                Spacer()
+            }
+            ZStack{
+                Text(template.name)
+                    .font(.title)
+                    .fontWeight(.bold)
+            }
+                    .frame(maxWidth: .infinity, alignment: .center)
+            
             JournalCover(template: template, degrees: 0, title: template.name)
                 .scaleEffect(0.8)
                 .frame(width: screenWidth * 0.8, height: screenHeight * 0.5)
