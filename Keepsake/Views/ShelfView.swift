@@ -9,6 +9,7 @@ import SwiftUI
 struct ShelfView: View {
     @Namespace private var shelfNamespace
     @ObservedObject var userVM: UserViewModel
+    @ObservedObject var shelf: JournalShelf
     @ObservedObject var aiVM: AIViewModel
     var shelfIndex: Int
     @State var degrees: CGFloat = 0
@@ -27,25 +28,50 @@ struct ShelfView: View {
     @State var selectedEntry: Int = 0
     @State var displayPage: Int = 2
     @State var showNavBack: Bool = false
+    @State private var showJournalForm = false
     
     var body: some View {
         if !show {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 10) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("Welcome back, Rik")
-                        .font(.title3)
-                        .foregroundColor(.gray)
-                        .bold()
-                    
-                    Text("What is on your mind today?")
-                        .font(.largeTitle)
-                        .bold()
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(nil) // Allow multiple lines
-                        .fixedSize(horizontal: false, vertical: true)
+                    HStack {
+                        Text("Welcome back, Rik")
+                            .font(.title2)
+                            .foregroundColor(.gray)
+                            .fontWeight(.semibold)
+                            .padding(.top, 20)
+                        
+                        Spacer()
+                                                    
+                        Menu {
+                            Button(action: {
+                                showJournalForm = true
+                                print("clicked")
+                            }) {
+                                Text("New Journal")
+                            }
+                            
+                            Button(action: {
+                                showJournalForm = true
+                            }) {
+                                Text("New AR Scrapbook")
+                            }
+                            
+                        } label: {
+                            Image(systemName: "plus.circle")
+                                .font(.system(size: 30))
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.top, 20)
+                    }
                 }
-                .padding(.horizontal, 30)
-                .padding(.top, 20)
+                    
+                Text("What is on your mind today?")
+                    .font(.largeTitle)
+                    .bold()
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(nil) // Allow multiple lines
+                    .fixedSize(horizontal: false, vertical: true)
                 
                 //Journals
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -122,23 +148,75 @@ struct ShelfView: View {
                     .padding(.horizontal, 20)
                 }
                 .frame(height: 500)
-                
             }
+            .padding(.horizontal, 30)
+//            .onAppear() {
+//                print(userVM.user.journalShelves)
+//            }
             .frame(maxHeight: .infinity, alignment: .top)
+            .sheet(isPresented: $showJournalForm) {
+                JournalFormView(
+                    isPresented: $showJournalForm,
+                    onCreate: { title, coverColor, pageColor, titleColor in
+                        createJournal(
+                            from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: .leather),
+                            shelfIndex: shelfIndex
+                        )
+                    },
+                    templates: userVM.user.savedTemplates
+                )
+            }
         } else {
             if !inTextEntry {
-                OpenJournal(userVM: userVM, journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal), shelfIndex: shelfIndex, bookIndex: selectedJournal, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPage, coverZ: $coverZ, scaleFactor: $scaleEffect, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, showNavBack: $showNavBack)
+                OpenJournal(userVM: userVM,
+                          journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
+                          shelfIndex: shelfIndex,
+                          bookIndex: selectedJournal,
+                          degrees: $degrees,
+                          isHidden: $isHidden,
+                          show: $show,
+                          frontDegrees: $frontDegrees,
+                          circleStart: $circleStart,
+                          circleEnd: $circleEnd,
+                          displayPageIndex: $displayPage,
+                          coverZ: $coverZ,
+                          scaleFactor: $scaleEffect,
+                          inTextEntry: $inTextEntry,
+                          selectedEntry: $selectedEntry,
+                          showNavBack: $showNavBack)
                     .matchedGeometryEffect(id: "journal_\(selectedJournal)", in: shelfNamespace, properties: .position, anchor: .center)
                     .scaleEffect(scaleEffect)
                     .transition(.slide)
                     .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                     .navigationBarBackButtonHidden(showNavBack)
             } else {
-                JournalTextInputView(userVM: userVM, aiVM: aiVM, shelfIndex: shelfIndex, journalIndex: selectedJournal, entryIndex: selectedEntry, pageIndex: displayPage, inTextEntry: $inTextEntry, entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                JournalTextInputView(userVM: userVM,
+                                   aiVM: aiVM,
+                                   shelfIndex: shelfIndex,
+                                   journalIndex: selectedJournal,
+                                   entryIndex: selectedEntry,
+                                   pageIndex: displayPage,
+                                   inTextEntry: $inTextEntry,
+                                   entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
                     .navigationBarBackButtonHidden(true)
             }
-            
         }
+    }
+    
+    func createJournal(from template: Template, shelfIndex: Int) {
+        let newJournal = Journal(
+            name: template.name,
+            createdDate: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short),
+            entries: [],
+            category: "General",
+            isSaved: false,
+            isShared: false,
+            template: template,
+            pages: [JournalPage(number: 1)],
+            currentPage: 0
+        )
+        userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
+        print(userVM.user.journalShelves[0])
     }
     
     private func calculateVerticalOffset(proxy: GeometryProxy) -> CGFloat {
@@ -161,5 +239,10 @@ struct ShelfView: View {
         Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .flower1), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 2), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
         Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .snoopy), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
         Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .flower3), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
-    ])], scrapbookShelves: [])), aiVM: AIViewModel(), shelfIndex: 0)
+    ])], scrapbookShelves: [])), shelf: JournalShelf(name: "Bookshelf", journals: [
+        Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
+        Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
+        Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
+        Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
+    ]), aiVM: AIViewModel(), shelfIndex: 0)
 }

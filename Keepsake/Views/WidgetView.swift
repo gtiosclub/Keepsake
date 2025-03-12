@@ -14,13 +14,21 @@ struct WidgetView: View {
     var pageNum: Int
     @ObservedObject var page: JournalPage
     var isDisplay: Bool
+    @Binding var inTextEntry: Bool
+    @Binding var selectedEntry: Int
     var body: some View {
         let gridItems = [GridItem(.fixed(width), spacing: 10, alignment: .leading),
                          GridItem(.fixed(width), spacing: UIScreen.main.bounds.width * 0.02, alignment: .leading),]
 
         LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
             ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
-                createView(for: widget, width: width, height: height, isDisplay: isDisplay)
+                createView(for: widget, width: width, height: height, isDisplay: isDisplay, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+                    .onTapGesture {
+                        if widget.type != .image {
+                            selectedEntry = index
+                            inTextEntry.toggle()
+                        }
+                    }
                 
                 
             }
@@ -62,7 +70,7 @@ struct TextEntryView: View {
 }
 
 @ViewBuilder
-func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool) -> some View {
+func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool, inTextEntry: Binding<Bool>, selectedEntry: Binding<Int>) -> some View {
     switch widget.type {
     case .written:
         TextEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
@@ -157,8 +165,10 @@ struct PictureEntryView: View {
     struct Preview: View {
         @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1)
         @State var selectedImageIndex: Int = 0
+        @State var inTextEntry = false
+        @State var selectedEntry: Int = 0
         var body: some View {
-            WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: 10, pageNum: 2, page: page, isDisplay: true)
+            WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: 10, pageNum: 2, page: page, isDisplay: true, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
         }
     }
 

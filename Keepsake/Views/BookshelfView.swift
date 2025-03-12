@@ -9,7 +9,7 @@ import SwiftUI
 
 
 struct BookshelfView: View {
-    var shelf: JournalShelf
+    @ObservedObject var shelf: JournalShelf
     @State var scale: CGFloat = 0.24
     var body: some View {
         VStack(alignment: .leading) {
