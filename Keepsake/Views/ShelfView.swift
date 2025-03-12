@@ -27,25 +27,49 @@ struct ShelfView: View {
     @State var selectedEntry: Int = 0
     @State var displayPage: Int = 2
     @State var showNavBack: Bool = false
+    @State private var showJournalForm = false
     
     var body: some View {
         if !show {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 10) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("Welcome back, Rik")
-                        .font(.title3)
-                        .foregroundColor(.gray)
-                        .bold()
-                    
-                    Text("What is on your mind today?")
-                        .font(.largeTitle)
-                        .bold()
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(nil) // Allow multiple lines
-                        .fixedSize(horizontal: false, vertical: true)
+                    HStack {
+                        Text("Welcome back, Rik")
+                            .font(.title2)
+                            .foregroundColor(.gray)
+                            .fontWeight(.semibold)
+                            .padding(.top, 20)
+                        
+                        Spacer()
+                                                    
+                        Menu {
+                            Button(action: {
+                                showJournalForm = true
+                            }) {
+                                Text("New Journal")
+                            }
+                            
+                            Button(action: {
+                                showJournalForm = true
+                            }) {
+                                Text("New AR Scrapbook")
+                            }
+                            
+                        } label: {
+                            Image(systemName: "plus.circle")
+                                .font(.system(size: 30))
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.top, 20)
+                    }
                 }
-                .padding(.horizontal, 30)
-                .padding(.top, 20)
+                    
+                Text("What is on your mind today?")
+                    .font(.largeTitle)
+                    .bold()
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(nil) // Allow multiple lines
+                    .fixedSize(horizontal: false, vertical: true)
                 
                 //Journals
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -122,23 +146,72 @@ struct ShelfView: View {
                     .padding(.horizontal, 20)
                 }
                 .frame(height: 500)
-                
             }
+            .padding(.horizontal, 30)
             .frame(maxHeight: .infinity, alignment: .top)
+            .sheet(isPresented: $showJournalForm) {
+                JournalFormView(
+                    isPresented: $showJournalForm,
+                    onCreate: { title, coverColor, pageColor, titleColor in
+                        createJournal(
+                            from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: .leather),
+                            shelfIndex: shelfIndex
+                        )
+                    },
+                    templates: userVM.user.savedTemplates
+                )
+            }
         } else {
             if !inTextEntry {
-                OpenJournal(userVM: userVM, journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal), shelfIndex: shelfIndex, bookIndex: selectedJournal, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPage, coverZ: $coverZ, scaleFactor: $scaleEffect, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, showNavBack: $showNavBack)
+                OpenJournal(userVM: userVM,
+                          journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
+                          shelfIndex: shelfIndex,
+                          bookIndex: selectedJournal,
+                          degrees: $degrees,
+                          isHidden: $isHidden,
+                          show: $show,
+                          frontDegrees: $frontDegrees,
+                          circleStart: $circleStart,
+                          circleEnd: $circleEnd,
+                          displayPageIndex: $displayPage,
+                          coverZ: $coverZ,
+                          scaleFactor: $scaleEffect,
+                          inTextEntry: $inTextEntry,
+                          selectedEntry: $selectedEntry,
+                          showNavBack: $showNavBack)
                     .matchedGeometryEffect(id: "journal_\(selectedJournal)", in: shelfNamespace, properties: .position, anchor: .center)
                     .scaleEffect(scaleEffect)
                     .transition(.slide)
                     .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                     .navigationBarBackButtonHidden(showNavBack)
             } else {
-                JournalTextInputView(userVM: userVM, aiVM: aiVM, shelfIndex: shelfIndex, journalIndex: selectedJournal, entryIndex: selectedEntry, pageIndex: displayPage, inTextEntry: $inTextEntry, entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                JournalTextInputView(userVM: userVM,
+                                   aiVM: aiVM,
+                                   shelfIndex: shelfIndex,
+                                   journalIndex: selectedJournal,
+                                   entryIndex: selectedEntry,
+                                   pageIndex: displayPage,
+                                   inTextEntry: $inTextEntry,
+                                   entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
                     .navigationBarBackButtonHidden(true)
             }
-            
         }
+    }
+    
+    func createJournal(from template: Template, shelfIndex: Int) {
+        let newJournal = Journal(
+            name: template.name,
+            createdDate: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short),
+            entries: [],
+            category: "General",
+            isSaved: false,
+            isShared: false,
+            template: template,
+            pages: [JournalPage(number: 1)],
+            currentPage: 0
+        )
+        
+        userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
     }
     
     private func calculateVerticalOffset(proxy: GeometryProxy) -> CGFloat {
