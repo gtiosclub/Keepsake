@@ -19,7 +19,7 @@ struct JournalTextInputView: View {
     @State var date: String = ""
     @State var inputText: String = ""
     @Binding var inTextEntry: Bool
-    var textfieldPrompt: String = "Enter Prompt"
+    var textfieldPrompt: String = "Enter Title"
     var entry: JournalEntry
     @State var showPromptSheet: Bool = false
     @State var selectedPrompt: String? = ""
@@ -62,18 +62,30 @@ struct JournalTextInputView: View {
                     }.padding(UIScreen.main.bounds.width * 0.025)
                 }
                 TextField(textfieldPrompt, text: $title, axis: .vertical)
-                    .font(.title)
+                    .font(.custom("SF Pro Display", size: UIFont.preferredFont(forTextStyle: .title1).pointSize))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
                 Text(date).font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
                 if selectedPrompt != nil {
-                    if !selectedPrompt!.isEmpty {
-                        let trimmedPrompt: String = selectedPrompt!.trimmingCharacters(in: .whitespacesAndNewlines)
-                        Text(trimmedPrompt).font(.subheadline)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                    if let selectedPrompt = selectedPrompt, !selectedPrompt.isEmpty {
+                        let trimmedPrompt = selectedPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+                        
+                        HStack(spacing: 8) {
+                            Image(systemName: "lightbulb")
+                                .foregroundColor(.yellow)           .font(.title3)
+                                
+                            Text(trimmedPrompt)
+                                .font(.subheadline)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.blue.opacity(0.2))
+                        )
+                        .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
                     }
                 }
                 DebounceTextField(inputText: $inputText, aiVM: aiVM)
