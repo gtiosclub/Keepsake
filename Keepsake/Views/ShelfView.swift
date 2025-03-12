@@ -54,7 +54,7 @@ struct ShelfView: View {
                             GeometryReader { geometry in
                                 let verticalOffset = calculateVerticalOffset(proxy: geometry)
                                 VStack(spacing: 35) {
-                                    JournalCover(book: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index), degrees: 0)
+                                    JournalCover(template: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).template, degrees: 0, title: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).name)
                                         .scaleEffect(scaleEffect)
                                         .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                                         .transition(.identity)
