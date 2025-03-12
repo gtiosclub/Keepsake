@@ -71,7 +71,7 @@ struct LibraryScrapbookView: View {
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(userVM.user.getScrapbookShelves().indices, id: \.self) { index in
                     NavigationLink(destination: ShelfView(userVM: userVM, aiVM: aiVM, shelfIndex: index)) {
-                        ScrapbookView(shelf: userVM.user.getScrapbookShelves()[index])
+                        BookshelfForScrapbookView(shelf: userVM.user.getScrapbookShelves()[index])
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
