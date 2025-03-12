@@ -51,7 +51,7 @@ struct CommunityView: View {
 //                                        .fill(Color.gray.opacity(0.5))
 //                                        .frame(width: 150, height: 200)
 //                                        .cornerRadius(10)
-                                    JournalCover(book: journals[index], degrees: 0)
+                                    JournalCover(template: journals[index].template, degrees: 0, title: journals[index].name)
                                         .scaleEffect(scaleEffect)
                                         .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                                     VStack(alignment: .leading, spacing: 3) {
