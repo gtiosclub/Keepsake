@@ -5,114 +5,66 @@
 //  Created by Alec Hance on 2/10/25.
 //
 
-import SwiftUI
 
 import SwiftUI
-
-struct LeftSemi: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY),
-                          control: CGPoint(x: rect.minX, y:  rect.minY))
-        
-        return path
-
-    }
-}
-
-struct RightSemi: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.minY),
-                          control: CGPoint(x: rect.maxX, y:  rect.minY))
-        
-        return path
-
-    }
-}
-
-struct BottomLeftSemi: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.maxY),
-                          control: CGPoint(x: rect.minX, y:  rect.maxY))
-        
-        return path
-
-    }
-}
 
 struct JournalCover: View {
-    @State var journal: Journal
-//    @State var coverColor: Color
-//    @State var pageColor: Color
-//    @State var titleText: String
-//    @State var titleColor: Color
+    @State var book: any Book
+//    @Binding var degrees: CGFloat
+    @State var degrees: CGFloat
     var body: some View {
         ZStack {
-            VStack {
-                ForEach(0..<9, id: \.self) { i in
-                    VStack(spacing: 0) {
-                        LeftSemi().stroke(Color.black, lineWidth: 2)
-                            .frame(width: UIScreen.main.bounds.width * 0.02, height: UIScreen.main.bounds.height * 0.01)
-                        BottomLeftSemi().stroke(Color.black, lineWidth: 2)
-                            .frame(width: UIScreen.main.bounds.width * 0.02, height: UIScreen.main.bounds.height * 0.005)
-                        
-                    }
-                    
-                    
-                }
-            }.offset(x: UIScreen.main.bounds.width * -0.25)
-            RoundedRectangle(cornerRadius: 10)
-                .frame(width: UIScreen.main.bounds.width * 0.5 + 8, height: UIScreen.main.bounds.height * 0.3)
-                .foregroundStyle(journal.template.coverColor)
-                .offset(x: 4, y: 7)
-            RoundedRectangle(cornerRadius: 10)
-                .frame(width: UIScreen.main.bounds.width * 0.5, height: UIScreen.main.bounds.height * 0.3)
-                .foregroundStyle(journal.template.pageColor)
-                .offset(x: 5, y: 5)
-            VStack {
-                ForEach(0..<9, id: \.self) { i in
-                    VStack(spacing: 0) {
-                        RightSemi().stroke(Color.black, lineWidth: 2)
-                            .frame(width: UIScreen.main.bounds.width * 0.02, height: UIScreen.main.bounds.height * 0.01)
-                        BottomLeftSemi().stroke(Color.clear, lineWidth: 2)
-                            .frame(width: UIScreen.main.bounds.width * 0.02, height: UIScreen.main.bounds.height * 0.005)
-                    }
-                    
-                    
-                }
-            }.offset(x: UIScreen.main.bounds.width * -0.24)
+            // Spine Effect
+            Rectangle()
+                .fill(book.template.coverColor) // Darker than cover color
+                .brightness(-0.2)
+                .frame(width: UIScreen.main.bounds.width * 0.1, height: UIScreen.main.bounds.height * 0.56)
+                .offset(x: UIScreen.main.bounds.width * -0.42)
+                .shadow(radius: 3)
+                .zIndex(-3)
+                .overlay(
+                    Image("\(book.template.texture)") // Load texture image from assets
+                        .resizable()
+                        .frame(width: UIScreen.main.bounds.width * 0.1, height: UIScreen.main.bounds.height * 0.56)
+                        .offset(x: UIScreen.main.bounds.width * -0.42)
+                        .scaledToFill()
+                        .opacity(0.4) // Adjust for realism
+                )
+            
+//            // Page Thickness Simulation (Right Edge)
+//            Rectangle()
+//                .fill(Color.gray.opacity(0.8))
+//                .frame(width: UIScreen.main.bounds.width * 0.02, height: UIScreen.main.bounds.height * 0.54)
+//                .offset(x: UIScreen.main.bounds.width * 0.46)
+//                .shadow(radius: 2)
+//                .zIndex(-3)
+            
+            // Cover Page
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
-                    .frame(width: UIScreen.main.bounds.width * 0.5, height: UIScreen.main.bounds.height * 0.3)
-                    .foregroundStyle(journal.template.coverColor)
-                Text(journal.name)
-                    .font(.title)
-                    .foregroundStyle(journal.template.titleColor)
-                VStack {
-                    ForEach(0..<9, id: \.self) { i in
-                        VStack(spacing: 0) {
-                            RightSemi().stroke(Color.black, lineWidth: 2)
-                                .frame(width: UIScreen.main.bounds.width * 0.02, height: UIScreen.main.bounds.height * 0.01)
-                            BottomLeftSemi().stroke(Color.clear, lineWidth: 2)
-                                .frame(width: UIScreen.main.bounds.width * 0.02, height: UIScreen.main.bounds.height * 0.005)
-                            
-                        }
-                        
-                        
-                    }
-                }.offset(x: UIScreen.main.bounds.width * -0.24)
+                    .fill(book.template.coverColor)
+                    .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
+                    .overlay(
+                        Image("\(book.template.texture)") // Load texture image from assets
+                            .resizable()
+                            .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .scaledToFill()
+                            .opacity(0.4) // Adjust for realism
+                    )
+                    .shadow(color: .black.opacity(0.3), radius: 5, x: 5, y: 5) // Gives depth
                 
+                // Title
+                Text(book.name)
+                    .font(.title)
+                    .foregroundStyle(book.template.titleColor)
             }
+            .rotation3DEffect(.degrees(0), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint.leading, anchorZ: 0, perspective: 0.2)
         }
     }
 }
 #Preview {
-    JournalCover(journal: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .green, pageColor: .white, titleColor: .black)))
+    JournalCover(book: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(coverColor: .red, pageColor: .white, titleColor: .black), pages: [], currentPage: 2), degrees: 0)
 }
 
 //Color(red: 0.96, green: 0.5, blue: 0.5)

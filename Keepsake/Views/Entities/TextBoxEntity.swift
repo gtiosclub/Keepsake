@@ -2,7 +2,7 @@
 //  TextBoxEntity.swift
 //  Keepsake
 //
-//  Created by Shaunak Karnik on 2/15/25.
+//  Created by Shaunak Karnik on 3/4/25.
 //
 
 import SwiftUI
@@ -14,16 +14,15 @@ class TextBoxEntity: Entity {
     private var textComponent: TextComponent
     
     init(text: String) async {
-        self.textEntity = Entity()
-        self.textComponent = TextComponent()
-
+        
+        
+        // Creates the text box entity
+        textEntity = Entity()
+        
+        // Create the TextComponent component (built-in component that includes a mesh background)
+        textComponent = TextComponent()
+        
         super.init()
-        
-//        // Creates the text box entity
-//        let textEntity = Entity()
-//        // Create the TextComponent component (built-in component that includes a mesh background)
-//        var textComponent = TextComponent()
-        
         textComponent.backgroundColor = CGColor(gray: 0.5, alpha: 0.8)
         
         // Separately instatiatied width and height to use in collision box dimensions
@@ -33,7 +32,7 @@ class TextBoxEntity: Entity {
         textComponent.cornerRadius = 100
         
         // Set insets for now, need to figure out how to center text later
-        textComponent.edgeInsets = UIEdgeInsets(top: 100, left: 200, bottom: 100, right: 200)
+        textComponent.edgeInsets = UIEdgeInsets(top: 300, left: 500, bottom: 100, right: 200)
         
         // TextComponent takes in a Attributed String instead of a normal string so needs extra work to instantiate
         var attributedtext = AttributedString(text)
@@ -52,12 +51,12 @@ class TextBoxEntity: Entity {
     }
     
     func updateText(_ newText: String) {
-            var attributedText = AttributedString(newText)
-            attributedText.font = .boldSystemFont(ofSize: 200)
-            textComponent.text = attributedText
-            
-            // Update the text entity's component
-            textEntity.components[TextComponent.self] = textComponent
+        var attributedText = AttributedString(newText)
+        attributedText.font = .boldSystemFont(ofSize: 200)
+        textComponent.text = attributedText
+        
+        // Update the text entity's component
+        textEntity.components[TextComponent.self] = textComponent
     }
     
     // Needed since this class is a subclass of Entity

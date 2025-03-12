@@ -7,10 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4873C38C2D6138F400BDBC2D /* RealityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4873C38A2D6136AF00BDBC2D /* RealityKit.framework */; };
+		5724A4492D64E87F0012A6F2 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 5724A4482D64E87F0012A6F2 /* FirebaseAuth */; };
+		5724A44B2D64E87F0012A6F2 /* FirebaseAuthCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 5724A44A2D64E87F0012A6F2 /* FirebaseAuthCombine-Community */; };
+		5724A44D2D64E87F0012A6F2 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5724A44C2D64E87F0012A6F2 /* FirebaseCore */; };
+		5724A44F2D64E87F0012A6F2 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 5724A44E2D64E87F0012A6F2 /* FirebaseFirestore */; };
+		5724A4512D64E87F0012A6F2 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 5724A4502D64E87F0012A6F2 /* FirebaseStorage */; };
 		5B27A50C2D5AB30600327B51 /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B27A50B2D5AB30600327B51 /* WatchConnectivity.framework */; };
 		5B27A5342D5AB33500327B51 /* KeepsakeWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 5B27A5112D5AB33400327B51 /* KeepsakeWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F71261682D5405C000F65745 /* ChatGPTSwift */; };
+		F731D16D2D80AAD900356CCE /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = F731D16C2D80AAD900356CCE /* FirebaseFunctions */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,6 +81,16 @@
 		F751BD3F2D50049F00EDB703 /* KeepsakeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeepsakeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BD8C10A82D6516720095F73B /* Exceptions for "Keepsake" folder in "Keepsake" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = F751BD242D50049D00EDB703 /* Keepsake */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5B27A5122D5AB33400327B51 /* KeepsakeWatch Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -94,6 +109,9 @@
 		};
 		F751BD272D50049D00EDB703 /* Keepsake */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BD8C10A82D6516720095F73B /* Exceptions for "Keepsake" folder in "Keepsake" target */,
+			);
 			path = Keepsake;
 			sourceTree = "<group>";
 		};
@@ -137,7 +155,13 @@
 			files = (
 				4873C38C2D6138F400BDBC2D /* RealityKit.framework in Frameworks */,
 				F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */,
+				5724A44D2D64E87F0012A6F2 /* FirebaseCore in Frameworks */,
+				5724A4492D64E87F0012A6F2 /* FirebaseAuth in Frameworks */,
+				F731D16D2D80AAD900356CCE /* FirebaseFunctions in Frameworks */,
 				5B27A50C2D5AB30600327B51 /* WatchConnectivity.framework in Frameworks */,
+				5724A4512D64E87F0012A6F2 /* FirebaseStorage in Frameworks */,
+				5724A44B2D64E87F0012A6F2 /* FirebaseAuthCombine-Community in Frameworks */,
+				5724A44F2D64E87F0012A6F2 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -285,6 +309,12 @@
 			name = Keepsake;
 			packageProductDependencies = (
 				F71261682D5405C000F65745 /* ChatGPTSwift */,
+				5724A4482D64E87F0012A6F2 /* FirebaseAuth */,
+				5724A44A2D64E87F0012A6F2 /* FirebaseAuthCombine-Community */,
+				5724A44C2D64E87F0012A6F2 /* FirebaseCore */,
+				5724A44E2D64E87F0012A6F2 /* FirebaseFirestore */,
+				5724A4502D64E87F0012A6F2 /* FirebaseStorage */,
+				F731D16C2D80AAD900356CCE /* FirebaseFunctions */,
 			);
 			productName = Keepsake;
 			productReference = F751BD252D50049D00EDB703 /* Keepsake.app */;
@@ -381,6 +411,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				F71261672D5405C000F65745 /* XCRemoteSwiftPackageReference "ChatGPTSwift" */,
+				5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F751BD262D50049D00EDB703 /* Products */;
@@ -529,13 +560,13 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatch;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.aryanpatel.Keepsake;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.rik.Keepsake;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.aryanpatel.Keepsake.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake.watch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -559,13 +590,13 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatch;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.aryanpatel.Keepsake;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.rik.Keepsake;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.aryanpatel.Keepsake.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake.watch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -582,10 +613,10 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5VM646AGC4;
+				DEVELOPMENT_TEAM = D2429Z9GY7;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "nityapotti.KeepsakeWatch-Watch-AppTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "ios.KeepsakeWatch-Watch-AppTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -602,10 +633,10 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5VM646AGC4;
+				DEVELOPMENT_TEAM = D2429Z9GY7;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "nityapotti.KeepsakeWatch-Watch-AppTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "ios.KeepsakeWatch-Watch-AppTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -621,10 +652,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5VM646AGC4;
+				DEVELOPMENT_TEAM = D2429Z9GY7;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "nityapotti.KeepsakeWatch-Watch-AppUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = "ios.KeepsakeWatch-Watch-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -640,10 +671,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5VM646AGC4;
+				DEVELOPMENT_TEAM = D2429Z9GY7;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "nityapotti.KeepsakeWatch-Watch-AppUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = "ios.KeepsakeWatch-Watch-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -778,13 +809,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Keepsake/Preview Content\"";
 				DEVELOPMENT_TEAM = N495U8874N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Need to build AR Scrapbooks";
+				INFOPLIST_FILE = Keepsake/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires camera access";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone access required in order to record audio.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -796,7 +830,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.aryanpatel.Keepsake;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -809,13 +843,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Keepsake/Preview Content\"";
 				DEVELOPMENT_TEAM = N495U8874N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Need to build AR Scrapbooks";
+				INFOPLIST_FILE = Keepsake/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires camera access";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone access required in order to record audio.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -827,7 +864,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.aryanpatel.Keepsake;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -839,13 +876,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = TL893ZWF55;
+				DEVELOPMENT_TEAM = D2429Z9GY7;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rikroy.KeepsakeTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.ios.KeepsakeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -858,13 +896,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = TL893ZWF55;
+				DEVELOPMENT_TEAM = D2429Z9GY7;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rikroy.KeepsakeTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.ios.KeepsakeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -878,10 +917,11 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = TL893ZWF55;
+				DEVELOPMENT_TEAM = D2429Z9GY7;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rikroy.KeepsakeUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.ios.KeepsakeUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -895,10 +935,11 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = TL893ZWF55;
+				DEVELOPMENT_TEAM = D2429Z9GY7;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rikroy.KeepsakeUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.ios.KeepsakeUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -976,6 +1017,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.8.1;
+			};
+		};
 		F71261672D5405C000F65745 /* XCRemoteSwiftPackageReference "ChatGPTSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/alfianlosari/ChatGPTSwift.git";
@@ -987,10 +1036,40 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		5724A4482D64E87F0012A6F2 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		5724A44A2D64E87F0012A6F2 /* FirebaseAuthCombine-Community */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = "FirebaseAuthCombine-Community";
+		};
+		5724A44C2D64E87F0012A6F2 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		5724A44E2D64E87F0012A6F2 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		5724A4502D64E87F0012A6F2 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
 		F71261682D5405C000F65745 /* ChatGPTSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F71261672D5405C000F65745 /* XCRemoteSwiftPackageReference "ChatGPTSwift" */;
 			productName = ChatGPTSwift;
+		};
+		F731D16C2D80AAD900356CCE /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5724A4472D64E87F0012A6F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
