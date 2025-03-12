@@ -148,6 +148,9 @@ struct ShelfView: View {
                 .frame(height: 500)
             }
             .padding(.horizontal, 30)
+//            .onAppear() {
+//                print(userVM.user.journalShelves)
+//            }
             .frame(maxHeight: .infinity, alignment: .top)
             .sheet(isPresented: $showJournalForm) {
                 JournalFormView(
@@ -210,8 +213,8 @@ struct ShelfView: View {
             pages: [JournalPage(number: 1)],
             currentPage: 0
         )
-        
         userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
+        print(userVM.user.journalShelves[0])
     }
     
     private func calculateVerticalOffset(proxy: GeometryProxy) -> CGFloat {

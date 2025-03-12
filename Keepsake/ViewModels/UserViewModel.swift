@@ -82,7 +82,8 @@ class UserViewModel: ObservableObject {
     }
     
     func addJournalToShelf(journal: Journal, shelfIndex: Int) {
-        user.journalShelves[shelfIndex].journals.append(journal)
+//        user.journalShelves[shelfIndex].journals.append(journal)
+        user.getJournalShelves()[shelfIndex].journals.append(journal)
     }
     
     func removeJournalEntry(journal: Journal, pageNum: Int, index: Int) {
