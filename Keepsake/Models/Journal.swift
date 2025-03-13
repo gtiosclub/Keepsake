@@ -52,6 +52,16 @@ class Journal: Book, ObservableObject {
 
 extension Journal: CustomStringConvertible {
     func toDictionary() -> [String: Any] {
+        var pageDict: [String: [String]] = [:]
+        print(pages)
+        for page in pages {
+            pageDict[String(page.number)] = []
+            for entry in page.entries {
+                pageDict[String(page.number)]?.append(entry.id.uuidString)
+            }
+        }
+        
+        
         return [
             "name": name,
             "id": id.uuidString,
@@ -60,7 +70,7 @@ extension Journal: CustomStringConvertible {
             "isSaved": isSaved,
             "isShared": isShared,
             "template": template.toDictionary(),
-            "pages": pages.map { $0.toDictionary() },
+            "pages": pageDict,
             "currentPage": currentPage
         ]
     }

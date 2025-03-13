@@ -27,10 +27,14 @@ class JournalShelf {
 
 extension JournalShelf: CustomStringConvertible {
     func toDictionary() -> [String: Any] {
+        var journalIDs: [String] = []
+        for journal in journals {
+            journalIDs.append(journal.id.uuidString)
+        }
         return [
             "name": name,
             "id": id.uuidString,
-            "journals": journals.map { $0.toDictionary() },
+            "journals": journalIDs,
         ]
     }
     
