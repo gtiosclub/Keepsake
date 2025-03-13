@@ -50,10 +50,10 @@ struct OpenJournal: View {
             .padding()
             
             ZStack {
-                JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees)
+                JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees, userVM: userVM)
                 JournalDisplayView(displayIsHidden: $displayIsHidden, userVM: userVM, journal: journal, shelfIndex: shelfIndex, bookIndex: bookIndex, displayPageIndex: $displayPageIndex, zIndex: $zIndex, displayDegrees: $displayDegrees, circleStart: $circleStart, circleEnd: $circleEnd, frontIsHidden: $frontIsHidden, frontDegrees: $frontDegrees, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
                 
-                JournalFrontPagesView(book: journal, degrees: $degrees, frontIsHidden: $frontIsHidden, displayPageIndex: $displayPageIndex, frontDegrees: $frontDegrees, isHidden: $isHidden, coverZ: $coverZ)
+                JournalFrontPagesView(book: journal, degrees: $degrees, frontIsHidden: $frontIsHidden, displayPageIndex: $displayPageIndex, frontDegrees: $frontDegrees, isHidden: $isHidden, coverZ: $coverZ, userVM: userVM)
                 VStack {
                     ForEach(0..<9, id: \.self) { i in
                         VStack(spacing: 0) {
@@ -129,6 +129,8 @@ struct JournalBackPagesView: View {
     @Binding var degrees: CGFloat
     @State var inTextEntry: Bool = false
     @State var selectedEntry: Int = 0
+    @ObservedObject var userVM: UserViewModel
+    @State var showDeleteButton: Int = -1
     var body: some View {
         RoundedRectangle(cornerRadius: 10)
             .fill(book.template.coverColor)
@@ -152,7 +154,7 @@ struct JournalBackPagesView: View {
                 .zIndex(-2)
             VStack {
                 if displayPageIndex + 1 < book.pages.count && displayPageIndex + 1 > -1{
-                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex + 1, page: book.pages[displayPageIndex + 1], isDisplay: false, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex + 1, page: book.pages[displayPageIndex + 1], isDisplay: false, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton)
                         .frame(width: UIScreen.main.bounds.width * 0.87)
                         .padding(.top, 10)
                 }
@@ -178,6 +180,8 @@ struct JournalFrontPagesView: View {
     @Binding var coverZ: Double
     @State var inTextEntry: Bool = false
     @State var selectedEntry: Int = 0
+    @ObservedObject var userVM: UserViewModel
+    @State var showDeleteButton: Int = -1
     var body: some View {
         //Fake Front Page
         RoundedRectangle(cornerRadius: 10)
@@ -195,7 +199,7 @@ struct JournalFrontPagesView: View {
                 .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
             VStack {
                 if displayPageIndex - 1 < book.pages.count && displayPageIndex - 1 > -1 {
-                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex - 1, page: book.pages[displayPageIndex - 1], isDisplay: false, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex - 1, page: book.pages[displayPageIndex - 1], isDisplay: false, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton)
                         .frame(width: UIScreen.main.bounds.width * 0.87)
                         .padding(.top, 10)
                         .opacity(frontIsHidden ? 0 : 1)
@@ -266,6 +270,7 @@ struct JournalDisplayView: View {
     @Binding var inTextEntry: Bool
     @State var scaleFactor: CGFloat = 1
     @Binding var selectedEntry: Int
+    @State var showDeleteButton: Int = -1
     var body: some View {
         ZStack(alignment: .top) {
             RoundedRectangle(cornerRadius: 10)
@@ -275,7 +280,7 @@ struct JournalDisplayView: View {
                 .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
             VStack {
                 if displayPageIndex < journal.pages.count && displayPageIndex > -1 {
-                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex, page: journal.pages[displayPageIndex], isDisplay: true, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex, page: journal.pages[displayPageIndex], isDisplay: true, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton)
                         .frame(width: UIScreen.main.bounds.width * 0.87)
                         .padding(.top, 10)
                         .opacity(displayIsHidden ? 0 : 1)
@@ -294,6 +299,7 @@ struct JournalDisplayView: View {
                 DragGesture()
                     .onEnded({ value in
                         if value.translation.width < 0 {
+                            showDeleteButton = -1
                             circleStart = 0.5
                             circleEnd = 1
                             zIndex = -0.5
@@ -316,6 +322,7 @@ struct JournalDisplayView: View {
                         }
                         
                         if value.translation.width > 0 {
+                            showDeleteButton = -1
                             // right
                             circleStart = 0.5
                             circleEnd = 1
