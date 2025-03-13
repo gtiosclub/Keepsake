@@ -202,7 +202,7 @@ class FirebaseViewModel: ObservableObject {
     func addJournalEntry(journalEntry: JournalEntry, journalID: UUID, pageNumber: Int) async -> Bool {
         let journal_entry_reference = db.collection("JOURNAL_ENTRIES").document(journalEntry.id.uuidString)
         do {
-            let journalEntryData = journalEntry.toDictionary()
+            let journalEntryData = journalEntry.toDictionary(journalID: journalID)
             try await journal_entry_reference.setData(journalEntryData)
             
             try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
