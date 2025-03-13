@@ -108,13 +108,14 @@ struct JournalEntry: Encodable, Hashable {
 }
 
 extension JournalEntry: CustomStringConvertible {
-    func toDictionary() -> [String: Any] {
+    func toDictionary(journalID: UUID) -> [String: Any] {
         return [
             "date": date,
             "title": title,
             "entryContents": text,
             "summary": summary,
             "width": width,
+            "journal_id": journalID.uuidString,
             "height": height,
             "isFake": isFake,
             "color": color,

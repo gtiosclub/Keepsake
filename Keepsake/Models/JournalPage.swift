@@ -28,12 +28,6 @@ class JournalPage: ObservableObject {
 }
 
 extension JournalPage: CustomStringConvertible {
-    func toDictionary() -> [String: Any] {
-        return [
-            "number": number,
-            "entries": entries.map { $0.toDictionary() } // Assuming JournalEntry has toDictionary()
-        ]
-    }
     
     static func fromDictionary(_ dict: [String: Any]) -> JournalPage? {
         guard let number = dict["number"] as? Int,
