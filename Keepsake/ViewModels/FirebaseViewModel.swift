@@ -283,4 +283,87 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func createConversationEntry(entry: JournalEntry, journalID: String) async -> Bool {
+            let journalEntry = db.collection("JOURNAL_ENTRIES")
+            var conversationEntryData: [String: Any]  = [
+                "date": "",
+                "entryContents": "",
+                "conversationLog": [],
+                "id": "\(entry.id)",
+                "journal_id": journalID,
+                "summary": "",
+                "title": ""
+            ]
+            do {
+                try await journalEntry.document("\(entry.id.uuidString)").setData(conversationEntryData)
+                return true
+                
+            } catch {
+                print("Error making document: \(error.localizedDescription)")
+                return false
+            }
+        }
+    func updateEntryWithConversationLog(id: UUID) async {
+        let journalDoc = db.collection("JOURNAL_ENTRIES").document(id.uuidString)
+        
+        do {
+            try await journalDoc.updateData([
+                "conversationLog": []
+            ])
+        } catch {
+            print("Error making document: \(error.localizedDescription)")
+        }
+        
+        
+    }
+        
+        func addConversationLog(text: [String], journalEntry: UUID) async -> Bool {
+            let conversationEntry = db.collection("JOURNAL_ENTRIES").document("\(journalEntry.uuidString)")
+            
+            do {
+                try await conversationEntry.updateData([
+                    "conversationLog": text
+                ])
+                return true
+                
+            } catch {
+                print("Error making document: \(error.localizedDescription)")
+                return false
+            }
+        }
+    
+    func conversationEntryCheck(journalEntryID: UUID) async -> Bool {
+        let entryDoc = db.collection("JOURNAL_ENTRIES").document("\(journalEntryID.uuidString)")
+        do {
+            let doc = try await entryDoc.getDocument()
+            if doc.exists {
+                return true
+            } else {
+                return false
+            }
+        } catch {
+            print("Error making document: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    func loadConversationLog(for journalEntryID: String, viewModel: AIViewModel) async {
+            let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntryID)
+
+            do {
+                let document = try await docRef.getDocument()
+                if let data = document.data(),
+                   let conversationLog = data["conversationLog"] as? [String], !conversationLog.isEmpty {
+
+                    await MainActor.run {
+                        if viewModel.conversationHistory.isEmpty {
+                            viewModel.conversationHistory = conversationLog
+                        }
+                    }
+                }
+            } catch {
+                print("Error loading conversationLog: \(error.localizedDescription)")
+            }
+    }
+    
 }

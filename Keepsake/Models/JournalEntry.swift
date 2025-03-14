@@ -17,6 +17,7 @@ struct JournalEntry: Encodable, Hashable {
     var date: String
     var title: String
     var text: String
+    var conversationLog: [String]
     var summary: String
     var width: Int
     var height: Int
@@ -36,6 +37,7 @@ struct JournalEntry: Encodable, Hashable {
         self.date = date
         self.text = text
         self.title = title
+        self.conversationLog = []
         self.summary = summary
         self.width = 1
         self.height = 1
@@ -44,12 +46,27 @@ struct JournalEntry: Encodable, Hashable {
         self.images = []
         self.type = .written
     }
+    init(date: String, title: String, conversationLog: [String], summary: String, type: EntryType) {
+            self.id = UUID()
+            self.date = date
+            self.text = ""
+            self.title = title
+            self.conversationLog = conversationLog
+            self.summary = summary
+            self.width = 1
+            self.height = 1
+            self.isFake = false
+            self.color = [0.5,0.5,0.5]
+            self.images = []
+            self.type = .chat
+        }
     
     init(date: String, title: String, text: String, summary: String, width: Int, height: Int, isFake: Bool, color: [Double]) {
         self.id = UUID()
         self.date = date
         self.text = text
         self.title = title
+        self.conversationLog = []
         self.summary = summary
         self.width = width
         self.height = height
@@ -64,6 +81,7 @@ struct JournalEntry: Encodable, Hashable {
         self.date = date
         self.text = text
         self.title = title
+        self.conversationLog = []
         self.summary = summary
         self.width = width
         self.height = height
@@ -83,6 +101,7 @@ struct JournalEntry: Encodable, Hashable {
         self.date = "01/01/2000"
         self.title = "Title"
         self.text = "Text"
+        self.conversationLog = []
         self.summary = "Summary"
         self.width = 1
         self.height = 1
@@ -97,6 +116,7 @@ struct JournalEntry: Encodable, Hashable {
         self.date = entry.date
         self.title = entry.title
         self.text = entry.text
+        self.conversationLog = []
         self.summary = entry.summary
         self.width = width
         self.height = height
