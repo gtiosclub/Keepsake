@@ -39,7 +39,8 @@ import SwiftUI
 
 struct ConversationView: View {
     @ObservedObject var viewModel: AIViewModel
-    var conversationEntry = ConversationEntry(date: "2/14/25", title: "Midnight Thoughts", conversationLog: [])
+    @ObservedObject var FBviewModel: FirebaseViewModel
+    var convoEntry: JournalEntry
     
     var body: some View {
         ScrollViewReader { proxy in
@@ -89,16 +90,26 @@ struct ConversationView: View {
                 }
                 .padding(.horizontal)
             }
-            .onChange(of: viewModel.conversationHistory) { _ in
+            .onChange(of: viewModel.conversationHistory) { newHistory in
                 if let lastMessage = viewModel.conversationHistory.last {
                     proxy.scrollTo(lastMessage, anchor: .bottom)
+                }
+                Task {
+                    let success = await FBviewModel.addConversationLog(text: newHistory, journalEntry: convoEntry.id)
+                        if !success {
+                            print("Failed to update conversation log in Firestore.")
+                        }
                 }
             }
             .background(Color.white)
         }
         .onAppear {
             Task {
-                await viewModel.startConversation(entry: conversationEntry)
+                await FBviewModel.loadConversationLog(for: convoEntry.id.uuidString, viewModel: viewModel)
+                
+                if viewModel.conversationHistory.isEmpty {
+                    await viewModel.startConversation(entry: convoEntry)
+                }
             }
         }
         
@@ -116,7 +127,7 @@ struct ConversationView: View {
             } else {
                 Button(action: {
                     Task {
-                        await viewModel.sendMessage(entry: conversationEntry)
+                        await viewModel.sendMessage(entry: convoEntry)
                     }
                 }) {
                     Image(systemName: "paperplane")
@@ -129,8 +140,11 @@ struct ConversationView: View {
         .padding()
         .background(Color.white)
     }
+    
+    
 }
 
+
 #Preview {
-    ConversationView(viewModel: AIViewModel())
+    ConversationView(viewModel: AIViewModel(), FBviewModel: FirebaseViewModel(), convoEntry: JournalEntry())
 }

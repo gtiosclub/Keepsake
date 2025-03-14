@@ -87,6 +87,19 @@ final class ViewModelUnitTests: XCTestCase {
         XCTAssertNotNil(journalEntry)
         print("Journal: \(String(describing: journalEntry))")
     }
+    
+    func testCreateJournalEntry() async {
+        let testEntry = JournalEntry(date: "3/13/25", title: "TestTitle", conversationLog: [], summary: "TestSummary", type: .chat)
+        let journalEntry = await vm.createConversationEntry(entry: testEntry, journalID: "0272F187-D036-4966-AD98-598E8537CA8E")
+        XCTAssertTrue(journalEntry)
+    }
+    
+    func testCheckConversationEntry() async {
+        let fakeID = UUID(uuidString: "0C932301-F760-482E-A8AD-42EFBB75E3F8") ?? UUID()
+        
+        let test = await vm.conversationEntryCheck(journalEntryID: fakeID)
+        XCTAssertTrue(test)
+    }
 
     
     

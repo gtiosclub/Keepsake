@@ -11,6 +11,7 @@ import SwiftUI
 struct LibraryView: View {
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var aiVM: AIViewModel
+    @ObservedObject var fbVM: FirebaseViewModel
     @State private var showBookshelfView = true
     var body: some View {
         NavigationView {
@@ -23,9 +24,9 @@ struct LibraryView: View {
                 .padding()
 
                 if showBookshelfView {
-                    LibraryBookshelfView(userVM: userVM, aiVM: aiVM)
+                    LibraryBookshelfView(userVM: userVM, aiVM: aiVM, fbVM: fbVM)
                 } else {
-                    LibraryScrapbookView(userVM: userVM, aiVM: aiVM) // Add Scrapbook View
+                    LibraryScrapbookView(userVM: userVM, aiVM: aiVM, fbVM: fbVM) // Add Scrapbook View
                 }
             }
         }
@@ -35,11 +36,12 @@ struct LibraryView: View {
 struct LibraryBookshelfView: View {
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var aiVM: AIViewModel
+    @ObservedObject var fbVM: FirebaseViewModel
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(userVM.user.getJournalShelves().indices, id: \.self) { index in
-                    NavigationLink(destination: ShelfView(userVM: userVM, shelf: userVM.getJournalShelves()[index], aiVM: aiVM, shelfIndex: index)) {
+                    NavigationLink(destination: ShelfView(userVM: userVM, shelf: userVM.getJournalShelves()[index], aiVM: aiVM, fbVM: FirebaseViewModel(), shelfIndex: index)) {
                         BookshelfView(shelf: userVM.user.getJournalShelves()[index])
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -65,11 +67,12 @@ struct LibraryBookshelfView: View {
 struct LibraryScrapbookView: View {
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var aiVM: AIViewModel
+    @ObservedObject var fbVM: FirebaseViewModel
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(userVM.user.getScrapbookShelves().indices, id: \.self) { index in
-                    NavigationLink(destination: ShelfView(userVM: userVM, shelf: userVM.getJournalShelves()[index], aiVM: aiVM, shelfIndex: index)) {
+                    NavigationLink(destination: ShelfView(userVM: userVM, shelf: userVM.getJournalShelves()[index], aiVM: aiVM, fbVM: fbVM, shelfIndex: index)) {
                         BookshelfForScrapbookView(shelf: userVM.user.getScrapbookShelves()[index])
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -137,7 +140,7 @@ struct LibraryView_Previews: PreviewProvider {
             ])
         ])
         
-        return LibraryView(userVM: UserViewModel(user: sampleUser), aiVM: AIViewModel())
+        return LibraryView(userVM: UserViewModel(user: sampleUser), aiVM: AIViewModel(), fbVM: FirebaseViewModel())
     }
 }
 
