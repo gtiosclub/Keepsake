@@ -157,25 +157,42 @@ struct RemindersView_Previews: PreviewProvider {
 //}
 //
 
+extension Color {
+    init(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
 
+        var rgb: UInt64 = 0
+        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+
+        let red = Double((rgb >> 16) & 0xFF) / 255.0
+        let green = Double((rgb >> 8) & 0xFF) / 255.0
+        let blue = Double(rgb & 0xFF) / 255.0
+
+        self.init(red: red, green: green, blue: blue)
+    }
+}
 struct RemindersListView: View {
-    @EnvironmentObject var viewModel: RemindersViewModel
+    @EnvironmentObject private var viewModel: RemindersViewModel
 
     var body: some View {
-        List(viewModel.reminders) { reminder in
-            VStack(alignment: .leading) {
-                Text(reminder.title)
-                    .font(.headline)
-                Text(reminder.date, style: .date)
-                    .font(.subheadline)
-                Text(reminder.body)
-                    .font(.body)
-            }
-            .padding(.vertical, 5)
-        }
-        #if os(watchOS)
+
+        
+        NavigationStack {
+            VStack {
+                ForEach(viewModel.reminders) { reminder in
+                    VStack(alignment: .leading) {
+                        Text(reminder.title)
+                            .font(.headline)
+                        Text(reminder.date, style: .date)
+                            .font(.subheadline)
+                        Text(reminder.body)
+                            .font(.body)
+                    }
+                    .padding(.vertical, 5)
+                }
                 NavigationLink(
-                                    destination: TextReminder(),
+                    destination: TextReminder(),
                     label: {
                         Image(systemName: "plus.circle.fill")
                             .foregroundColor(Color(hex: "FFADF4"))
@@ -185,10 +202,9 @@ struct RemindersListView: View {
                             .shadow(radius: 10)
                     }
                 )
-
                 .buttonStyle(PlainButtonStyle()) // To remove default button style
-        #endif
-
+            }
+        }
     }
 }
 

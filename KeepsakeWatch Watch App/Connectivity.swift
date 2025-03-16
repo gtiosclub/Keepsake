@@ -298,10 +298,22 @@ final class Connectivity: NSObject, WCSessionDelegate {
     }
 
     private func loadReminders() {
+        #if os(watchOS)
+            print(" watch reached")
+        #endif
+    #if os(iOS)
+        print(" iOS reached")
+#endif
         if let data = UserDefaults.standard.data(forKey: "reminders"),
            let savedReminders = try? JSONDecoder().decode([Reminder].self, from: data) {
             reminders = savedReminders
         }
+#if os(watchOS)
+    print(" done loading watch")
+#endif
+#if os(iOS)
+        print(" done loading iOS")
+#endif
     }
 
     func saveReminders() {
