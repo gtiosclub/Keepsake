@@ -9,11 +9,13 @@ import UserNotifications
 
 @main
 struct KeepsakeWatch_Watch_AppApp: App {
+    @StateObject var viewModel = RemindersViewModel()
     @WKExtensionDelegateAdaptor(AppDelegate.self) var appDelegate  // This is for watchOS instead of iOS
     
     var body: some Scene {
         WindowGroup {
             RemindersListView()
+                .environmentObject(viewModel)
         }
     }
 }

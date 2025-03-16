@@ -86,7 +86,9 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				AudioRecording.swift,
+				Connectivity.swift,
 				Reminder.swift,
+				ViewModelConnectivity.swift,
 			);
 			target = F751BD242D50049D00EDB703 /* Keepsake */;
 		};

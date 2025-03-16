@@ -14,7 +14,6 @@ struct Reminder: Identifiable, Codable {
     var title: String
     var date: Date
     var body: String
-    
 }
 
 //// Reminders View
@@ -157,48 +156,26 @@ struct RemindersView_Previews: PreviewProvider {
 //    }
 //}
 //
+
+
 struct RemindersListView: View {
-    @State var reminders: [Reminder] = [
-        Reminder(title: "Sample Reminder", date: Date(), body: "Test Reminder Body")
-    ]
-    @State private var showVoiceRecording = false
-    
+    @EnvironmentObject var viewModel: RemindersViewModel
+
     var body: some View {
-        NavigationStack {
-            VStack {
-//                Text("Reminders")
-//                    .font(.body)
-//                    .foregroundColor(.white)
-                
-                ForEach(reminders) { reminder in
-                    VStack(alignment: .leading) {
-                        Text(reminder.title)
-                            .font(.headline)
-                            .foregroundColor(.white)
-                        Text("\(reminder.date.formatted(date: .abbreviated, time: .shortened))")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-//                        Text(reminder.body)
-//                            .font(.title3)
-//                            .foregroundColor(.white)
-                    }
-                    .padding(.vertical, 5)
-                }
-                
-                Spacer()
-                
-                // Custom button for navigating to Voice Recording
-#if os(watchOS)
+        List(viewModel.reminders) { reminder in
+            VStack(alignment: .leading) {
+                Text(reminder.title)
+                    .font(.headline)
+                Text(reminder.date, style: .date)
+                    .font(.subheadline)
+                Text(reminder.body)
+                    .font(.body)
+            }
+            .padding(.vertical, 5)
+        }
+        #if os(watchOS)
                 NavigationLink(
-                                    destination: Choice(
-                                        reminders: reminders,
-                                        showVoiceRecording: showVoiceRecording,
-                                        onComplete: { newReminder in
-                                            // Send reminder to Connectivity after it's added
-                                            Connectivity.shared.send(reminder: newReminder)
-                                            reminders.append(newReminder)
-                                        }
-                                    ),
+                                    destination: TextReminder(),
                     label: {
                         Image(systemName: "plus.circle.fill")
                             .foregroundColor(Color(hex: "FFADF4"))
@@ -210,15 +187,80 @@ struct RemindersListView: View {
                 )
 
                 .buttonStyle(PlainButtonStyle()) // To remove default button style
-#endif
-            }
+        #endif
 
-            .background(Color.black.edgesIgnoringSafeArea(.all)) // Black background
-            .navigationTitle("Reminders")
-            
-        }
     }
 }
+
+
+
+//struct RemindersListView: View {
+//    @State var reminders: [Reminder] = [
+//        Reminder(title: "Sample Reminder", date: Date(), body: "Test Reminder Body")
+//    ]
+//    @State private var showVoiceRecording = false
+//    
+//    var body: some View {
+//        NavigationStack {
+//            VStack {
+////                Text("Reminders")
+////                    .font(.body)
+////                    .foregroundColor(.white)
+//                
+//                ForEach(reminders) { reminder in
+//                    VStack(alignment: .leading) {
+//                        Text(reminder.title)
+//                            .font(.headline)
+//                            .foregroundColor(.white)
+//                        Text("\(reminder.date.formatted(date: .abbreviated, time: .shortened))")
+//                            .font(.subheadline)
+//                            .foregroundColor(.gray)
+////                        Text(reminder.body)
+////                            .font(.title3)
+////                            .foregroundColor(.white)
+//                    }
+//                    .padding(.vertical, 5)
+//                }
+//                
+//                Spacer()
+//                
+//                // Custom button for navigating to Voice Recording
+//#if os(watchOS)
+//                NavigationLink(
+//                                    destination: TextReminder(
+////                                        reminders: reminders,
+////                                        showVoiceRecording: showVoiceRecording,
+////                                        onComplete: { newReminder in
+////                                            // Send reminder to Connectivity after it's added
+////                                            Connectivity.shared.send(reminder: newReminder)
+////                                            reminders.append(newReminder)
+////                                        }
+//                                    ),
+//                    label: {
+//                        Image(systemName: "plus.circle.fill")
+//                            .foregroundColor(Color(hex: "FFADF4"))
+//                            .font(.title)
+//                            .padding()
+//                            .background(Circle().fill(Color.white.opacity(0.3)))
+//                            .shadow(radius: 10)
+//                    }
+//                )
+//
+//                .buttonStyle(PlainButtonStyle()) // To remove default button style
+//#endif
+//            }
+//
+//            .background(Color.black.edgesIgnoringSafeArea(.all)) // Black background
+//            .navigationTitle("Reminders")
+//            
+//        }
+//    }
+//}
+
+
+
+
+
 //struct RemindersListView: View {
 //    @State var reminders: [Reminder] = [
 //        Reminder(title: "Sample Reminder", date: Date(), body: "Test Reminder Body")

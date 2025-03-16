@@ -18,19 +18,19 @@ import UIKit
 import UserNotifications
 
 
-class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        // Configure Firebase
-        FirebaseApp.configure()
-        UNUserNotificationCenter.current().delegate = self
-        requestNotificationPermission()
-
-        return true
-    }
-
-
-}
+//class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+//
+//    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+//        // Configure Firebase
+//        FirebaseApp.configure()
+//        UNUserNotificationCenter.current().delegate = self
+//        requestNotificationPermission()
+//
+//        return true
+//    }
+//
+//
+//}
 
 
 @main
@@ -39,7 +39,7 @@ struct KeepsakeApp: App {
             requestNotificationPermission()
     }
     
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+//    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var firebaseViewModel = FirebaseViewModel.vm
     var body: some Scene {
         WindowGroup {

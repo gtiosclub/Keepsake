@@ -103,120 +103,246 @@
 //    }
 //}
 
+//import Foundation
+//import WatchConnectivity
+//#if os(iOS)
+//import FirebaseFirestore
+//#endif
+//enum ConnectivityKey: String {
+//    case reminder
+//}
+//
+//
+//final class Connectivity: NSObject, WCSessionDelegate {
+//    /// Connectivity singleton
+//    static let shared = Connectivity()
+//
+//    /// Published item lists
+//    @Published var reminder: Reminder
+//
+//    override private init() {
+//       
+//        self.reminder = Reminder(title: "Sample Reminder", date: Date(), body: "Test Reminder Body")
+//        super.init()
+//
+//        WCSession.default.delegate = self
+//        WCSession.default.activate()
+//
+//        // Make sure WCSession is supported
+//#if !os(watchOS)
+//        guard WCSession.isSupported() else { return }
+//#endif
+//
+//        // Set WCSession's delegate to self and activate
+//        
+//        
+//    }
+//
+//    // MARK: - Send/Receive Methods
+//    
+//
+//    /// Send itemLists to companion
+//    public func send(reminder: Reminder) {
+//        // Check the session is activated
+//        guard WCSession.default.activationState == .activated else {
+//            print(":(")
+//            return }
+//        print("Activation State: \(WCSession.default.activationState.rawValue)")
+//
+//        // Check the companion's app is installed
+//#if os(watchOS)
+//        guard WCSession.default.isCompanionAppInstalled else {
+//            print(":( :(")
+//            return
+//        }
+//#else
+//        guard WCSession.default.isWatchAppInstalled else { return }
+//#endif
+//
+//        // Create the message using the itemLists' data
+//        print("made it until here!")
+//        do {
+//                let data = try JSONEncoder().encode(reminder)
+//                print("Encoded data: \(data.count) bytes")
+//
+//                let message: [String: Data] = [ConnectivityKey.reminder.rawValue: data]
+//        
+//            print("watchOS WCSession activation state: \(WCSession.default.activationState.rawValue)") // On watchOS side
+//
+//            WCSession.default.sendMessage(message, replyHandler: { response in
+//                        print("Message sent successfully")
+//                    }) { error in
+//                        print("Error sending message: \(error.localizedDescription)")
+//                }
+//            } catch {
+//                print("Error encoding reminder: \(error.localizedDescription)")
+//            }
+//        
+//    }
+//
+//    // MARK: - WCSessionDelegate Methods
+//
+//    /// Receives the message from the companion
+//    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+//        print("📥 Received Message")
+//        // Receive the data, decode it, and set it to itemLists
+//        guard let data = message[ConnectivityKey.reminder.rawValue] as? Data,
+//              let reminder = try? JSONDecoder().decode(Reminder.self, from: data) else { return }
+//        self.reminder = reminder
+//        print(self.reminder)
+//#if os(iOS)
+//        print("made it yayyyyyy YAY")
+//        let db = Firestore.firestore()
+//
+//                // Save the reminder to Firebase
+//                db.collection("users").document(reminder.id.uuidString).setData([
+//                        "title": reminder.title,
+//                        "date": reminder.date,
+//                        "body": reminder.body
+//                    ]) { error in
+//                        if let error = error {
+//                            print("Error saving reminder to Firebase: \(error.localizedDescription)")
+//                        } else {
+//                            print("Reminder saved to Firebase successfully.")
+//                        }
+//                    }
+//#endif
+//    }
+//
+//    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: (any Error)?) { }
+//
+//#if os(iOS)
+//    func sessionDidBecomeInactive(_ session: WCSession) { }
+//
+//    func sessionDidDeactivate(_ session: WCSession) {
+//        // If the watch has been switched, reactivate their session on the new watch
+//        WCSession.default.activate()
+//    }
+//#endif
+//}
+
+
+
+
+//import Foundation
+//import WatchConnectivity
+//
+//final class Connectivity: NSObject, WCSessionDelegate {
+//    static let shared = Connectivity()
+//
+//    @Published var reminders: [Reminder] = []
+//
+//    override private init() {
+//        super.init()
+//        #if !os(watchOS)
+//        guard WCSession.isSupported() else { return }
+//        #endif
+//        WCSession.default.delegate = self
+//        WCSession.default.activate()
+//    }
+//
+//    public func send(reminder: Reminder) {
+//        guard WCSession.default.activationState == .activated else { return }
+//        #if os(watchOS)
+//        guard WCSession.default.isCompanionAppInstalled else { return }
+//        #else
+//        guard WCSession.default.isWatchAppInstalled else { return }
+//        #endif
+//        
+//        guard let data = try? JSONEncoder().encode(reminder) else { return }
+//
+//        let message: [String: Data] = [
+//            "reminder": data
+//        ]
+//
+//        WCSession.default.sendMessage(message, replyHandler: nil) { error in
+//            print("Error sending data: \(error.localizedDescription)")
+//        }
+//    }
+//
+//    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+//        guard let data = message["reminder"] as? Data,
+//              let reminder = try? JSONDecoder().decode(Reminder.self, from: data) else { return }
+//        self.reminders.append(reminder)
+//    }
+//
+//    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: (any Error)?) { }
+//
+//    #if os(iOS)
+//    func sessionDidBecomeInactive(_ session: WCSession) { }
+//
+//    func sessionDidDeactivate(_ session: WCSession) {
+//        WCSession.default.activate()
+//    }
+//    #endif
+//}
+
+
+
 import Foundation
 import WatchConnectivity
-#if os(iOS)
-import FirebaseFirestore
-#endif
-enum ConnectivityKey: String {
-    case reminder
-}
-
 
 final class Connectivity: NSObject, WCSessionDelegate {
-    /// Connectivity singleton
     static let shared = Connectivity()
 
-    /// Published item lists
-    @Published var reminder: Reminder
+    @Published var reminders: [Reminder] = []
 
     override private init() {
-       
-        self.reminder = Reminder(title: "Sample Reminder", date: Date(), body: "Test Reminder Body")
         super.init()
-
+        loadReminders()
+        #if !os(watchOS)
+        guard WCSession.isSupported() else { return }
+        #endif
         WCSession.default.delegate = self
         WCSession.default.activate()
-
-        // Make sure WCSession is supported
-#if !os(watchOS)
-        guard WCSession.isSupported() else { return }
-#endif
-
-        // Set WCSession's delegate to self and activate
-        
-        
     }
 
-    // MARK: - Send/Receive Methods
-    
-
-    /// Send itemLists to companion
-    public func send(reminder: Reminder) {
-        // Check the session is activated
-        guard WCSession.default.activationState == .activated else {
-            print(":(")
-            return }
-        print("Activation State: \(WCSession.default.activationState.rawValue)")
-
-        // Check the companion's app is installed
-#if os(watchOS)
-        guard WCSession.default.isCompanionAppInstalled else {
-            print(":( :(")
-            return
+    private func loadReminders() {
+        if let data = UserDefaults.standard.data(forKey: "reminders"),
+           let savedReminders = try? JSONDecoder().decode([Reminder].self, from: data) {
+            reminders = savedReminders
         }
-#else
-        guard WCSession.default.isWatchAppInstalled else { return }
-#endif
-
-        // Create the message using the itemLists' data
-        print("made it until here!")
-        do {
-                let data = try JSONEncoder().encode(reminder)
-                print("Encoded data: \(data.count) bytes")
-
-                let message: [String: Data] = [ConnectivityKey.reminder.rawValue: data]
-        
-            print("watchOS WCSession activation state: \(WCSession.default.activationState.rawValue)") // On watchOS side
-
-            WCSession.default.sendMessage(message, replyHandler: { response in
-                        print("Message sent successfully")
-                    }) { error in
-                        print("Error sending message: \(error.localizedDescription)")
-                }
-            } catch {
-                print("Error encoding reminder: \(error.localizedDescription)")
-            }
-        
     }
 
-    // MARK: - WCSessionDelegate Methods
+    func saveReminders() {
+        if let data = try? JSONEncoder().encode(reminders) {
+            UserDefaults.standard.set(data, forKey: "reminders")
+        }
+    }
 
-    /// Receives the message from the companion
+    public func send(reminder: Reminder) {
+        guard WCSession.default.activationState == .activated else { return }
+        #if os(watchOS)
+        guard WCSession.default.isCompanionAppInstalled else { return }
+        #else
+        guard WCSession.default.isWatchAppInstalled else { return }
+        #endif
+        
+        guard let data = try? JSONEncoder().encode(reminder) else { return }
+
+        let message: [String: Data] = [
+            "reminder": data
+        ]
+
+        WCSession.default.sendMessage(message, replyHandler: nil) { error in
+            print("Error sending data: \(error.localizedDescription)")
+        }
+    }
+
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
-        print("📥 Received Message")
-        // Receive the data, decode it, and set it to itemLists
-        guard let data = message[ConnectivityKey.reminder.rawValue] as? Data,
+        guard let data = message["reminder"] as? Data,
               let reminder = try? JSONDecoder().decode(Reminder.self, from: data) else { return }
-        self.reminder = reminder
-        print(self.reminder)
-#if os(iOS)
-        print("made it yayyyyyy YAY")
-        let db = Firestore.firestore()
-
-                // Save the reminder to Firebase
-                db.collection("users").document(reminder.id.uuidString).setData([
-                        "title": reminder.title,
-                        "date": reminder.date,
-                        "body": reminder.body
-                    ]) { error in
-                        if let error = error {
-                            print("Error saving reminder to Firebase: \(error.localizedDescription)")
-                        } else {
-                            print("Reminder saved to Firebase successfully.")
-                        }
-                    }
-#endif
+        reminders.append(reminder)
+        saveReminders()
     }
 
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: (any Error)?) { }
 
-#if os(iOS)
+    #if os(iOS)
     func sessionDidBecomeInactive(_ session: WCSession) { }
 
     func sessionDidDeactivate(_ session: WCSession) {
-        // If the watch has been switched, reactivate their session on the new watch
         WCSession.default.activate()
     }
-#endif
+    #endif
 }
