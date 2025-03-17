@@ -281,6 +281,9 @@
 
 import Foundation
 import WatchConnectivity
+#if os(iOS)
+import FirebaseFirestore
+#endif
 
 final class Connectivity: NSObject, WCSessionDelegate {
     static let shared = Connectivity()
@@ -345,6 +348,10 @@ final class Connectivity: NSObject, WCSessionDelegate {
         guard let data = message["reminder"] as? Data,
               let reminder = try? JSONDecoder().decode(Reminder.self, from: data) else { return }
         reminders.append(reminder)
+        #if os(iOS)
+        let db = Firestore.firestore()
+        db.collection("reminders").addDocument(data: ["title": reminder.title, "date": reminder.date])
+        #endif
         saveReminders()
     }
 
