@@ -22,6 +22,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct KeepsakeApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var firebaseViewModel = FirebaseViewModel.vm
+    @StateObject private var authViewModel = AuthViewModel()
     var body: some Scene {
         WindowGroup {
             ContentView(userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", id: UUID(), journals: [
