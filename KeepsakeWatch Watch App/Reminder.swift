@@ -130,13 +130,13 @@ struct RemindersListView: View {
                 }
                 .listStyle(PlainListStyle())
                 .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
+                    ToolbarItem(placement: .automatic) {
                         Text("Reminders")
                             .font(.title3)
                             .fontWeight(.bold)
                             .foregroundColor(Color(hex: "FFADF4"))
                     }
-                    ToolbarItem(placement: .topBarTrailing) {
+                    ToolbarItem(placement: .automatic) {
                         Button(action: { showVoiceRecording = true }) {
                             Image(systemName: "plus.circle.fill")
                                 .foregroundColor(Color(hex: "FFADF4"))
