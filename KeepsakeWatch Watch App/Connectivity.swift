@@ -350,7 +350,8 @@ final class Connectivity: NSObject, WCSessionDelegate {
         reminders.append(reminder)
         #if os(iOS)
         let db = Firestore.firestore()
-        db.collection("reminders").addDocument(data: ["title": reminder.title, "date": reminder.date])
+        
+        db.collection("reminders").addDocument(data: ["uid": self.uid, "title": reminder.title, "date": reminder.date])
         #endif
         saveReminders()
     }
