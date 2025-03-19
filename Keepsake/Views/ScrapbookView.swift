@@ -259,7 +259,7 @@ struct ScrapbookView: View {
         if let textEntity = entity as? TextBoxEntity {
             text = textEntity.getText()
         } else if let imageEntity = entity as? ImageEntity, let uiImage = image  {
-            imageData = uiImage.pngData()
+            imageData = compressImage(uiImage, compressionQuality: 0.8)
         }
         
         let entityUpdate = EntityUpdate(
@@ -276,6 +276,11 @@ struct ScrapbookView: View {
             multipeerSession.sendToAllPeers(data, reliably: true)
         }
     }
+    
+    private func compressImage(_ image: UIImage, compressionQuality: CGFloat) -> Data? {
+        return image.jpegData(compressionQuality: compressionQuality)
+    }
+
 
     private func updateEntity(with update: EntityUpdate) {
         if let existingEntity = anchor?.children.first(where: { $0.name == update.id }) {
