@@ -59,6 +59,10 @@ class TextBoxEntity: Entity {
         textEntity.components[TextComponent.self] = textComponent
     }
     
+    func getText() -> String {
+        return NSAttributedString(textComponent.text ?? "").string
+    }
+    
     // Needed since this class is a subclass of Entity
     required init() {
         fatalError("init() has not been implemented")
