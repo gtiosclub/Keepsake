@@ -354,16 +354,16 @@ final class Connectivity: NSObject, WCSessionDelegate {
         guard let data = message["reminder"] as? Data,
               let reminder = try? JSONDecoder().decode(Reminder.self, from: data) else { return }
         reminders.append(reminder)
-        #if os(iOS)
-        let db = firebaseVM.db
-        var uid: String?
-        if authViewModel.userSession != nil {
-            uid = authViewModel.currentUser!.id
-        } else {
-            print("no user")
-        }
-        db.collection("reminders").addDocument(data: ["uid": uid!, "title": reminder.title, "date": reminder.date])
-        #endif
+//        #if os(iOS)
+////        let db = firebaseVM.db
+////        var uid: String?
+////        if authViewModel.userSession != nil {
+////            uid = authViewModel.currentUser!.id
+////        } else {
+////            print("no user")
+////        }
+////        db.collection("reminders").addDocument(data: ["uid": uid!, "title": reminder.title, "date": reminder.date])
+//        #endif
         saveReminders()
     }
 
