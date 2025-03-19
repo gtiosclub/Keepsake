@@ -284,10 +284,13 @@ import WatchConnectivity
 #if os(iOS)
 import FirebaseFirestore
 #endif
-
+import SwiftUI
 final class Connectivity: NSObject, WCSessionDelegate {
     static let shared = Connectivity()
-
+    #if os(iOS)
+    @Published private var firebaseVM = FirebaseViewModel()
+    @StateObject var authViewModel = AuthViewModel()
+    #endif
     @Published var reminders: [Reminder] = []
 
     override private init() {
@@ -326,6 +329,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
     }
 
     public func send(reminder: Reminder) {
+        print("sending")
         guard WCSession.default.activationState == .activated else { return }
         #if os(watchOS)
         guard WCSession.default.isCompanionAppInstalled else { return }
@@ -342,16 +346,23 @@ final class Connectivity: NSObject, WCSessionDelegate {
         WCSession.default.sendMessage(message, replyHandler: nil) { error in
             print("Error sending data: \(error.localizedDescription)")
         }
+        print("sent")
     }
 
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+        print("recieved")
         guard let data = message["reminder"] as? Data,
               let reminder = try? JSONDecoder().decode(Reminder.self, from: data) else { return }
         reminders.append(reminder)
         #if os(iOS)
-        let db = Firestore.firestore()
-        
-        db.collection("reminders").addDocument(data: ["uid": self.uid, "title": reminder.title, "date": reminder.date])
+        let db = firebaseVM.db
+        var uid: String?
+        if authViewModel.userSession != nil {
+            uid = authViewModel.currentUser!.id
+        } else {
+            print("no user")
+        }
+        db.collection("reminders").addDocument(data: ["uid": uid!, "title": reminder.title, "date": reminder.date])
         #endif
         saveReminders()
     }
