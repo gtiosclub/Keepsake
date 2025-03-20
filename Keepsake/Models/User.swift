@@ -10,13 +10,24 @@ import Foundation
 class User: Identifiable, ObservableObject {
     var id: String
     var name: String
+    var username: String
     @Published var journalShelves: [JournalShelf]
     @Published var scrapbookShelves: [ScrapbookShelf]
     @Published var savedTemplates: [Template]
     
+    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
+        self.id = id
+        self.name = name
+        self.username = username
+        self.journalShelves = journalShelves
+        self.scrapbookShelves = scrapbookShelves
+        self.savedTemplates = savedTemplates
+
+    }
     init(id: String, name: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
         self.id = id
         self.name = name
+        self.username = name + "@gmail.com"
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = savedTemplates
@@ -27,6 +38,7 @@ class User: Identifiable, ObservableObject {
     init(journalShelves: [JournalShelf] = [], scrapbookShelves: [ScrapbookShelf] = [], savedTemplates: [Template] = []) {
         self.id = UUID().uuidString
         self.name = "Default User"
+        self.username = "default@gmail.com"
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = []

@@ -26,7 +26,7 @@ struct ProfileView: View {
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .padding(.top)
-                            Text(user.name)
+                            Text(user.username)
                                 .font(.footnote)
                                 .accentColor(.pink)
                             
