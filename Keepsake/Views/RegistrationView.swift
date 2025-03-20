@@ -14,70 +14,82 @@ struct RegistrationView: View {
     @State private var confirmPassword = ""
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var viewModel: AuthViewModel
+    @EnvironmentObject var viewModelReminder: RemindersViewModel
+    @State var userCreated = false
     var body: some View {
-        VStack {
-            Image("Dog Image")
-                .resizable()
-                .scaledToFill()
-                .frame(width: 100, height: 120)
-                .padding(.vertical, 32)
-            
-            VStack(spacing: 24) {
-                InputView(text: $email,
-                          title: "Email Address",
-                          placeholder: "name@example.com")
-                .autocapitalization(.none)
+        NavigationStack {
+            VStack {
+                Image("Dog Image")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 100, height: 120)
+                    .padding(.vertical, 32)
                 
-                InputView(text: $fullname,
-                          title: "Full Name",
-                          placeholder: "Enter your name")
-                
-                InputView(text: $password,
-                          title: "Password",
-                          placeholder: "Enter your password",
-                          isSecure: true)
-                
-                InputView(text: $confirmPassword,
-                          title: "Confirm password",
-                          placeholder: "Enter your password again",
-                          isSecure: true)
-                
-            }
-            .padding(.horizontal)
-            .padding(.top, 12)
-            
-            Button {
-                Task {
-                    try await viewModel.createUser(withEmail: email, password: password, fullname: fullname)
+                VStack(spacing: 24) {
+                    InputView(text: $email,
+                              title: "Email Address",
+                              placeholder: "name@example.com")
+                    .autocapitalization(.none)
+                    
+                    InputView(text: $fullname,
+                              title: "Full Name",
+                              placeholder: "Enter your name")
+                    
+                    InputView(text: $password,
+                              title: "Password",
+                              placeholder: "Enter your password",
+                              isSecure: true)
+                    
+                    InputView(text: $confirmPassword,
+                              title: "Confirm password",
+                              placeholder: "Enter your password again",
+                              isSecure: true)
+                    
                 }
-            } label: {
-                HStack {
-                    Text("SIGN UP")
-                        .fontWeight(.semibold)
-                }
-                .foregroundColor(.white)
-                .frame(width: UIScreen.main.bounds.width - 32, height: 40)
+                .padding(.horizontal)
+                .padding(.top, 12)
                 
-            }
-            .background(Color(.systemPink))
-            .disabled(!formIsValid)
-            .opacity(formIsValid  ? 1.0 : 0.5)
-            .cornerRadius(10)
-            .padding(.top, 24)
-            
-            Spacer()
-            
-            Button {
-                dismiss()
-            } label: {
-                HStack(spacing: 3) {
-                    Text("Already have an account?")
-                        .foregroundColor(.pink)
-                    Text("Sign in")
-                        .fontWeight(.bold)
-                        .foregroundColor(.pink)
+                Button {
+                    Task {
+                        try await viewModel.createUser(withEmail: email, password: password, fullname: fullname)
+                        userCreated = true
+                    }
+                } label: {
+                    HStack {
+                        Text("SIGN UP")
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(.white)
+                    .frame(width: UIScreen.main.bounds.width - 32, height: 40)
+                    
                 }
-                .font(.system(size: 14))
+                .background(Color(.systemPink))
+                .disabled(!formIsValid)
+                .opacity(formIsValid  ? 1.0 : 0.5)
+                .cornerRadius(10)
+                .padding(.top, 24)
+                
+                Spacer()
+                NavigationLink(
+                    
+                    destination: RemindersListView()
+                        .environmentObject(viewModel)
+                        .environmentObject(viewModelReminder),
+                    isActive: $userCreated,
+                    label: { EmptyView() }
+                )
+                Button {
+                    dismiss()
+                } label: {
+                    HStack(spacing: 3) {
+                        Text("Already have an account?")
+                            .foregroundColor(.pink)
+                        Text("Sign in")
+                            .fontWeight(.bold)
+                            .foregroundColor(.pink)
+                    }
+                    .font(.system(size: 14))
+                }
             }
         }
         

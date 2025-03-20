@@ -45,8 +45,8 @@ struct KeepsakeApp: App {
     @StateObject private var firebaseViewModel = FirebaseViewModel.vm
     var body: some Scene {
         WindowGroup {
-
-            RemindersListView()
+            RegistrationView()
+            //RemindersListView()
                 .environmentObject(viewModel)
                 .environmentObject(viewModelReminder)
             //            ContentView(userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
