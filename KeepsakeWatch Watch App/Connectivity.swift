@@ -286,10 +286,11 @@ import FirebaseFirestore
 #endif
 import SwiftUI
 final class Connectivity: NSObject, WCSessionDelegate {
+    
     static let shared = Connectivity()
     #if os(iOS)
     @Published private var firebaseVM = FirebaseViewModel()
-    var authViewModel: AuthViewModel
+    var authViewModel: AuthViewModel?
     #endif
     @Published var reminders: [Reminder] = []
 
@@ -301,8 +302,14 @@ final class Connectivity: NSObject, WCSessionDelegate {
         #endif
         WCSession.default.delegate = self
         WCSession.default.activate()
+        print("WCSession activated")
     }
-
+#if os(iOS)
+    
+    func setAuthViewModel(_ viewModel: AuthViewModel) {
+        self.authViewModel = viewModel
+    }
+#endif
     private func loadReminders() {
         #if os(watchOS)
             print(" watch reached")
@@ -321,7 +328,8 @@ final class Connectivity: NSObject, WCSessionDelegate {
         print(" done loading iOS")
 #endif
     }
-
+    
+    
     func saveReminders() {
         if let data = try? JSONEncoder().encode(reminders) {
             UserDefaults.standard.set(data, forKey: "reminders")
@@ -349,16 +357,21 @@ final class Connectivity: NSObject, WCSessionDelegate {
         print("sent")
     }
 
-    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) async {
+    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
         print("recieved")
         guard let data = message["reminder"] as? Data,
               let reminder = try? JSONDecoder().decode(Reminder.self, from: data) else { return }
-        reminders.append(reminder)
+        
+        DispatchQueue.main.async {
+            self.reminders.append(reminder)
+            self.saveReminders()
+            print("Reminder added: \(reminder)")
+        }
         #if os(iOS)
             let db = firebaseVM.db
             var uid: String?
-        if await authViewModel.userSession != nil {
-            uid = await authViewModel.currentUser!.id
+        if authViewModel?.userSession != nil {
+            uid = authViewModel?.currentUser!.id
             } else {
                 print("no user")
             }
@@ -371,7 +384,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
                 }
             }
         #endif
-        saveReminders()
+        
     }
 
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: (any Error)?) { }

@@ -192,7 +192,8 @@ struct RemindersListView: View {
                     .padding(.vertical, 5)
                 }
                 NavigationLink(
-                    destination: TextReminder(),
+                    destination: TextReminder()
+                        .environmentObject(viewModel),
                     label: {
                         Image(systemName: "plus.circle.fill")
                             .foregroundColor(Color(hex: "FFADF4"))

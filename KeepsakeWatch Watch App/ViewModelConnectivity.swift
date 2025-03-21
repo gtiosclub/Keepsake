@@ -34,10 +34,9 @@ final class RemindersViewModel: ObservableObject {
     @Published var reminders: [Reminder] = []
     
     private var cancellables = Set<AnyCancellable>()
-    private var authViewModel: AuthViewModel
-    init(authViewModel: AuthViewModel) {
-        self.authViewModel = authViewModel
-        Connectivity.shared.authViewModel = authViewModel
+
+    init() {
+        
         Connectivity.shared.$reminders
             .dropFirst()
             .receive(on: DispatchQueue.main)
@@ -49,5 +48,6 @@ final class RemindersViewModel: ObservableObject {
         Connectivity.shared.reminders = reminders
         Connectivity.shared.saveReminders()
         Connectivity.shared.send(reminder: reminder)
+        
     }
 }
