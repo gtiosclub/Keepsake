@@ -32,10 +32,12 @@ import SwiftUI
 
 final class RemindersViewModel: ObservableObject {
     @Published var reminders: [Reminder] = []
-
+    
     private var cancellables = Set<AnyCancellable>()
-
-    init() {
+    private var authViewModel: AuthViewModel
+    init(authViewModel: AuthViewModel) {
+        self.authViewModel = authViewModel
+        Connectivity.shared.authViewModel = authViewModel
         Connectivity.shared.$reminders
             .dropFirst()
             .receive(on: DispatchQueue.main)

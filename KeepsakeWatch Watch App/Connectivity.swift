@@ -289,7 +289,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
     static let shared = Connectivity()
     #if os(iOS)
     @Published private var firebaseVM = FirebaseViewModel()
-    @StateObject var authViewModel = AuthViewModel()
+    var authViewModel: AuthViewModel
     #endif
     @Published var reminders: [Reminder] = []
 
@@ -349,21 +349,28 @@ final class Connectivity: NSObject, WCSessionDelegate {
         print("sent")
     }
 
-    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) async {
         print("recieved")
         guard let data = message["reminder"] as? Data,
               let reminder = try? JSONDecoder().decode(Reminder.self, from: data) else { return }
         reminders.append(reminder)
-//        #if os(iOS)
-////        let db = firebaseVM.db
-////        var uid: String?
-////        if authViewModel.userSession != nil {
-////            uid = authViewModel.currentUser!.id
-////        } else {
-////            print("no user")
-////        }
-////        db.collection("reminders").addDocument(data: ["uid": uid!, "title": reminder.title, "date": reminder.date])
-//        #endif
+        #if os(iOS)
+            let db = firebaseVM.db
+            var uid: String?
+        if await authViewModel.userSession != nil {
+            uid = await authViewModel.currentUser!.id
+            } else {
+                print("no user")
+            }
+            
+            db.collection("reminders").addDocument(data: ["uid": uid!, "title": reminder.title, "date": reminder.date]){ error in
+                if let error = error {
+                    print("Error saving reminder to Firebase: \(error.localizedDescription)")
+                } else {
+                    print("Reminder saved to Firebase successfully.")
+                }
+            }
+        #endif
         saveReminders()
     }
 
