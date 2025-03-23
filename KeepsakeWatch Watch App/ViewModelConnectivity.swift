@@ -33,6 +33,7 @@ import SwiftUI
 final class RemindersViewModel: ObservableObject {
     @Published var reminders: [Reminder] = []
     
+    
     private var cancellables = Set<AnyCancellable>()
 
     init() {

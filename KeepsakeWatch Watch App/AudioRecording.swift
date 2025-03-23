@@ -18,7 +18,7 @@ final class AudioRecording {
     func startRecording() {
         let session = AVAudioSession.sharedInstance()
         do {
-            try session.setCategory(.record, mode: .default)
+            try session.setCategory(.playAndRecord, mode: .default)
             try session.setActive(true)
         } catch {
             print("Failed to set up audio session: \(error.localizedDescription)")
