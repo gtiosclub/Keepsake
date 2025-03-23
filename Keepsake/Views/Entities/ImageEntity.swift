@@ -35,10 +35,18 @@ class ImageEntity: Entity {
         
         // creates an entity to attach the mesh to
         let modelEntity = ModelEntity(mesh: mesh, materials: [material])
+       
+        
+        //creating hover effect style then adding that to the compoenent. this follows the say style as the developer videos
+        let highlightStyle = HoverEffectComponent.HighlightHoverEffectStyle(color: .white,strength: 1)
+        let hoverEffect = HoverEffectComponent(.highlight(highlightStyle))
+        
+       
+        
         
         // gives the entity the ability to be interacted with
-        modelEntity.components.set([InputTargetComponent(),
-                                   CollisionComponent(shapes: [ShapeResource.generateBox(width: width, height: height, depth: 0.2)])])
+        modelEntity.components.set([InputTargetComponent(),hoverEffect,
+                                    CollisionComponent(shapes: [ShapeResource.generateBox(width: width, height: height, depth: 0.2)])])
 
         self.addChild(modelEntity)
     }

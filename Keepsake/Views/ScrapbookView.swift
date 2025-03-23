@@ -89,9 +89,24 @@ struct ScrapbookView: View {
                      We get the parent instead of just the entity because
                      the entity will be the collsion shape attached to the entity instead of the entity itself
                      */
+                    
+                    
+                    
+                    // im trying to add the hovereffect onto the entity that is selected wihtin the view, but it doesnt actually change the entity?
                     if let selected = value.hitTest(point: value.location, in: .local).first?.entity.parent {
+                        if let previous = selectedEntity{
+                            previous.components.remove(HoverEffectComponent.self)
+                        }
+                        
+                        
                         selectedEntity = selected
+                        let highlightStyle = HoverEffectComponent.HighlightHoverEffectStyle(color: .white,strength: 1)
+                        let hoverEffect = HoverEffectComponent(.highlight(highlightStyle))
+                        
+                        selectedEntity?.components.set(hoverEffect)
                     }
+                    
+                    
                     print(selectedEntity?.name ?? "No Entity Selected")
                 })
 
@@ -234,4 +249,10 @@ struct ScrapbookView: View {
             editingTextEntity.updateText(textInput)
         }
     }
+    
+    
+    
+    
+    
+    
 }

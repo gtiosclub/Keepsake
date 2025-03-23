@@ -41,8 +41,15 @@ class TextBoxEntity: Entity {
         
 
         // Adds the component to the entity's set of components (each component gives the entity a different behavior)
+        
+        
+        
+        //creating hover effect style then adding that to the compoenent. this follows the say style as the developer videos 
+        let highlightStyle = HoverEffectComponent.HighlightHoverEffectStyle(color: .blue,strength: 1)
+        let hoverEffect = HoverEffectComponent(.highlight(highlightStyle))
+        
         textEntity.components.set(textComponent)
-        textEntity.components.set([InputTargetComponent(),
+        textEntity.components.set([InputTargetComponent(),hoverEffect,
                                    CollisionComponent(shapes: [ShapeResource.generateBox(width: componentWidth, height: componentHeight, depth: 0.05),])])
         
         
