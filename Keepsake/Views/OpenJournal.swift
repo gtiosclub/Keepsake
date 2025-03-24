@@ -33,21 +33,50 @@ struct OpenJournal: View {
     @Binding var selectedEntry: Int
     @Binding var showNavBack: Bool
     @State private var showSearch = false
-    
     var body: some View {
         VStack {
-            Button(action: {
-                withAnimation(.spring()) {
-                    showSearch = true
+            HStack(alignment: .top, spacing: 15) {
+                VStack(alignment: .leading) {
+                    Text(journal.name).font(.system(size: 40))
+                    Text(journal.createdDate).font(.system(size: 20))
+                    Text("created by...").font(.system(size: 15))
                 }
-            }) {
-                Image(systemName: "magnifyingglass")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 24, height: 24)
-                    .foregroundColor(.black)
-            }
-            .padding()
+                Spacer()
+                Button(action: {
+                    withAnimation(.spring()) {
+                        showSearch = true
+                    }
+                }) {
+                    Image(systemName: "magnifyingglass")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .padding(.top, 8)
+                        .foregroundColor(.black)
+                }
+                Button {
+                    
+                } label: {
+                    Image(systemName: "book.pages")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .padding(.top, 8)
+                        .foregroundColor(.black)
+                }
+                Button {
+                    
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .padding(.top, 8)
+                        .foregroundColor(.black)
+                }
+            }.padding(.horizontal, 30)
+                .opacity(degrees == -180 ? 1 : 0)
+
             
             ZStack {
                 JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees, userVM: userVM)
@@ -71,43 +100,6 @@ struct OpenJournal: View {
                         
                     }
                 }.offset(x: UIScreen.main.bounds.width * -0.45)
-                HStack {
-                    Button(action: {
-                        circleStart = 0.5
-                        circleEnd = 1
-                        withAnimation(.linear(duration: 1).delay(0.5)) {
-                            circleStart += 0.25
-                            degrees += 90
-                            frontDegrees += 90
-                        } completion: {
-                            coverZ = 0
-                            isHidden = false
-                            withAnimation {
-                                circleStart += 0.25
-                                degrees += 90
-                                frontDegrees += 90
-                            } completion: {
-                                withAnimation(.linear(duration: 0.7)) {
-                                    scaleFactor = 0.6
-                                } completion: {
-                                    showNavBack.toggle()
-                                    withAnimation {
-                                        show.toggle()
-                                    }
-                                }
-                            }
-                        }
-                    }, label: {
-                        Image(systemName: "return")
-                            .resizable()
-                            .scaledToFit()
-                            .foregroundStyle(.black)
-                            .frame(width: UIScreen.main.bounds.width * 0.1)
-                    }).opacity(degrees == -180 ? 1 : 0)
-                    Spacer()
-                    AddEntryButtonView(journal: journal, inTextEntry: $inTextEntry, userVM: userVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry)
-                        .opacity(degrees == -180 ? 1 : 0)
-                }.padding(.horizontal, 20).offset(y: UIScreen.main.bounds.height * 0.33)
                 
                 if showSearch {
                     SearchOverlayView(isPresented: $showSearch, firebaseVM: FirebaseViewModel.vm)
@@ -115,13 +107,16 @@ struct OpenJournal: View {
                         .zIndex(1) // Ensure the search overlay is on top
                 }
             }
+            HStack {
+                JournalReturnButton(circleStart: $circleStart, circleEnd: $circleEnd, frontDegrees: $frontDegrees, showNavBack: $showNavBack, degrees: $degrees, isHidden: $isHidden, coverZ: $coverZ, scaleFactor: $scaleFactor, show: $show)
+                Spacer()
+                AddEntryButtonView(journal: journal, inTextEntry: $inTextEntry, userVM: userVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry)
+            }.padding(.horizontal, 30)
+                .opacity(degrees == -180 ? 1 : 0)
         }
     }
 }
-//
-//#Preview {
-//    OpenJournal(book: shelf.books[number], degrees: $degrees)
-//}
+
 
 struct JournalBackPagesView: View {
     @ObservedObject var book: Journal
@@ -349,6 +344,55 @@ struct JournalDisplayView: View {
             )
     }
 }
+
+struct JournalReturnButton: View {
+    @Binding var circleStart: CGFloat
+    @Binding var circleEnd: CGFloat
+    @Binding var frontDegrees:CGFloat
+    @Binding var showNavBack: Bool
+    @Binding var degrees: CGFloat
+    @Binding var isHidden: Bool
+    @Binding var coverZ: Double
+    @Binding var scaleFactor: CGFloat
+    @Binding var show: Bool
+    var body: some View {
+        VStack {
+            Button(action: {
+                circleStart = 0.5
+                circleEnd = 1
+                withAnimation(.linear(duration: 1).delay(0.5)) {
+                    circleStart += 0.25
+                    degrees += 90
+                    frontDegrees += 90
+                } completion: {
+                    coverZ = 0
+                    isHidden = false
+                    withAnimation {
+                        circleStart += 0.25
+                        degrees += 90
+                        frontDegrees += 90
+                    } completion: {
+                        withAnimation(.linear(duration: 0.7)) {
+                            scaleFactor = 0.6
+                        } completion: {
+                            showNavBack.toggle()
+                            withAnimation {
+                                show.toggle()
+                            }
+                        }
+                    }
+                }
+            }, label: {
+                Image(systemName: "return")
+                    .resizable()
+                    .foregroundStyle(.black)
+                    .frame(width: UIScreen.main.bounds.width * 0.07, height: UIScreen.main.bounds.width * 0.07)
+            }).frame(width: UIScreen.main.bounds.width * 0.1)
+            
+        }
+    }
+}
+
 
 #Preview {
     struct Preview: View {
