@@ -8,6 +8,7 @@
 import SwiftUI
 import Foundation
 import AVFoundation
+import Speech
 
 struct JournalVoiceMemoInputView: View {
     @ObservedObject var userVM: UserViewModel
@@ -40,57 +41,80 @@ struct JournalVoiceMemoInputView: View {
     ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), shelfIndex: 0, journalIndex: 0, entryIndex: 0, pageIndex: 2, entry: JournalEntry(date: "01/02/2024", title: "Oh my world", text: "I have started to text", summary: "summary"), selectedPrompt: "Summarize the highlights of your day and any moments of learning")
 }
 
-final class AudioRecording {
+final class AudioRecording: NSObject, ObservableObject {
     private var audioRecorder: AVAudioRecorder?
-    private var audioPlayer: AVPlayer?
-    private var saveFileURL: URL?
-    private(set) var isRecording = false
-    
-    func startRecording() {
-        let session = AVAudioSession.sharedInstance()
-        do {
-            try session.setCategory(.record, mode: .default)
-            try session.setActive(true)
-        } catch {
-            print("failed")
-        }
-        print("recording started")
-        let fileName = UUID().uuidString + ".m4a"
-        let downloadsDirectory = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Downloads")
-        let fileURL = downloadsDirectory.appendingPathComponent(fileName)
+    private var audioEngine: AVAudioEngine?
+    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    private var recognitionTask: SFSpeechRecognitionTask?
+    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
+    private let audioSession = AVAudioSession.sharedInstance()
 
-        saveFileURL = fileURL
-        saveFileURL = fileURL
-        print(fileName)
-        print(fileURL.path)
-        
-        let settings: [String: Any] = [
-            AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-            AVSampleRateKey: 44100,
-            AVNumberOfChannelsKey: 1,
-            AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
-        ]
-        
-        do {
-            audioRecorder = try AVAudioRecorder(url: fileURL, settings: settings)
-            audioRecorder?.record()
-            isRecording = true
-        } catch {
-            print("fail")
+    @Published var isRecording = false
+    @Published var transcript: String = ""
+
+    func startRecording() {
+        isRecording = true
+        transcript = ""
+
+        SFSpeechRecognizer.requestAuthorization { authStatus in
+            guard authStatus == .authorized else {
+                print("Speech recognition not authorized")
+                return
+            }
+
+            DispatchQueue.main.async {
+                self.startSpeechRecognition()
+            }
         }
     }
-    
-    func stopRecording() {
-        audioRecorder?.stop()
-        isRecording = false
-        print("recording ended")
-        
-        let session = AVAudioSession.sharedInstance()
-        do {
-            try session.setActive(false)
-        } catch {
-            print("failed")
+
+    private func startSpeechRecognition() {
+        audioEngine = AVAudioEngine()
+        recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
+
+        guard let inputNode = audioEngine?.inputNode,
+              let recognitionRequest = recognitionRequest else {
+            print("Failed to set up audio engine")
+            return
         }
+
+        recognitionRequest.shouldReportPartialResults = true
+
+        recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { result, error in
+            if let result = result {
+                DispatchQueue.main.async {
+                    self.transcript = result.bestTranscription.formattedString
+                }
+            }
+            if error != nil || (result?.isFinal ?? false) {
+                self.audioEngine?.stop()
+                inputNode.removeTap(onBus: 0)
+                self.recognitionRequest = nil
+                self.recognitionTask = nil
+                self.isRecording = false
+            }
+        }
+
+        let recordingFormat = inputNode.outputFormat(forBus: 0)
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) {
+            (buffer, _) in
+            self.recognitionRequest?.append(buffer)
+        }
+
+        do {
+            try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+            try audioEngine?.start()
+        } catch {
+            print("Audio engine error: \(error.localizedDescription)")
+        }
+    }
+
+    func stopRecording() {
+        audioEngine?.stop()
+        audioEngine?.inputNode.removeTap(onBus: 0)
+        recognitionRequest?.endAudio()
+        isRecording = false
     }
 }
 
@@ -134,6 +158,11 @@ struct VoiceRecordingView: View {
                 recordingButton
             }
             .buttonStyle(PlainButtonStyle())
+            Text(audioRecording.transcript)
+                .padding()
+                .font(.body)
+                .foregroundColor(.gray)
+                .lineLimit(nil)
         }
     }
     
