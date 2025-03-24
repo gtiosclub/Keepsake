@@ -16,21 +16,59 @@ struct WidgetView: View {
     var isDisplay: Bool
     @Binding var inTextEntry: Bool
     @Binding var selectedEntry: Int
+    @ObservedObject var userVM: UserViewModel
+    @Binding var showDeleteButton: Int
+    @State private var isWiggling = false // Control wiggle animation
     var body: some View {
         let gridItems = [GridItem(.fixed(width), spacing: 10, alignment: .leading),
                          GridItem(.fixed(width), spacing: UIScreen.main.bounds.width * 0.02, alignment: .leading),]
 
         LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
             ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
-                createView(for: widget, width: width, height: height, isDisplay: isDisplay, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
-                    .onTapGesture {
-                        if widget.type != .image {
-                            selectedEntry = index
-                            inTextEntry.toggle()
+                ZStack(alignment: .topLeading) {
+                    createView(for: widget, width: width, height: height, isDisplay: isDisplay, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+                        .onTapGesture {
+                            if showDeleteButton != -1 {
+                                showDeleteButton = -1
+                                isWiggling = false
+                            } else if widget.type != .image {
+                                selectedEntry = index
+                                inTextEntry.toggle()
+                            }
+                        }
+                        .onLongPressGesture {
+                            withAnimation {
+                                showDeleteButton = index
+                                isWiggling = true
+                            }
+                        }
+
+                    // Always keep the button in the view, but control visibility with opacity
+                    Button {
+                        userVM.removeJournalEntry(page: page, index: index)
+                        withAnimation {
+                            showDeleteButton = -1
+                            isWiggling = false
+                        }
+                    } label: {
+                        ZStack {
+                            Circle()
+                                .fill(Color.gray)
+                                .frame(width: 25, height: 25)
+                            Image(systemName: "minus")
+                                .foregroundColor(.white)
+                                .font(.system(size: 14, weight: .bold))
                         }
                     }
-                
-                
+                    .opacity(showDeleteButton == index ? 1 : 0) // Instead of removing the button, fade it in/out
+                    .animation(.easeInOut(duration: 0.2), value: showDeleteButton) // Smooth fade effect
+                    .offset(x: -10, y: -10)
+
+                }
+                .rotationEffect(.degrees(isWiggling && showDeleteButton == index ? 2 : 0)) // Wiggle effect
+                .animation(isWiggling && showDeleteButton == index ?
+                           Animation.easeInOut(duration: 0.1).repeatForever(autoreverses: true)
+                           : .default, value: isWiggling)
             }
         }
         .frame(width: 470)
@@ -45,7 +83,10 @@ struct TextEntryView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 10)
                 .stroke(.black)
-                .fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]))
+                .fill(LinearGradient(colors: [
+                                    Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]).opacity(0.9),
+                                    Color(red: entry.color[0] * 0.8, green: entry.color[1] * 0.8, blue: entry.color[2] * 0.8)
+                                ], startPoint: .topLeading, endPoint: .bottomTrailing))
                 .frame(width: entry.frameWidth, height: entry.frameHeight)
                 .opacity(entry.isFake ? 0 : 1)
                 .frame(height: height, alignment: .top)
@@ -64,7 +105,7 @@ struct TextEntryView: View {
                         .scaledToFill()
                         .lineLimit(1)
                 }
-            }.padding(.horizontal, 10)
+            }
         }
     }
 }
@@ -161,14 +202,21 @@ struct PictureEntryView: View {
         }
 }
 
+
 #Preview {
     struct Preview: View {
         @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1)
         @State var selectedImageIndex: Int = 0
         @State var inTextEntry = false
         @State var selectedEntry: Int = 0
+        @State var deleteEntry: Int = -1
         var body: some View {
-            WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: 10, pageNum: 2, page: page, isDisplay: true, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+            WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: 10, pageNum: 2, page: page, isDisplay: true, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
+                Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
+                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
+                Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
+                Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
+            ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), showDeleteButton: $deleteEntry)
         }
     }
 
