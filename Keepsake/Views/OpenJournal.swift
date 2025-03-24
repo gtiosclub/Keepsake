@@ -34,7 +34,7 @@ struct OpenJournal: View {
     @Binding var showNavBack: Bool
     @State private var showSearch = false
     var body: some View {
-        VStack {
+        VStack(spacing: 10) {
             HStack(alignment: .top, spacing: 15) {
                 VStack(alignment: .leading) {
                     Text(journal.name).font(.system(size: 40))
@@ -79,7 +79,7 @@ struct OpenJournal: View {
 
             
             ZStack {
-                JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees, userVM: userVM)
+                JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees, userVM: userVM, scaleFactor: $scaleFactor)
                 JournalDisplayView(displayIsHidden: $displayIsHidden, userVM: userVM, journal: journal, shelfIndex: shelfIndex, bookIndex: bookIndex, displayPageIndex: $displayPageIndex, zIndex: $zIndex, displayDegrees: $displayDegrees, circleStart: $circleStart, circleEnd: $circleEnd, frontIsHidden: $frontIsHidden, frontDegrees: $frontDegrees, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
                 
                 JournalFrontPagesView(book: journal, degrees: $degrees, frontIsHidden: $frontIsHidden, displayPageIndex: $displayPageIndex, frontDegrees: $frontDegrees, isHidden: $isHidden, coverZ: $coverZ, userVM: userVM)
@@ -126,6 +126,7 @@ struct JournalBackPagesView: View {
     @State var selectedEntry: Int = 0
     @ObservedObject var userVM: UserViewModel
     @State var showDeleteButton: Int = -1
+    @Binding var scaleFactor: CGFloat
     var body: some View {
         RoundedRectangle(cornerRadius: 10)
             .fill(book.template.coverColor)
@@ -138,7 +139,7 @@ struct JournalBackPagesView: View {
                     .scaledToFill()
                     .opacity(0.4) // Adjust for realism
             )
-            .shadow(color: .black.opacity(0.3), radius: 5, x: 5, y: 5) // Gives depth
+            .shadow(color: .black.opacity(scaleFactor == 0.6 ? 0.0 : 0.3), radius: 5, x: 5, y: 5) // Gives depth
             .zIndex(-4)
         //Back Page
         ZStack {
@@ -221,7 +222,7 @@ struct JournalFrontPagesView: View {
                         .scaledToFill()
                         .opacity(0.4) // Adjust for realism
                 )
-                .shadow(color: .black.opacity(degrees > -180 ? 0 : 0.3), radius: 5, x: 5, y: 5) // Gives depth
+                //.shadow(color: .black.opacity(degrees > -180 ? 0 : 0.3), radius: 5, x: 5, y: 5) // Gives depth
             
             // Title
             Text(book.name)
@@ -233,7 +234,7 @@ struct JournalFrontPagesView: View {
                 .brightness(-0.2)
                 .frame(width: UIScreen.main.bounds.width * 0.1, height: UIScreen.main.bounds.height * 0.56)
                 .offset(x: UIScreen.main.bounds.width * -0.42)
-                .shadow(radius: 3)
+                //.shadow(radius: 3)
                 .opacity(isHidden ? 0 : 1)
                 .zIndex(-3)
                 .overlay(
