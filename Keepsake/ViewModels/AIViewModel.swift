@@ -467,7 +467,7 @@ class AIViewModel: ObservableObject {
     
     @Published var conversationHistory: [String] = []
     @Published var userInput: String = ""
-    func startConversation(entry: ConversationEntry) async {
+    func startConversation(entry: JournalEntry) async {
         var entryLog = entry.conversationLog
         let startPrompt = """
         You will be holding a back and forth conversation with a user in their conversation entry.
@@ -488,7 +488,7 @@ class AIViewModel: ObservableObject {
         isLoading = false
     }
     
-    func sendMessage(entry: ConversationEntry) async {
+    func sendMessage(entry: JournalEntry) async {
         var entryLog = entry.conversationLog
         guard (!userInput.isEmpty) else {
             return
@@ -519,4 +519,5 @@ class AIViewModel: ObservableObject {
         }
         isLoading = false
     }
+    
 }

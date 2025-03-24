@@ -76,12 +76,21 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    /****######################################################################################
+    JOURNALS
+     #########################################################################################**/
+    
     // Add a Journal Model into Firebase
-    func addJournal(journal: Journal) async -> Bool {
+    func addJournal(journal: Journal, journalShelfID: UUID) async -> Bool {
         let journal_reference = db.collection("JOURNALS").document(journal.id.uuidString)
         do {
             let journalData = journal.toDictionary()
             try await journal_reference.setData(journalData)
+            
+            try await db.collection("JOURNAL_SHELVES").document(journalShelfID.uuidString).updateData([
+                "journals": FieldValue.arrayUnion([journal.id.uuidString])
+            ])
+            
             return true
         } catch {
             print("Error adding journal: \(error.localizedDescription)")
@@ -89,28 +98,42 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    
-    func addJournalShelf(journalShelf: JournalShelf) async -> Bool {
-        let journal_reference = db.collection("JOURNAL_SHELVES").document(journalShelf.id.uuidString)
-        do {
-            // Chains together each Model's "toDictionary()" method for simplicity in code and scalability in editing each Model
-            let journalShelfData = journalShelf.toDictionary()
-            try await journal_reference.setData(journalShelfData)
-            return true
-        } catch {
-            print("Error adding Journal Shelf: \(error.localizedDescription)")
-            return false
-        }
-    }
-    
-    // Get a JournalShelf Document from Firebase and load it into a Journal Model
-    func getJournalShelfFromFirebase(id: String) async -> JournalShelf? {
-        let journalReference = db.collection("JOURNAL_SHELVES").document(id)
+    func getJournalFromID(id: String) async -> Journal? {
+        let journalReference = db.collection("JOURNALS").document(id)
+        
         do {
             let document = try await journalReference.getDocument()
-            if let data = document.data() {
-                // Chains together each Model's "fromDictionary()" method for simplicity in code and scalability in editing each Model
-                return JournalShelf.fromDictionary(data)
+            if let dict = document.data() {
+                let name = dict["name"] as? String ?? ""
+                let idString = dict["id"] as? String ?? ""
+                let id = UUID(uuidString: idString) ?? UUID()
+                let createdDate = dict["createdDate"] as? String ?? ""
+                let category = dict["category"] as? String ?? ""
+                let isSaved = dict["isSaved"] as? Bool ?? true
+                let isShared = dict["isShared"] as? Bool ?? false
+                let templateDict = dict["template"] as? [String: Any] ?? [:]
+                let template = Template.fromDictionary(templateDict) ?? Template()
+                let pagesArray = dict["pages"] as? [String: [String]] ?? [:]
+                let currentPage = dict["currentPage"] as? Int ?? 0
+                
+                var journalPages: [JournalPage] = []
+                
+                for (page, entryIDs) in pagesArray {
+                    let num = page
+                    let entryCount = entryIDs.count
+                    var journalEntries: [JournalEntry] = []
+                    
+                    for entryID in entryIDs {
+                        let entry = await getJournalEntryFromID(id: entryID)
+                        if let entry = entry {
+                            journalEntries.append(entry)
+                        }
+                    }
+                    
+                    journalPages.append(JournalPage(number: Int(num) ?? 0, entries: journalEntries, realEntryCount: entryCount))
+                }
+                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: journalPages, currentPage: currentPage)
+                
             } else {
                 print("No document found")
                 return nil
@@ -120,6 +143,98 @@ class FirebaseViewModel: ObservableObject {
             return nil
         }
     }
+    //#########################################################################################
+    
+    /****######################################################################################
+    JOURNAL SHELF
+     #########################################################################################**/
+    
+    func addJournalShelf(journalShelf: JournalShelf) async -> Bool {
+        let journalShelfReference = db.collection("JOURNAL_SHELVES").document(journalShelf.id.uuidString)
+        do {
+            // Chains together each Model's "toDictionary()" method for simplicity in code and scalability in editing each Model
+            let journalShelfData = journalShelf.toDictionary()
+            try await journalShelfReference.setData(journalShelfData)
+            return true
+        } catch {
+            print("Error adding Journal Shelf: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    // Get a JournalShelf Document from Firebase and load it into a Journal Model
+    func getJournalShelfFromID(id: String) async -> JournalShelf? {
+        let journalShelfReference = db.collection("JOURNAL_SHELVES").document(id)
+        do {
+            let document = try await journalShelfReference.getDocument()
+            if let data = document.data() {
+                let name = data["name"] as? String ?? ""
+                let idString = data["id"] as? String ?? ""
+                let id = UUID(uuidString: idString) ?? UUID()
+                let journalIDs = data["journals"] as? [String] ?? []
+                
+                var arrJournals: [Journal] = []
+                
+                for journalId in journalIDs {
+                    let journal = await getJournalFromID(id: journalId)
+                    if let journal = journal {
+                        arrJournals.append(journal)
+                    }
+                }
+                return JournalShelf(name: name, id: id, journals: arrJournals)
+                
+            } else {
+                print("No document found")
+                return nil
+            }
+        } catch {
+            print("Error fetching Journal Shelf: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    //#########################################################################################
+    
+    /****######################################################################################
+    JOURNAL ENTRY
+     #########################################################################################**/
+    
+    func addJournalEntry(journalEntry: JournalEntry, journalID: UUID, pageNumber: Int) async -> Bool {
+        let journal_entry_reference = db.collection("JOURNAL_ENTRIES").document(journalEntry.id.uuidString)
+        do {
+            let journalEntryData = journalEntry.toDictionary(journalID: journalID)
+            try await journal_entry_reference.setData(journalEntryData)
+            
+            try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
+                "pages.\(pageNumber)": FieldValue.arrayUnion([journalEntry.id.uuidString])
+            ])
+            
+            return true
+        } catch {
+            print("Error adding journal: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    func getJournalEntryFromID(id: String) async -> JournalEntry? {
+        let journalEntryReference = db.collection("JOURNAL_ENTRIES").document(id)
+        
+        do {
+            let document = try await journalEntryReference.getDocument()
+            if let dict = document.data() {
+                return JournalEntry.fromDictionary(dict)
+            } else {
+                print("No document found")
+                return nil
+            }
+        } catch {
+            print("Error fetching Journal Shelf: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    //#########################################################################################
+    
     
     // Add an entry into Firebase
     func getAPIKeys() async throws -> [String: String] {
@@ -154,41 +269,101 @@ class FirebaseViewModel: ObservableObject {
     }
     
     private func fetchEntries(ids: [String]) async {
-        do {
-            var entries: [JournalEntry] = []
-            for id in ids {
-                let entry = try await fetchEntryById(id: id)
-                if let entry = entry {
-                    entries.append(entry)
-                }
+        var entries: [JournalEntry] = []
+        for id in ids {
+            let entry = await getJournalEntryFromID(id: id)
+            if let entry = entry {
+                entries.append(entry)
             }
+        }
 
-            // Update the searchedEntries on the main thread
-            await MainActor.run {
-                searchedEntries = entries
-            }
-        } catch {
-            print("Error fetching entries: \(error.localizedDescription)")
+        // Update the searchedEntries on the main thread
+        await MainActor.run {
+            searchedEntries = entries
         }
     }
     
-    private func fetchEntryById(id: String) async throws -> JournalEntry? {
-        let docRef = db.collection("JOURNAL_ENTRIES").document(id)
-        let document = try await docRef.getDocument()
-        if document.exists {
-            guard let data = document.data() else {
-                print("Document data is nil")
-                return nil
+    func createConversationEntry(entry: JournalEntry, journalID: String) async -> Bool {
+            let journalEntry = db.collection("JOURNAL_ENTRIES")
+            var conversationEntryData: [String: Any]  = [
+                "date": "",
+                "entryContents": "",
+                "conversationLog": [],
+                "id": "\(entry.id)",
+                "journal_id": journalID,
+                "summary": "",
+                "title": ""
+            ]
+            do {
+                try await journalEntry.document("\(entry.id.uuidString)").setData(conversationEntryData)
+                return true
+                
+            } catch {
+                print("Error making document: \(error.localizedDescription)")
+                return false
             }
-            return JournalEntry(
-                date: data["date"] as? String ?? "",
-                title: data["title"] as? String ?? "",
-                text: data["text"] as? String ?? "",
-                summary: data["summary"] as? String ?? ""
-            )
-        } else {
-            print("Document does not exist")
-            return nil
+        }
+    func updateEntryWithConversationLog(id: UUID) async {
+        let journalDoc = db.collection("JOURNAL_ENTRIES").document(id.uuidString)
+        
+        do {
+            try await journalDoc.updateData([
+                "conversationLog": []
+            ])
+        } catch {
+            print("Error making document: \(error.localizedDescription)")
+        }
+        
+        
+    }
+        
+        func addConversationLog(text: [String], journalEntry: UUID) async -> Bool {
+            let conversationEntry = db.collection("JOURNAL_ENTRIES").document("\(journalEntry.uuidString)")
+            
+            do {
+                try await conversationEntry.updateData([
+                    "conversationLog": text
+                ])
+                return true
+                
+            } catch {
+                print("Error making document: \(error.localizedDescription)")
+                return false
+            }
+        }
+    
+    func conversationEntryCheck(journalEntryID: UUID) async -> Bool {
+        let entryDoc = db.collection("JOURNAL_ENTRIES").document("\(journalEntryID.uuidString)")
+        do {
+            let doc = try await entryDoc.getDocument()
+            if doc.exists {
+                return true
+            } else {
+                return false
+            }
+        } catch {
+            print("Error making document: \(error.localizedDescription)")
+            return false
         }
     }
+    
+    func loadConversationLog(for journalEntryID: String, viewModel: AIViewModel) async {
+            let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntryID)
+
+            do {
+                let document = try await docRef.getDocument()
+                if let data = document.data(),
+                   let conversationLog = data["conversationLog"] as? [String], !conversationLog.isEmpty {
+
+                    await MainActor.run {
+                        if viewModel.conversationHistory.isEmpty {
+                            viewModel.conversationHistory = conversationLog
+                        }
+                    }
+                }
+            } catch {
+                print("Error loading conversationLog: \(error.localizedDescription)")
+            }
+    }
+    
 }
