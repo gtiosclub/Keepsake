@@ -91,4 +91,4 @@ class AuthViewModel: ObservableObject {
         }
     }
 }
-//id: uid, name: name, journals: journals, scrapbooks: scrapbooks
+
