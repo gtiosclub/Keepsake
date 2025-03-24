@@ -9,13 +9,19 @@ struct ProfileView: View {
                 List {
                     Section {
                         HStack {
-                            Text(user.name)
-                                .font(.title)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                                .frame(width: 72, height: 72)
-                                .background(Color(.systemGray3))
+//                            Text(user.name)
+//                                .font(.title)
+//                                .fontWeight(.semibold)
+//                                .foregroundColor(.white)
+//                                .frame(width: 72, height: 72)
+//                                .background(Color(.systemGray3))
+//                                .clipShape(Circle())
+                            Image("firebase image")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .clipped()
                                 .clipShape(Circle())
+                                .frame(width: 80, height: 80)
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(user.name)
