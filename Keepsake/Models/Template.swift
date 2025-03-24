@@ -55,6 +55,10 @@ enum Texture: String {
     }
 }
 
+extension Texture: CaseIterable, Identifiable {
+    var id: String { self.rawValue }
+}
+
 struct Template {
     var name: String = "Default"
     var coverColor: Color
