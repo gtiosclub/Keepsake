@@ -61,23 +61,25 @@ struct Template {
     var pageColor: Color
     var titleColor: Color
     var texture: Texture
+    var journalPages: [JournalPage]?
     //insert other TBD variables like color, line type, etc
 //    
-    init(name: String, coverColor: Color, pageColor: Color, titleColor: Color, texture: Texture) {
+    init(name: String, coverColor: Color, pageColor: Color, titleColor: Color, texture: Texture, journalPages: [JournalPage]? = nil) {
         self.name = name
         self.coverColor = coverColor
         self.pageColor = pageColor
         self.titleColor = titleColor
         self.texture = texture
+        self.journalPages = journalPages
     }
     
     // Overloaded initializers
     init(coverColor: Color, pageColor: Color, titleColor: Color) {
-        self.init(name: "Default", coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: .leather)
+        self.init(name: "Default", coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: .leather, journalPages: nil)
     }
 
     init() {
-        self.init(name: "Default", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .leather)
+        self.init(name: "Default", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .leather, journalPages: nil)
     }
 }
 
@@ -97,7 +99,7 @@ extension Template: CustomStringConvertible {
     
     // Convert Hex string to Color
         private static func hexToColor(hex: String) -> Color {
-            var hexSanitized = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+            let hexSanitized = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
             var int: UInt64 = 0
             Scanner(string: hexSanitized).scanHexInt64(&int)
             let a, r, g, b: Double
@@ -120,13 +122,19 @@ extension Template: CustomStringConvertible {
     
     // Convert Template to a dictionary
     func toDictionary() -> [String: Any] {
-        return [
+        var dict: [String: Any] = [
             "name": name,
             "coverColor": colorToHex(color: coverColor),
             "pageColor": colorToHex(color: pageColor),
             "titleColor": colorToHex(color: titleColor),
             "texture": texture.toDictionary()
         ]
+        
+        if let pages = journalPages {
+            dict["pages"] = pages.map { $0.toDictionary() }
+        }
+        
+        return dict
     }
     
     static func fromDictionary(_ dict: [String: Any]) -> Template? {
@@ -138,17 +146,28 @@ extension Template: CustomStringConvertible {
               let texture = Texture.fromDictionary(textureDict) else {
             return nil
         }
+        
+        var journalPages: [JournalPage]?
+        if let journalPagesArray = dict["journalPages"] as? [[String: Any]] {
+            journalPages = journalPagesArray.compactMap { JournalPage.fromDictionary($0) }
+        }
 
         return Template(
             name: name,
             coverColor: hexToColor(hex: coverColorHex),
             pageColor: hexToColor(hex: pageColorHex),
             titleColor: hexToColor(hex: titleColorHex),
-            texture: texture
+            texture: texture,
+            journalPages: journalPages
         )
     }
     
+//    var description: String {
+//        return "Template(name: \(name), coverColor: \(coverColor), pageColor: \(pageColor), titleColor: \(titleColor), texture: \(texture))"
+//    }
+//    
     var description: String {
-        return "Template(name: \(name), coverColor: \(coverColor), pageColor: \(pageColor), titleColor: \(titleColor), texture: \(texture))"
+        let pagesDescription = journalPages?.map { $0.description }.joined(separator: ", ") ?? "nil"
+        return "Template(name: \(name), coverColor: \(coverColor), pageColor: \(pageColor), titleColor: \(titleColor), texture: \(texture), pages: [\(pagesDescription)])"
     }
 }
