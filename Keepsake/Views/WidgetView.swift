@@ -83,7 +83,10 @@ struct TextEntryView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 10)
                 .stroke(.black)
-                .fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]))
+                .fill(LinearGradient(colors: [
+                                    Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]).opacity(0.9),
+                                    Color(red: entry.color[0] * 0.8, green: entry.color[1] * 0.8, blue: entry.color[2] * 0.8)
+                                ], startPoint: .topLeading, endPoint: .bottomTrailing))
                 .frame(width: entry.frameWidth, height: entry.frameHeight)
                 .opacity(entry.isFake ? 0 : 1)
                 .frame(height: height, alignment: .top)
