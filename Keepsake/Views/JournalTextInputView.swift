@@ -32,7 +32,7 @@ struct JournalTextInputView: View {
                     Button {
                         Task {
                             if entry.summary == "***" {
-                                userVM.removeJournalEntry(journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex), pageNum: pageIndex, index: entryIndex)
+                                userVM.removeJournalEntry(page: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex], index: entryIndex)
                             }
                             await MainActor.run {
                                 inTextEntry.toggle()

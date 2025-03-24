@@ -41,6 +41,7 @@ struct ShelfView: View {
                             .foregroundColor(.gray)
                             .fontWeight(.semibold)
                             .padding(.top, 20)
+                            .padding(.leading, 30)
                         
                         Spacer()
                                                     
@@ -64,6 +65,7 @@ struct ShelfView: View {
                                 .foregroundColor(.gray)
                         }
                         .padding(.top, 20)
+                        .padding(.trailing, 30)
                     }
                 }
                     
@@ -73,6 +75,7 @@ struct ShelfView: View {
                     .multilineTextAlignment(.leading)
                     .lineLimit(nil) // Allow multiple lines
                     .fixedSize(horizontal: false, vertical: true)
+                    .padding(.leading, 30)
                 
                 //Journals
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -150,7 +153,6 @@ struct ShelfView: View {
                 }
                 .frame(height: 500)
             }
-            .padding(.horizontal, 30)
 //            .onAppear() {
 //                print(userVM.user.journalShelves)
 //            }

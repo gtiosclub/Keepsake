@@ -26,10 +26,10 @@ struct AddEntryButtonView: View {
                             isExpanded.toggle()
                         }
                     }) {
-                        Image(systemName: "plus.circle.fill")
+                        Image(systemName: "plus.circle")
                             .resizable()
                             .frame(width: 45, height: 45)
-                            .foregroundColor(.red)
+                            .foregroundColor(.black)
                         
                     }
                 } else {

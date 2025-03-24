@@ -67,7 +67,7 @@ struct SearchOverlayView: View {
     }
 }
 
-#Preview {
+#Preview("iPhone Preview") {
     @State var var1 = true
     SearchOverlayView(isPresented: $var1, firebaseVM: FirebaseViewModel.vm)
 }
