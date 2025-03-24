@@ -14,14 +14,16 @@ class User: Identifiable, ObservableObject {
     @Published var journalShelves: [JournalShelf]
     @Published var scrapbookShelves: [ScrapbookShelf]
     @Published var savedTemplates: [Template]
+    @Published var friends: [String]
     
-    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
+    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String]) {
         self.id = id
         self.name = name
         self.username = username
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = savedTemplates
+        self.friends = friends
 
     }
     init(id: String, name: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
@@ -31,6 +33,7 @@ class User: Identifiable, ObservableObject {
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = savedTemplates
+        self.friends = []
 
     }
     
@@ -42,6 +45,7 @@ class User: Identifiable, ObservableObject {
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = []
+        self.friends = []
 
     }
     

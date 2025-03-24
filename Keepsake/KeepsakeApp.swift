@@ -21,7 +21,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct KeepsakeApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @StateObject private var firebaseViewModel = FirebaseViewModel.vm
+//    @StateObject private var firebaseViewModel = FirebaseViewModel.vm
     @StateObject private var authViewModel = AuthViewModel()
     var body: some Scene {
         WindowGroup {

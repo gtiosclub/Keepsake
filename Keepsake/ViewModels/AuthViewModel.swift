@@ -43,14 +43,15 @@ class AuthViewModel: ObservableObject {
         do {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
             self.userSession = result.user
-            let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [])
+            let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [])
             let userData: [String: Any] = [
                 "uid": user.id,
                 "name": user.name,
                 "username": user.username,
                 "journals": [],
                 "scrapbooks": [],
-                "templates": []
+                "templates": [],
+                "friends": []
                 
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
@@ -85,9 +86,10 @@ class AuthViewModel: ObservableObject {
                let username = snapshot.get("username") as? String,
                let journals = snapshot.get("journals") as? [JournalShelf],
                let scrapbooks = snapshot.get("scrapbooks") as? [ScrapbookShelf],
-               let templates = snapshot.get("templates") as? [Template] {
+               let templates = snapshot.get("templates") as? [Template],
+               let friends = snapshot.get("friends") as? [String] {
                 
-                let user = User(id: uid, name: name, username: username, journalShelves: [], scrapbookShelves: [], savedTemplates: [])
+                let user = User(id: uid, name: name, username: username, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: friends)
                 
                 // Assign the user object to currentUser
                 self.currentUser = user
