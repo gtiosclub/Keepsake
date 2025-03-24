@@ -86,9 +86,7 @@ class UserViewModel: ObservableObject {
         user.getJournalShelves()[shelfIndex].journals.append(journal)
     }
     
-    func removeJournalEntry(journal: Journal, pageNum: Int, index: Int) {
-        let page = journal.pages[pageNum]
-        var entrySelection = 0
+    func removeJournalEntry(page: JournalPage, index: Int) {
         switch page.realEntryCount {
         case 0:
             return
