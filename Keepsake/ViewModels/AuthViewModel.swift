@@ -81,7 +81,7 @@ class AuthViewModel: ObservableObject {
                let name = snapshot.get("name") as? String,
                let journals = snapshot.get("journals") as? [Journal],
                let scrapbooks = snapshot.get("scrapbooks") as? [Scrapbook] {
-
+                
                 let user = User(id: uid, name: name, journalShelves: [], scrapbookShelves: [])
                 
                 // Assign the user object to currentUser
@@ -90,30 +90,5 @@ class AuthViewModel: ObservableObject {
             }
         }
     }
-    
-//    func fetchUser() async {
-//        guard let uid = Auth.auth().currentUser?.uid else { return }
-//        
-//        do {
-//            let snapshot = try await Firestore.firestore().collection("USERS").document(uid).getDocument()
-//            
-//            if snapshot.exists,
-//               let uid = snapshot.get("uid") as? String,
-//               let name = snapshot.get("name") as? String,
-//               let journals = snapshot.get("journals") as? [Journal],
-//               let scrapbooks = snapshot.get("scrapbooks") as? [Scrapbook] {
-//                
-//                let user = User(id: uid, name: name, journalShelves: [], scrapbookShelves: [])
-//                
-//                // Ensure that `currentUser` is updated on the main thread
-//                DispatchQueue.main.async {
-//                    self.currentUser = user
-//                }
-//            }
-//        } catch {
-//            print("Error fetching user: \(error.localizedDescription)")
-//        }
-//    }
-
 }
-//id: uid, name: name, journals: journals, scrapbooks: scrapbooks
+
