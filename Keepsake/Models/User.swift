@@ -15,6 +15,7 @@ class User: Identifiable, ObservableObject {
     @Published var savedTemplates: [Template]
     var lastUsedShelfID: String
     var isJournalLastUsed: Bool
+    @Published var shelfIndex: Int = 0
     
     init(id: String, name: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
         self.id = id

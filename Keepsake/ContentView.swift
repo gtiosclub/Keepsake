@@ -15,7 +15,7 @@ struct ContentView: View {
     var body: some View {
         TabView {
             Tab("Home", systemImage: "house") {
-                ShelfView(userVM: userVM, shelf: userVM.getJournalShelves()[0], aiVM: aiVM, fbVM: fbVM, shelfIndex: 0)
+                HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: .journal_shelf)
             }
 
 
