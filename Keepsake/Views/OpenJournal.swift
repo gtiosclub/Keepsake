@@ -298,7 +298,8 @@ struct JournalDisplayView: View {
             .gesture(
                 DragGesture()
                     .onEnded({ value in
-                        if value.translation.width < 0 {
+                        if value.translation.width < 0 && displayPageIndex
+                            != journal.pages.count - 1 {
                             showDeleteButton = -1
                             circleStart = 0.5
                             circleEnd = 1
@@ -321,7 +322,8 @@ struct JournalDisplayView: View {
                             }
                         }
                         
-                        if value.translation.width > 0 {
+                        if value.translation.width > 0 && displayPageIndex
+                            != 0 {
                             showDeleteButton = -1
                             // right
                             circleStart = 0.5
