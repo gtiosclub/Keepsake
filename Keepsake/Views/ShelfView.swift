@@ -28,9 +28,7 @@ struct ShelfView: View {
     @State var inTextEntry: Bool = false
     @State var selectedEntry: Int = 0
     @State var displayPage: Int = 2
-    @State var showNavBack: Bool = false
     @State private var showJournalForm = false
-    
     var body: some View {
         if !show {
             VStack(alignment: .leading, spacing: 10) {
@@ -105,7 +103,6 @@ struct ShelfView: View {
                                                 }
                                                 circleStart = 1
                                                 circleEnd = 1
-                                                showNavBack.toggle()
                                                 withAnimation(.linear(duration: 0.7).delay(0.0)) {
                                                     circleStart -= 0.25
                                                     degrees -= 90
@@ -157,6 +154,7 @@ struct ShelfView: View {
 //                print(userVM.user.journalShelves)
 //            }
             .frame(maxHeight: .infinity, alignment: .top)
+            .navigationBarBackButtonHidden(true)
             .sheet(isPresented: $showJournalForm) {
                 JournalFormView(
                     isPresented: $showJournalForm,
@@ -185,13 +183,13 @@ struct ShelfView: View {
                           coverZ: $coverZ,
                           scaleFactor: $scaleEffect,
                           inTextEntry: $inTextEntry,
-                          selectedEntry: $selectedEntry,
-                          showNavBack: $showNavBack)
+                          selectedEntry: $selectedEntry
+                          )
                     .matchedGeometryEffect(id: "journal_\(selectedJournal)", in: shelfNamespace, properties: .position, anchor: .center)
                     .scaleEffect(scaleEffect)
                     .transition(.slide)
                     .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
-                    .navigationBarBackButtonHidden(showNavBack)
+                    .navigationBarBackButtonHidden(true)
             } else {
                 JournalTextInputView(userVM: userVM,
                                      aiVM: aiVM, fbVM: fbVM,

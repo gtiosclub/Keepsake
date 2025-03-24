@@ -13,6 +13,8 @@ class User: Identifiable, ObservableObject {
     @Published var journalShelves: [JournalShelf]
     @Published var scrapbookShelves: [ScrapbookShelf]
     @Published var savedTemplates: [Template]
+    var lastUsedShelfID: String
+    var isJournalLastUsed: Bool
     
     init(id: String, name: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
         self.id = id
@@ -20,7 +22,8 @@ class User: Identifiable, ObservableObject {
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = savedTemplates
-
+        self.lastUsedShelfID = ""
+        self.isJournalLastUsed = true
     }
     
     // Provide default values for id and name
@@ -30,7 +33,8 @@ class User: Identifiable, ObservableObject {
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = []
-
+        self.lastUsedShelfID = ""
+        self.isJournalLastUsed = true
     }
     
     func updateJournalEntry(shelfNum: Int, bookNum: Int, pageNum: Int, entryNum: Int, newEntry: JournalEntry) {

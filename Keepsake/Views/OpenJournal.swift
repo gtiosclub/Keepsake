@@ -31,7 +31,6 @@ struct OpenJournal: View {
     @State var entryIndex = -1
     @State var scaleFactor2 = 0
     @Binding var selectedEntry: Int
-    @Binding var showNavBack: Bool
     @State private var showSearch = false
     var body: some View {
         VStack(spacing: 10) {
@@ -108,7 +107,7 @@ struct OpenJournal: View {
                 }
             }
             HStack {
-                JournalReturnButton(circleStart: $circleStart, circleEnd: $circleEnd, frontDegrees: $frontDegrees, showNavBack: $showNavBack, degrees: $degrees, isHidden: $isHidden, coverZ: $coverZ, scaleFactor: $scaleFactor, show: $show)
+                JournalReturnButton(circleStart: $circleStart, circleEnd: $circleEnd, frontDegrees: $frontDegrees, degrees: $degrees, isHidden: $isHidden, coverZ: $coverZ, scaleFactor: $scaleFactor, show: $show)
                 Spacer()
                 AddEntryButtonView(journal: journal, inTextEntry: $inTextEntry, userVM: userVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry)
             }.padding(.horizontal, 30)
@@ -350,7 +349,6 @@ struct JournalReturnButton: View {
     @Binding var circleStart: CGFloat
     @Binding var circleEnd: CGFloat
     @Binding var frontDegrees:CGFloat
-    @Binding var showNavBack: Bool
     @Binding var degrees: CGFloat
     @Binding var isHidden: Bool
     @Binding var coverZ: Double
@@ -376,7 +374,6 @@ struct JournalReturnButton: View {
                         withAnimation(.linear(duration: 0.7)) {
                             scaleFactor = 0.6
                         } completion: {
-                            showNavBack.toggle()
                             withAnimation {
                                 show.toggle()
                             }
@@ -417,7 +414,7 @@ struct JournalReturnButton: View {
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: []))
         var body: some View {
-            OpenJournal(userVM: userVM, journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), shelfIndex: 0, bookIndex: 0, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPageIndex, coverZ: $cover, scaleFactor: $scaleFactor, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, showNavBack: $showNavBack)
+            OpenJournal(userVM: userVM, journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), shelfIndex: 0, bookIndex: 0, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPageIndex, coverZ: $cover, scaleFactor: $scaleFactor, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
         }
     }
 
