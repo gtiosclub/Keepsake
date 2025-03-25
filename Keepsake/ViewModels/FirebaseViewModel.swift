@@ -81,17 +81,19 @@ class FirebaseViewModel: ObservableObject {
     func createUser(withEmail email: String, password: String, fullname: String) async throws {
         do {
             let result = try await auth.createUser(withEmail: email, password: password)
+            let initialShelf = JournalShelf(name: "Initial Shelf", id: UUID(), journals: [])
+            await self.addJournalShelf(journalShelf: initialShelf)
             self.userSession = result.user
             let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedShelfID: "InitialShelf", isJournalLastUsed: true)
             let userData: [String: Any] = [
                 "uid": user.id,
                 "name": user.name,
                 "username": user.username,
-                "journalShelves": ["InitialShelf"],
+                "journalShelves": ["\(initialShelf.id)"],
                 "scrapbookShelves": [],
                 "templates": [],
                 "friends": [],
-                "lastUsedShelfId": "InitialShelf",
+                "lastUsedShelfId": "\(initialShelf.id)",
                 "isJournalLastUsed": true
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
@@ -315,8 +317,8 @@ class FirebaseViewModel: ObservableObject {
             if let dict = document.data() {
                 return JournalEntry.fromDictionary(dict)
             } else {
-                print("No document found")
-                return nil
+                return JournalEntry()
+                //return nil
             }
         } catch {
             print("Error fetching Journal Shelf: \(error.localizedDescription)")

@@ -9,6 +9,26 @@ import Foundation
 import SwiftUICore
 import UIKit
 
+extension Color {
+    func toRGBArray() -> [CGFloat] {
+        guard let components = UIColor(self).cgColor.components, components.count >= 3 else {
+            return [0, 0, 0, 1] // Default to black with full opacity if conversion fails
+        }
+        return [components[0], components[1], components[2], components.count > 3 ? components[3] : 1.0]
+    }
+}
+
+extension Color {
+    static func fromRGBArray(_ array: [CGFloat]) -> Color {
+        return Color(
+            red: Double(array[0]),
+            green: Double(array[1]),
+            blue: Double(array[2]),
+            opacity: Double(array.count > 3 ? array[3] : 1.0)
+        )
+    }
+}
+
 enum Texture: String {
     case leather
     case bears
@@ -128,9 +148,9 @@ extension Template: CustomStringConvertible {
     func toDictionary() -> [String: Any] {
         var dict: [String: Any] = [
             "name": name,
-            "coverColor": colorToHex(color: coverColor),
-            "pageColor": colorToHex(color: pageColor),
-            "titleColor": colorToHex(color: titleColor),
+            "coverColor": coverColor.toRGBArray(),
+            "pageColor": pageColor.toRGBArray(),
+            "titleColor": titleColor.toRGBArray(),
             "texture": texture.toDictionary()
         ]
         
@@ -143,27 +163,34 @@ extension Template: CustomStringConvertible {
     
     static func fromDictionary(_ dict: [String: Any]) -> Template? {
         guard let name = dict["name"] as? String,
-              let coverColorHex = dict["coverColor"] as? String,
-              let pageColorHex = dict["pageColor"] as? String,
-              let titleColorHex = dict["titleColor"] as? String,
-              let textureDict = dict["texture"] as? [String: Any],
-              let texture = Texture.fromDictionary(textureDict) else {
-            return nil
-        }
-        
-        var journalPages: [JournalPage]?
-        if let journalPagesArray = dict["journalPages"] as? [[String: Any]] {
-            journalPages = journalPagesArray.compactMap { JournalPage.fromDictionary($0) }
-        }
+                  let textureDict = dict["texture"] as? [String: Any] else {
+                return nil
+            }
+            
+            // Move `??` defaults outside `guard let`
+            let coverColorArray = dict["coverColor"] as? [CGFloat] ?? [0, 0, 0, 1]
+            let pageColorArray = dict["pageColor"] as? [CGFloat] ?? [1, 1, 1, 1]
+            let titleColorArray = dict["titleColor"] as? [CGFloat] ?? [0, 0, 0, 1]
+            
+            // Ensure `Texture.fromDictionary` doesn't return nil
+            guard let texture = Texture.fromDictionary(textureDict) else {
+                return nil
+            }
+            
+            // Decode journal pages if available
+            var journalPages: [JournalPage]?
+            if let journalPagesArray = dict["journalPages"] as? [[String: Any]] {
+                journalPages = journalPagesArray.compactMap { JournalPage.fromDictionary($0) }
+            }
 
-        return Template(
-            name: name,
-            coverColor: hexToColor(hex: coverColorHex),
-            pageColor: hexToColor(hex: pageColorHex),
-            titleColor: hexToColor(hex: titleColorHex),
-            texture: texture,
-            journalPages: journalPages
-        )
+            return Template(
+                name: name,
+                coverColor: Color.fromRGBArray(coverColorArray),
+                pageColor: Color.fromRGBArray(pageColorArray),
+                titleColor: Color.fromRGBArray(titleColorArray),
+                texture: texture,
+                journalPages: journalPages
+            )
     }
     
 //    var description: String {

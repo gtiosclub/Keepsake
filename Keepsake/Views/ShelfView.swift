@@ -99,6 +99,7 @@ struct ShelfView: View {
                                         .transition(.identity)
                                         .matchedGeometryEffect(id: "journal_\(index)", in: shelfNamespace, properties: .position, anchor: .center)
                                         .onTapGesture {
+                                            print(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index))
                                             selectedJournal = index
                                             displayPage = userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).currentPage
                                             
@@ -169,10 +170,12 @@ struct ShelfView: View {
                 JournalFormView(
                     isPresented: $showJournalForm,
                     onCreate: { title, coverColor, pageColor, titleColor, texture in
-                        createJournal(
-                            from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: texture),
-                            shelfIndex: shelfIndex
-                        )
+                        Task {
+                            await createJournal(
+                                from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: texture),
+                                shelfIndex: shelfIndex, shelfID: shelf.id
+                            )
+                        }
                     },
                     templates: userVM.user.savedTemplates
                 )
@@ -214,7 +217,7 @@ struct ShelfView: View {
         }
     }
     
-    func createJournal(from template: Template, shelfIndex: Int) {
+    func createJournal(from template: Template, shelfIndex: Int, shelfID: UUID) async {
         let newJournal = Journal(
             name: template.name,
             createdDate: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short),
@@ -227,7 +230,7 @@ struct ShelfView: View {
             currentPage: 0
         )
         userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
-        print(userVM.user.journalShelves[0])
+        await fbVM.addJournal(journal: newJournal, journalShelfID: shelfID)
     }
     
     private func calculateVerticalOffset(proxy: GeometryProxy) -> CGFloat {
