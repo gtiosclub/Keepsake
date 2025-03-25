@@ -26,6 +26,10 @@ class UserViewModel: ObservableObject {
         user.addJournalShelf(shelf: shelf)
     }
     
+    func addScrapbookShelfToUser(_ shelf: ScrapbookShelf) {
+        user.addScrapbookShelf(shelf: shelf)
+    }
+    
     func getJournalShelves() -> [JournalShelf] {
         return user.journalShelves
     }
@@ -40,6 +44,14 @@ class UserViewModel: ObservableObject {
     
     func updateJournalEntry(shelfIndex: Int, bookIndex: Int, pageNum: Int, entryIndex: Int, newEntry: JournalEntry) {
         user.getJournalShelves()[shelfIndex].journals[bookIndex].pages[pageNum].entries[entryIndex] = newEntry
+    }
+    
+    func getShelfIndex() -> Int {
+        return user.shelfIndex
+    }
+    
+    func setShelfIndex(index: Int) -> Void {
+        user.shelfIndex = index
     }
     
     func newAddJournalEntry(journal: Journal, pageNum: Int, entry: JournalEntry) -> Int {
