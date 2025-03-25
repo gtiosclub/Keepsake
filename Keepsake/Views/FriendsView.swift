@@ -92,7 +92,7 @@ import SwiftUI
 import FirebaseFirestore
 
 struct FriendsView: View {
-    @EnvironmentObject var viewModel: AuthViewModel
+    @EnvironmentObject var viewModel: FirebaseViewModel
     @State private var friendsList: [User] = []
     private let db = Firestore.firestore()
 
@@ -114,7 +114,9 @@ struct FriendsView: View {
                                 journalShelves: [],
                                 scrapbookShelves: [],
                                 savedTemplates: [],
-                                friends: friendData["friends"] as? [String] ?? []
+                                friends: friendData["friends"] as? [String] ?? [],
+                                lastUsedShelfID: "InitialShelf",
+                                isJournalLastUsed: true
                             )
 
                             DispatchQueue.main.async {

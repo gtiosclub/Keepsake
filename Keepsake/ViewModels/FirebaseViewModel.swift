@@ -11,12 +11,18 @@ import FirebaseFirestore
 import FirebaseAuth
 import FirebaseFunctions
 
+protocol AuthenticationFormProtocol {
+    var formIsValid: Bool {get}
+}
+
 class FirebaseViewModel: ObservableObject {
     let db = Firestore.firestore()
     private lazy var functions: Functions = Functions.functions()
     var onSetupCompleted: ((FirebaseViewModel) -> Void)?
     
     @Published var searchedEntries: [JournalEntry] = []
+    @Published var userSession: FirebaseAuth.User?
+    @Published var currentUser: User?
     
     let auth = Auth.auth()
     static let vm = FirebaseViewModel()
@@ -44,12 +50,97 @@ class FirebaseViewModel: ObservableObject {
     
     private lazy var vectorSearchQueryCallable: Callable<QueryRequest, QueryResponse> = functions.httpsCallable("ext-firestore-vector-search-queryCallable")
     
+//    init() {
+//        auth.signIn(withEmail: "royankit11@gmail.com", password: "test123") { [weak self] authResult, error in
+//            guard let self = self else { return }
+//            
+//            if let error = error {
+//                return
+//            }
+//        }
+//    }
+    
     init() {
-        auth.signIn(withEmail: "royankit11@gmail.com", password: "test123") { [weak self] authResult, error in
-            guard let self = self else { return }
+        self.userSession = auth.currentUser
+        
+        Task {
+            await fetchUser()
+        }
+    }
+    
+    func signIn(withEmail email: String, password: String) async throws {
+        do {
+            let result = try await auth.signIn(withEmail: email, password: password)
+            self.userSession = result.user
+            await fetchUser()
+        } catch {
             
-            if let error = error {
-                return
+        }
+    }
+    
+    func createUser(withEmail email: String, password: String, fullname: String) async throws {
+        do {
+            let result = try await auth.createUser(withEmail: email, password: password)
+            self.userSession = result.user
+            let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedShelfID: "InitialShelf", isJournalLastUsed: true)
+            let userData: [String: Any] = [
+                "uid": user.id,
+                "name": user.name,
+                "username": user.username,
+                "journalShelves": ["InitialShelf"],
+                "scrapbookShelves": [],
+                "templates": [],
+                "friends": [],
+                "lastUsedShelfId": "InitialShelf",
+                "isJournalLastUsed": true
+            ]
+            try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
+            await fetchUser()
+            
+        } catch {
+            print("error :( \(error.localizedDescription)")
+        }
+    }
+    func signOut() {
+        do {
+            try auth.signOut()
+            self.userSession = nil
+            self.currentUser = nil
+        } catch {
+            
+        }
+    }
+    
+    func deleteAccount() {
+        
+    }
+    
+    func fetchUser() async {
+        guard let uid = auth.currentUser?.uid else {return}
+        
+        guard let snapshot = try? await Firestore.firestore().collection("USERS").document(uid).getDocument() else { return }
+        if snapshot.exists {
+            // Manually extract data from the snapshot
+            if let uid = snapshot.get("uid") as? String,
+               let name = snapshot.get("name") as? String,
+               let username = snapshot.get("username") as? String,
+               let journalShelfIds = snapshot.get("journalShelves") as? [String],
+               let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
+               let templates = snapshot.get("templates") as? [String],
+               let friends = snapshot.get("friends") as? [String],
+               let lastUsed = snapshot.get("lastUsedShelfId") as? String,
+               let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
+            {
+                var journalShelves: [JournalShelf] = []
+                for astr in journalShelfIds {
+                    let shelf = await getJournalShelfFromID(id: astr)!
+                    journalShelves.append(shelf)
+                }
+                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsed, isJournalLastUsed: isJournalLastUsed)
+                
+                // Assign the user object to currentUser
+                self.currentUser = user
+                
             }
         }
     }
