@@ -168,9 +168,9 @@ struct ShelfView: View {
             .sheet(isPresented: $showJournalForm) {
                 JournalFormView(
                     isPresented: $showJournalForm,
-                    onCreate: { title, coverColor, pageColor, titleColor in
+                    onCreate: { title, coverColor, pageColor, titleColor, texture in
                         createJournal(
-                            from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: .leather),
+                            from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: texture),
                             shelfIndex: shelfIndex
                         )
                     },

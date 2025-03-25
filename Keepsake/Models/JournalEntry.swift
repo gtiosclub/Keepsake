@@ -142,6 +142,20 @@ extension JournalEntry: CustomStringConvertible {
             "id": id.uuidString
         ]
     }
+    
+    func toDictionary() -> [String: Any] {
+        return [
+            "date": date,
+            "title": title,
+            "entryContents": text,
+            "summary": summary,
+            "width": width,
+            "height": height,
+            "isFake": isFake,
+            "color": color,
+            "id": id.uuidString
+        ]
+    }
 
     static func fromDictionary(_ dict: [String: Any]) -> JournalEntry? {
         guard let date = dict["date"] as? String,
