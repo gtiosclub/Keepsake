@@ -10,19 +10,35 @@ import Foundation
 class User: Identifiable, ObservableObject {
     var id: String
     var name: String
+    var username: String
     @Published var journalShelves: [JournalShelf]
     @Published var scrapbookShelves: [ScrapbookShelf]
     @Published var savedTemplates: [Template]
     var lastUsedShelfID: String
     var isJournalLastUsed: Bool
     @Published var shelfIndex: Int = 0
+    @Published var friends: [String]
     
-    init(id: String, name: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
+    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String]) {
         self.id = id
         self.name = name
+        self.username = username
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = savedTemplates
+        self.lastUsedShelfID = ""
+        self.isJournalLastUsed = true
+        self.friends = friends
+
+    }
+    init(id: String, name: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
+        self.id = id
+        self.name = name
+        self.username = name + "@gmail.com"
+        self.journalShelves = journalShelves
+        self.scrapbookShelves = scrapbookShelves
+        self.savedTemplates = savedTemplates
+        self.friends = []
         self.lastUsedShelfID = ""
         self.isJournalLastUsed = true
     }
@@ -31,11 +47,14 @@ class User: Identifiable, ObservableObject {
     init(journalShelves: [JournalShelf] = [], scrapbookShelves: [ScrapbookShelf] = [], savedTemplates: [Template] = []) {
         self.id = UUID().uuidString
         self.name = "Default User"
+        self.username = "default@gmail.com"
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = []
         self.lastUsedShelfID = ""
         self.isJournalLastUsed = true
+        self.friends = []
+
     }
     
     func updateJournalEntry(shelfNum: Int, bookNum: Int, pageNum: Int, entryNum: Int, newEntry: JournalEntry) {

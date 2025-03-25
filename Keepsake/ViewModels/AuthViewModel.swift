@@ -43,12 +43,16 @@ class AuthViewModel: ObservableObject {
         do {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
             self.userSession = result.user
-            let user = User(id: result.user.uid, name: email, journalShelves: [], scrapbookShelves: [])
+            let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [])
             let userData: [String: Any] = [
                 "uid": user.id,
                 "name": user.name,
+                "username": user.username,
                 "journals": [],
-                "scrapbooks": []
+                "scrapbooks": [],
+                "templates": [],
+                "friends": []
+                
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
             await fetchUser()
@@ -79,10 +83,13 @@ class AuthViewModel: ObservableObject {
             // Manually extract data from the snapshot
             if let uid = snapshot.get("uid") as? String,
                let name = snapshot.get("name") as? String,
-               let journals = snapshot.get("journals") as? [Journal],
-               let scrapbooks = snapshot.get("scrapbooks") as? [Scrapbook] {
+               let username = snapshot.get("username") as? String,
+               let journals = snapshot.get("journals") as? [JournalShelf],
+               let scrapbooks = snapshot.get("scrapbooks") as? [ScrapbookShelf],
+               let templates = snapshot.get("templates") as? [Template],
+               let friends = snapshot.get("friends") as? [String] {
                 
-                let user = User(id: uid, name: name, journalShelves: [], scrapbookShelves: [])
+                let user = User(id: uid, name: name, username: username, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: friends)
                 
                 // Assign the user object to currentUser
                 self.currentUser = user
@@ -91,4 +98,4 @@ class AuthViewModel: ObservableObject {
         }
     }
 }
-//id: uid, name: name, journals: journals, scrapbooks: scrapbooks
+
