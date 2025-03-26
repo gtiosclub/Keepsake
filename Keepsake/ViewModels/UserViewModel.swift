@@ -13,8 +13,31 @@ class UserViewModel: ObservableObject {
     init(user: User) {
         if user.savedTemplates.isEmpty {
             user.savedTemplates = [
-                Template(name: "Classic", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather),
-                Template(name: "Minimalist", coverColor: .gray, pageColor: .white, titleColor: .black, texture: .blackLeather),
+                Template(name: "Classic", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather, journalPages: [
+                    JournalPage(number: 1),
+                    JournalPage(number: 2,
+                                entries: [
+                                    JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")],
+                                realEntryCount: 1),
+                    JournalPage(number: 3,
+                                entries: [
+                                    JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"),
+                                    JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"),
+                                    JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")],
+                                realEntryCount: 3),
+                    JournalPage(number: 4,
+                                entries: [
+                                    JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"),
+                                    JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")],
+                                realEntryCount: 2),
+                    JournalPage(number: 5)]),
+                Template(name: "Minimalist", coverColor: .gray, pageColor: .white, titleColor: .black, texture: .blackLeather, journalPages: [JournalPage(
+                    number: 1,
+                    entries: [JournalEntry(date: "2025-03-26",title: "Entry 1",text: "Sample text for entry 1",summary: "Summary of entry 1"),
+                              JournalEntry(date: "2025-03-26",title: "Entry 2",text: "Sample text for entry 2",summary: "Summary of entry 2"),
+                              JournalEntry(date: "2025-03-26",title: "Entry 8",text: "Sample text for entry 8",summary: "Summary of entry 8")],
+                    realEntryCount: 0
+                )]),
                 Template(name: "Creative", coverColor: .blue, pageColor: .yellow, titleColor: .white, texture: .flower1),
                 Template(name: "Snoopy", coverColor: .black, pageColor: .white, titleColor: .white, texture: .snoopy)
             ]
