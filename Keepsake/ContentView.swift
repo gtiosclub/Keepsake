@@ -13,6 +13,10 @@ struct ContentView: View {
     @ObservedObject var fbVM: FirebaseViewModel
 
     var body: some View {
+        TabView {
+            Tab("Home", systemImage: "house") {
+                HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: .journal_shelf)
+            }
 
         NavigationView {
             TabView {
@@ -30,18 +34,8 @@ struct ContentView: View {
                 Tab("Profile", systemImage:"person.crop.circle") {
                     ProfileView()
                 }
-            }.onAppear {
-                // correct the transparency bug for Tab bars
-                let tabBarAppearance = UITabBarAppearance()
-                tabBarAppearance.configureWithOpaqueBackground()
-                UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-                // correct the transparency bug for Navigation bars
-                let navigationBarAppearance = UINavigationBarAppearance()
-                navigationBarAppearance.configureWithOpaqueBackground()
-                UINavigationBar.appearance().scrollEdgeAppearance = navigationBarAppearance
-
             }
-        }
+                
     }
 }
 
