@@ -10,6 +10,7 @@ import Observation
 import FirebaseFirestore
 import FirebaseAuth
 import FirebaseFunctions
+import FirebaseStorage
 
 protocol AuthenticationFormProtocol {
     var formIsValid: Bool {get}
@@ -346,24 +347,80 @@ class FirebaseViewModel: ObservableObject {
             }
         }
     }
-    
+         
     
     func getJournalEntryFromID(id: String) async -> JournalEntry? {
         let journalEntryReference = db.collection("JOURNAL_ENTRIES").document(id)
-        
+        print(id)
         do {
             let document = try await journalEntryReference.getDocument()
             if let dict = document.data() {
+                var x = JournalEntry.fromDictionary(dict)
+                print(x)
                 return JournalEntry.fromDictionary(dict)
             } else {
                 return JournalEntry()
                 //return nil
+                print("fake entry improperly returned")
             }
         } catch {
             print("Error fetching Journal Shelf: \(error.localizedDescription)")
             return nil
         }
     }
+    
+    //#########################################################################################
+    
+    /****######################################################################################
+    Images
+     #########################################################################################**/
+    
+    func storeImage(image: UIImage, completion: @escaping (String?) -> Void) {
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+            //completion(nil)
+            print("image with url")
+            return
+        }
+            // create random image path
+        let imagePath = "images/\(UUID().uuidString).jpg"
+        let storageRef = Storage.storage().reference()
+        // create reference to file you want to upload
+        let imageRef = storageRef.child(imagePath)
+        var urlString: String = ""
+        //upload image
+        
+        imageRef.putData(imageData, metadata: nil) { (metadata, error) in
+            if let error = error {
+                print("Error uploading image: \(error.localizedDescription)")
+            } else {
+                // Image successfully uploaded
+                imageRef.downloadURL { url, error in
+                    if let downloadURL = url {
+                        urlString = downloadURL.absoluteString
+                        completion(urlString)
+                    } else {
+                        print("Error getting download URL: (String(describing: error?.localizedDescription))")
+                    }
+                }
+            }
+        }
+    }
+    
+    func getImageFromURL(urlString: String) async -> UIImage? {
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL string: \(urlString)")
+            return nil
+        }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            return UIImage(data: data)
+        } catch {
+            print("Error loading image from URL: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
     
     //#########################################################################################
     

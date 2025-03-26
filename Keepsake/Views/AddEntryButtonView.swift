@@ -137,21 +137,40 @@ struct SelectedPhotoView: View {
     @Binding var selectedImages: [UIImage]
     @Binding var selectedItems: [PhotosPickerItem]
     @ObservedObject var fbVM: FirebaseViewModel
+    @State var imageURLs: [String] = []
     var body: some View {
         HStack {
             Button {
                 if journal.pages[journal.currentPage].entries.count <= 8 {
                     print(selectedImages)
                     Task {
-                        await fbVM.addJournalEntry(journalEntry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }, images: selectedImages), journalID: journal.id, pageNumber: displayPage)
+                        imageURLs = []
+                        var count = 0
+                        for image in selectedImages {
+                            let imagePath = await fbVM.storeImage(image: image) { url in
+                                if let url = url {
+                                    imageURLs.append(url)
+                                    count += 1
+                                    print()
+                                    print("added")
+                                }
+                                if count == selectedImages.count {
+                                    selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }, images: imageURLs))
+                                    print()
+                                    print(journal.pages[displayPage].entries[selectedEntry])
+                                    print()
+                                    Task {
+                                        await fbVM.updateJournalPage(entries: journal.pages[displayPage].entries, journalID: journal.id, pageNumber: displayPage)
+                                        selectedImages = []
+                                        selectedItems = []
+                                    }
+                                }
+                            }
+                        }
                     }
-                    selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }, images: selectedImages))
-                    selectedImages = []
-                    selectedItems = []
                 } else {
                     //handle too many entries
                 }
-                print(journal.pages[journal.currentPage].entries)
             } label: {
                 ZStack {
                     Text("Add widget with \(selectedImages.count) photos")

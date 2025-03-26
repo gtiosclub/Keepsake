@@ -8,8 +8,11 @@
 import Foundation
 import SwiftUI
 
-enum EntryType: Encodable {
-    case written, chat, image, voice
+enum EntryType: String, Encodable {
+    case written = "written"
+    case chat = "chat"
+    case image = "image"
+    case voice = "voice"
 }
 
 struct JournalEntry: Encodable, Hashable {
@@ -23,7 +26,7 @@ struct JournalEntry: Encodable, Hashable {
     var height: Int
     var isFake: Bool
     var color: [Double]
-    var images: [Data]
+    var images: [String]
     var frameWidth: CGFloat {
         return UIScreen.main.bounds.width * 0.38 * CGFloat(width) + UIScreen.main.bounds.width * 0.02 * CGFloat(width - 1)
     }
@@ -76,7 +79,7 @@ struct JournalEntry: Encodable, Hashable {
         self.type = .written
     }
     
-    init(date: String, title: String, text: String, summary: String, width: Int, height: Int, isFake: Bool, color: [Double], images: [UIImage]) {
+    init(date: String, title: String, text: String, summary: String, width: Int, height: Int, isFake: Bool, color: [Double], images: [String]) {
         self.id = UUID()
         self.date = date
         self.text = text
@@ -87,13 +90,23 @@ struct JournalEntry: Encodable, Hashable {
         self.height = height
         self.isFake = isFake
         self.color = color
-        self.images = []
-        for image in images {
-            if let imageData = image.pngData() {
-                    self.images.append(imageData)
-            }
-        }
+        self.images = images
         self.type = .image
+    }
+    
+    init(date: String, title: String, text: String, summary: String, width: Int, height: Int, isFake: Bool, color: [Double], images: [String], type: EntryType) {
+        self.id = UUID()
+        self.date = date
+        self.text = text
+        self.title = title
+        self.conversationLog = []
+        self.summary = summary
+        self.width = width
+        self.height = height
+        self.isFake = isFake
+        self.color = color
+        self.images = images
+        self.type = type
     }
     
     init() {
@@ -111,7 +124,7 @@ struct JournalEntry: Encodable, Hashable {
         self.type = .written
     }
     
-    init(entry: JournalEntry, width: Int, height: Int, color: [Double], images: [Data], type: EntryType) {
+    init(entry: JournalEntry, width: Int, height: Int, color: [Double], images: [String], type: EntryType) {
         self.id = UUID()
         self.date = entry.date
         self.title = entry.title
@@ -139,7 +152,9 @@ extension JournalEntry: CustomStringConvertible {
             "height": height,
             "isFake": isFake,
             "color": color,
-            "id": id.uuidString
+            "id": id.uuidString,
+            "images": images,
+            "type": "\(type)"
         ]
     }
     
@@ -153,7 +168,9 @@ extension JournalEntry: CustomStringConvertible {
             "height": height,
             "isFake": isFake,
             "color": color,
-            "id": id.uuidString
+            "id": id.uuidString,
+            "type": "\(type)",
+            "images": images
         ]
     }
 
@@ -167,15 +184,21 @@ extension JournalEntry: CustomStringConvertible {
               let width = dict["width"] as? Int,
               let height = dict["height"] as? Int,
               let isFake = dict["isFake"] as? Bool,
+              let type = dict["type"] as? String,
+              let images = dict["images"] as? [String],
               let color = dict["color"] as? [Double] else {
             return nil
         }
+        if let enumType = EntryType(rawValue: type) {
+            return JournalEntry(date: date, title: title, text: text, summary: summary, width: width, height: height, isFake: isFake, color: color, images: images, type: enumType)
+        } else {
+            return nil
+        }
         
-        return JournalEntry(date: date, title: title, text: text, summary: summary, width: width, height: height, isFake: isFake, color: color)
     }
     
     var description: String {
-        return "JournalEntry(date: \(date), title: \(title), text: \(text), summary: \(summary), width: \(width), height: \(height), isFake: \(isFake), color: \(color))"
+        return "JournalEntry(date: \(date), title: \(title), text: \(text), summary: \(summary), width: \(width), height: \(height), isFake: \(isFake), color: \(color), type: \(type), images: \(images))"
     }
     
 }

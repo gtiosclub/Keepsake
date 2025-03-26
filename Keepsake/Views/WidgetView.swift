@@ -28,7 +28,7 @@ struct WidgetView: View {
         LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
             ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
                 ZStack(alignment: .topLeading) {
-                    createView(for: widget, width: width, height: height, isDisplay: isDisplay, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+                    createView(for: widget, width: width, height: height, isDisplay: isDisplay, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, fbVM: fbVM)
                         .onTapGesture {
                             if showDeleteButton != -1 {
                                 showDeleteButton = -1
@@ -116,12 +116,12 @@ struct TextEntryView: View {
 }
 
 @ViewBuilder
-func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool, inTextEntry: Binding<Bool>, selectedEntry: Binding<Int>) -> some View {
+func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool, inTextEntry: Binding<Bool>, selectedEntry: Binding<Int>, fbVM: FirebaseViewModel) -> some View {
     switch widget.type {
     case .written:
         TextEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
     default:
-        PictureEntryView(entry: widget, width: width, height: height, isDisplay: isDisplay).opacity(widget.isFake ? 0 : 1)
+        PictureEntryView(entry: widget, width: width, height: height, isDisplay: isDisplay, fbVM: fbVM).opacity(widget.isFake ? 0 : 1)
     }
 }
 
@@ -133,6 +133,8 @@ struct PictureEntryView: View {
     @State var selected: Int = 0
     var isDisplay: Bool
     @State var isActive: Bool = true
+    @State var uiImages: [UIImage] = []
+    @ObservedObject var fbVM: FirebaseViewModel
     var body: some View {
             ZStack {
                 // Background Color
@@ -142,22 +144,14 @@ struct PictureEntryView: View {
 
                 // Carousel
                 TabView(selection: $selected) {
-                    ForEach(0..<entry.images.count, id: \.self) { index in
+                    ForEach(0..<uiImages.count, id: \.self) { index in
                         ZStack {
-                            if let uiImage = UIImage(data: entry.images[index]) {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: entry.frameWidth, height: entry.frameHeight)
-                                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                                    .tag(index)
-                            } else {
-                                Image(systemName: "photo")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 350, height: 200)
-                                    .tag(index)
-                            }
+                            Image(uiImage: uiImages[index])
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: entry.frameWidth, height: entry.frameHeight)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .tag(index)
 
                             // Navigation Dots (Stacked on top of images)
                             VStack {
@@ -165,7 +159,7 @@ struct PictureEntryView: View {
                                 Spacer()
                                 Spacer()
                                 HStack {
-                                    ForEach(entry.images.indices, id: \.self) { dotIndex in
+                                    ForEach(uiImages.indices, id: \.self) { dotIndex in
                                         Capsule()
                                             .fill(Color.white.opacity(selected == dotIndex ? 1 : 0.33))
                                             .frame(width: UIScreen.main.bounds.width * 0.07, height: UIScreen.main.bounds.height * 0.005)
@@ -190,6 +184,14 @@ struct PictureEntryView: View {
                 isActive = true
                 selected = 0
                 // Create a new timer instance for each carousel
+                Task {
+                    for image in entry.images {
+                        let uiImage = await fbVM.getImageFromURL(urlString: image)
+                        if let uiImage = uiImage {
+                            uiImages.append(uiImage)
+                        }
+                    }
+                }
                 timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
                     guard isActive else {
                         selected = 0
