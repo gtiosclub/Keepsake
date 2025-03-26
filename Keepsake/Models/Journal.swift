@@ -57,7 +57,9 @@ extension Journal: CustomStringConvertible {
         for page in pages {
             pageDict[String(page.number)] = []
             for entry in page.entries {
-                pageDict[String(page.number)]?.append(entry.id.uuidString)
+                if (entry.isFake == false) {
+                    pageDict[String(page.number)]?.append(entry.id.uuidString)
+                }
             }
         }
         

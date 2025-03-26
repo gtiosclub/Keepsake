@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct isLoggedInView: View {
-    @EnvironmentObject var viewModel: AuthViewModel
+    @EnvironmentObject var viewModel: FirebaseViewModel
     var body: some View {
         Group {
             if viewModel.userSession != nil {

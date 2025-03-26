@@ -3,7 +3,7 @@ import SwiftUI
 import UIKit
 
 struct ProfileView: View {
-    @EnvironmentObject var viewModel: AuthViewModel
+    @EnvironmentObject var viewModel: FirebaseViewModel
     @State private var profileImage: UIImage? = nil
     @State private var showImagePicker = false
     @State private var showImageOptions = false
@@ -155,5 +155,5 @@ struct ImagePickerViewController: UIViewControllerRepresentable {
 
 #Preview {
     ProfileView()
-        .environmentObject(AuthViewModel())
+        .environmentObject(FirebaseViewModel())
 }

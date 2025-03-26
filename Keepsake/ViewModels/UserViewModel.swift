@@ -50,8 +50,19 @@ class UserViewModel: ObservableObject {
         return user.shelfIndex
     }
     
-    func setShelfIndex(index: Int) -> Void {
+    func setShelfIndex(index: Int, shelfID: UUID, isJournal: Bool) -> Void {
         user.shelfIndex = index
+        user.lastUsedShelfID = shelfID
+        user.isJournalLastUsed = isJournal
+    }
+    
+    func setShelfToLastUsedJShelf() {
+        let shelves = user.getJournalShelves()
+        for index in shelves.indices {
+            if shelves[index].id == user.lastUsedShelfID {
+                user.shelfIndex = index
+            }
+        }
     }
     
     func newAddJournalEntry(journal: Journal, pageNum: Int, entry: JournalEntry) -> Int {
