@@ -18,6 +18,7 @@ struct HomeView: View {
     @ObservedObject var fbVM: FirebaseViewModel
     @State var selectedOption: ViewOption = .journal_shelf
     var body: some View {
+        let _ = userVM.setShelfToLastUsedJShelf()
         switch selectedOption {
         case .journal_shelf:
             ShelfView(userVM: userVM, shelf: userVM.getJournalShelves()[userVM.getShelfIndex()], aiVM: aiVM, fbVM: fbVM, shelfIndex: userVM.getShelfIndex(), selectedOption: $selectedOption)

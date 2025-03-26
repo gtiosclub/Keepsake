@@ -8,25 +8,18 @@
 import SwiftUI
 
 struct FirstView: View {
-    @EnvironmentObject var viewModel: AuthViewModel
+    @EnvironmentObject var viewModel: FirebaseViewModel
     var body: some View {
         Group {
-            if viewModel.userSession != nil {
-                ProfileView()
+            if let user = viewModel.currentUser {
+                ContentView(userVM: UserViewModel(user: user), aiVM: AIViewModel(), fbVM: viewModel)
             } else {
                 LoginView()
             }
-//            LoginView()
-
-
-
-
-
-
         }
     }
 }
 
-#Preview {
-    FirstView()
-}
+//#Preview {
+//    FirstView()
+//}
