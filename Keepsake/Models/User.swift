@@ -31,6 +31,18 @@ class User: Identifiable, ObservableObject {
         self.lastUsedShelfID = lastUsedShelfID
         self.isJournalLastUsed = isJournalLastUsed
     }
+    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String]) {
+        self.id = id
+        self.name = name
+        self.username = username
+        self.journalShelves = journalShelves
+        self.scrapbookShelves = scrapbookShelves
+        self.savedTemplates = savedTemplates
+        self.isJournalLastUsed = true
+        self.friends = friends
+        self.lastUsedShelfID = UUID()
+        self.isJournalLastUsed = true
+    }
     init(id: String, name: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
         self.id = id
         self.name = name
