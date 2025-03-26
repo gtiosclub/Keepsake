@@ -206,16 +206,14 @@ struct VoiceMemoEntryView: View {
     }
 }
 
+
 #Preview {
     struct Preview: View {
-        @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1)
-        @State var selectedImageIndex: Int = 0
-        var JournalEntry = JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")
+        var journalEntry: JournalEntry = JournalEntry(date: "Date", title: "title", text: "text", summary: "summary", width: 1, height: 1, isFake: false, color: [0.5, 0.5, 0.5], images: [])
         var body: some View {
-            VoiceMemoEntryView(entry: JournalEntry, width: <#T##CGFloat#>, height: <#T##CGFloat#>)
+            VoiceMemoEntryView(entry: journalEntry, width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12)
         }
     }
 
     return Preview()
 }
-
