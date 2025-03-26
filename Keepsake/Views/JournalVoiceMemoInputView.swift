@@ -19,30 +19,105 @@ struct JournalVoiceMemoInputView: View {
     var pageIndex: Int
     @State var title: String = ""
     @State var date: String = ""
+    @Binding var inVoiceEntry: Bool
     @ObservedObject var audioRecording: AudioRecording
     @State var transcription: String = ""
     var entry: JournalEntry
     @State var showPromptSheet: Bool = false
     @State var selectedPrompt: String? = ""
     var body: some View {
-        VoiceRecordingView(audioRecording: audioRecording)
-            .frame(width: UIScreen.main.bounds.width / 5)
-            .font(.title)
-        Text("Imagine that you're a famous inventor. Describe your most groundbreaking invention in detail.")
-            .font(.headline)
-            .foregroundStyle(.secondary)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.1)))
-            .padding()
-        ScrollView {
-            let transcript = audioRecording.transcript == "" ? "Tap the microphone to start recording" : audioRecording.transcript
-            Text(transcript)
-                .padding()
-                .font(.body)
-                .foregroundColor(.gray)
-                .lineLimit(nil)
-        }
+        NavigationStack {
+            HStack {
+                Button {
+                    Task {
+                        if entry.summary == "***" {
+                            userVM.removeJournalEntry(journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex), pageNum: pageIndex, index: entryIndex)
+                        }
+                        await MainActor.run {
+                            inVoiceEntry = false
+                        }
+                    }
+                }
+                label: {
+                    Image(systemName: "chevron.left")
+                        .foregroundStyle(.black)
+                }.padding(UIScreen.main.bounds.width * 0.025)
+                Spacer()
+                Button {
+                    Task {
+                        var newEntry: JournalEntry = JournalEntry(date: date, title: title, text: audioRecording.transcript, summary: entry.summary, width: entry.width, height: entry.height, isFake: false, color: entry.color)
+                        if entry.text != audioRecording.transcript {
+                            newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(audioRecording.transcript.prefix(15))
+                        }
+                        newEntry.type = .voice
+                        userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
+                        await MainActor.run {
+                            inVoiceEntry = false
+                        }
+                    }
+                }
+                label: {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.black)
+                }.padding(UIScreen.main.bounds.width * 0.025)
+            }
+            HStack {
+                Text("voice memos")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.secondary)
+                    .padding()
+                Spacer()
+            }
+            VoiceRecordingView(audioRecording: audioRecording)
+                .frame(width: UIScreen.main.bounds.width / 5)
+                .font(.title)
             
+            if selectedPrompt != nil {
+                if !selectedPrompt!.isEmpty {
+                    let trimmedPrompt: String = selectedPrompt!.trimmingCharacters(in: .whitespacesAndNewlines)
+                    Text(trimmedPrompt)
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.1)))
+                        .padding()
+                }
+            }
+            ScrollView {
+                let transcript = audioRecording.transcript == "" ? "Tap the microphone to start recording" : audioRecording.transcript
+                Text(transcript)
+                    .padding()
+                    .font(.body)
+                    .foregroundColor(.gray)
+                    .lineLimit(nil)
+            }
+            HStack() {
+                Menu {
+                    Button {
+                        showPromptSheet = true
+                    } label: {
+                        HStack {
+                            Text("Need Suggestions?")
+                            Spacer()
+                            Image(systemName: "lightbulb")
+                        }
+                    }
+                } label: {
+                    Image(systemName: "plus.circle")
+                        .resizable()
+                        .scaledToFit()
+                        .foregroundStyle(.black)
+                        .frame(width: UIScreen.main.bounds.width * 0.1)
+                        .contextMenu {
+                            
+                        }
+                }
+                .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                .padding(.bottom, 10)
+                Spacer()
+            }
+        }
     }
 }
 
@@ -52,7 +127,7 @@ struct JournalVoiceMemoInputView: View {
         Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
         Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
         Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
-    ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), shelfIndex: 0, journalIndex: 0, entryIndex: 0, pageIndex: 2, audioRecording: AudioRecording(), entry: JournalEntry(date: "01/02/2024", title: "Oh my world", text: "I have started to text", summary: "summary"), selectedPrompt: "Summarize the highlights of your day and any moments of learning")
+    ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), shelfIndex: 0, journalIndex: 0, entryIndex: 0, pageIndex: 2, inVoiceEntry: .constant(true), audioRecording: AudioRecording(), entry: JournalEntry(date: "01/02/2024", title: "Oh my world", text: "I have started to text", summary: "summary"), selectedPrompt: "Summarize the highlights of your day and any moments of learning")
 }
 
 final class AudioRecording: NSObject, ObservableObject {
