@@ -13,6 +13,7 @@ struct AddEntryButtonView: View {
     @ObservedObject var journal: Journal
     @Binding var inTextEntry: Bool
     @ObservedObject var userVM: UserViewModel
+    @ObservedObject var fbVM: FirebaseViewModel
     @Binding var displayPage: Int
     @Binding var selectedEntry: Int
     @State var selectedItems = [PhotosPickerItem]()
@@ -33,7 +34,7 @@ struct AddEntryButtonView: View {
                         
                     }
                 } else {
-                    SelectedPhotoView(journal: journal, displayPage: displayPage, selectedEntry: selectedEntry, userVM: userVM, selectedImages: $selectedImages, selectedItems: $selectedItems)
+                    SelectedPhotoView(journal: journal, displayPage: displayPage, selectedEntry: selectedEntry, userVM: userVM, selectedImages: $selectedImages, selectedItems: $selectedItems, fbVM: fbVM)
                 }
             }
             if isExpanded {
@@ -43,6 +44,17 @@ struct AddEntryButtonView: View {
                         
                         if journal.pages[journal.currentPage].entries.count <= 8 {
                             selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                            var newIndex = 0
+                            switch journal.pages[journal.currentPage].realEntryCount {
+                            case 1: newIndex = 0
+                            case 2: newIndex = 4
+                            case 3: newIndex = 1
+                            case 4: newIndex = 3
+                            case 5: newIndex = 6
+                            case 6: newIndex = 7
+                            case 7: newIndex = 5
+                            default: newIndex = 2
+                            }
                         } else {
                             //handle too many entries
                         }
@@ -124,11 +136,15 @@ struct SelectedPhotoView: View {
     @ObservedObject var userVM: UserViewModel
     @Binding var selectedImages: [UIImage]
     @Binding var selectedItems: [PhotosPickerItem]
+    @ObservedObject var fbVM: FirebaseViewModel
     var body: some View {
         HStack {
             Button {
                 if journal.pages[journal.currentPage].entries.count <= 8 {
                     print(selectedImages)
+                    Task {
+                        await fbVM.addJournalEntry(journalEntry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }, images: selectedImages), journalID: journal.id, pageNumber: displayPage)
+                    }
                     selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }, images: selectedImages))
                     selectedImages = []
                     selectedItems = []
@@ -188,7 +204,7 @@ struct SelectedPhotoView: View {
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .flower3), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ])], scrapbookShelves: []))
         var body: some View {
-            AddEntryButtonView(journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), inTextEntry: $inTextEntry, userVM: userVM, displayPage: $displayPage, selectedEntry: $selectedEntry)
+            AddEntryButtonView(journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), inTextEntry: $inTextEntry, userVM: userVM, fbVM: FirebaseViewModel(), displayPage: $displayPage, selectedEntry: $selectedEntry)
         }
     }
 

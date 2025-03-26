@@ -182,7 +182,7 @@ struct ShelfView: View {
             }
         } else {
             if !inTextEntry {
-                OpenJournal(userVM: userVM,
+                OpenJournal(userVM: userVM, fbVM: fbVM,
                           journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
                           shelfIndex: shelfIndex,
                           bookIndex: selectedJournal,

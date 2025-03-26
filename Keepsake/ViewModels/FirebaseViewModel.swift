@@ -222,6 +222,17 @@ class FirebaseViewModel: ObservableObject {
                             journalEntries.append(entry)
                         }
                     }
+                    switch journalEntries.count {
+                    case 0: journalEntries = [JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry()]
+                    case 1: journalEntries = [journalEntries[0], JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry()]
+                    case 2: journalEntries = [journalEntries[0], JournalEntry(), JournalEntry(), JournalEntry(), journalEntries[1], JournalEntry(), JournalEntry(), JournalEntry()]
+                    case 3: journalEntries = [journalEntries[0], journalEntries[1], JournalEntry(), JournalEntry(), journalEntries[2], JournalEntry(), JournalEntry(), JournalEntry()]
+                    case 4: journalEntries = [journalEntries[0], journalEntries[1], JournalEntry(), journalEntries[2], journalEntries[3], JournalEntry(), JournalEntry(), JournalEntry()]
+                    case 5: journalEntries = [journalEntries[0], journalEntries[1], JournalEntry(), journalEntries[2], journalEntries[3], JournalEntry(), journalEntries[4], JournalEntry()]
+                    case 6: journalEntries = [journalEntries[0], journalEntries[1], JournalEntry(), journalEntries[2], journalEntries[3], JournalEntry(), journalEntries[4], journalEntries[5]]
+                    case 7: journalEntries = [journalEntries[0], journalEntries[1], JournalEntry(), journalEntries[2], journalEntries[3], journalEntries[4], journalEntries[5], journalEntries[6]]
+                    default: journalEntries = [journalEntries[0], journalEntries[1], journalEntries[2], journalEntries[3], journalEntries[4], journalEntries[5], journalEntries[6], journalEntries[7]]
+                    }
                     
                     journalPages.append(JournalPage(number: Int(num) ?? 0, entries: journalEntries, realEntryCount: entryCount))
                 }
@@ -299,7 +310,7 @@ class FirebaseViewModel: ObservableObject {
             try await journal_entry_reference.setData(journalEntryData)
             
             try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
-                "pages.\(pageNumber)": FieldValue.arrayUnion([journalEntry.id.uuidString])
+                "pages.\(pageNumber + 1)": FieldValue.arrayUnion([journalEntry.id.uuidString])
             ])
             
             return true
@@ -308,6 +319,34 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
+    
+    func updateJournalPage(entries: [JournalEntry], journalID: UUID, pageNumber: Int) async {
+        do {
+            try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
+                "pages.\(pageNumber + 1)": []
+            ])
+        } catch {
+            "error reseting page entries"
+            return
+        }
+        for entry in entries {
+            if (entry.isFake == true) {
+                continue
+            }
+            let entry_ref = db.collection("JOURNAL_ENTRIES").document(entry.id.uuidString)
+            do {
+                let journalEntryData = entry.toDictionary(journalID: journalID)
+                try await entry_ref.setData(journalEntryData)
+                
+                try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
+                    "pages.\(pageNumber + 1)": FieldValue.arrayUnion([entry.id.uuidString])
+                ])
+            } catch {
+                await addJournalEntry(journalEntry: entry, journalID: journalID, pageNumber: pageNumber)
+            }
+        }
+    }
+    
     
     func getJournalEntryFromID(id: String) async -> JournalEntry? {
         let journalEntryReference = db.collection("JOURNAL_ENTRIES").document(id)
