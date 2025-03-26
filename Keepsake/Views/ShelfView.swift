@@ -45,7 +45,7 @@ struct ShelfView: View {
                         }.padding(.leading, 5)
                     }
                     HStack {
-                        Text("Welcome back, Rik")
+                        Text("Welcome back, \(userVM.user.name)")
                             .font(.title2)
                             .foregroundColor(.gray)
                             .fontWeight(.semibold)
@@ -169,10 +169,10 @@ struct ShelfView: View {
             .sheet(isPresented: $showJournalForm) {
                 JournalFormView(
                     isPresented: $showJournalForm,
-                    onCreate: { title, coverColor, pageColor, titleColor, texture in
+                    onCreate: { title, coverColor, pageColor, titleColor, texture, journalPages in
                         Task {
                             await createJournal(
-                                from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: texture),
+                                from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: texture, journalPages: journalPages),
                                 shelfIndex: shelfIndex, shelfID: shelf.id
                             )
                         }
@@ -226,7 +226,8 @@ struct ShelfView: View {
             isSaved: false,
             isShared: false,
             template: template,
-            pages: [JournalPage(number: 1)],
+//            pages: [JournalPage(number: 1)],
+            pages: template.journalPages ?? [],
             currentPage: 0
         )
         userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
