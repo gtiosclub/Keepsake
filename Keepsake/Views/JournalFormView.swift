@@ -2,7 +2,7 @@ import SwiftUI
 
 struct JournalFormView: View {
     @Binding var isPresented: Bool
-    var onCreate: (String, Color, Color, Color, Texture) -> Void
+    var onCreate: (String, Color, Color, Color, Texture, [JournalPage]?) -> Void
     var templates: [Template]
     
     @State private var title: String = ""
@@ -11,6 +11,7 @@ struct JournalFormView: View {
     @State private var titleColor: Color = .black
     @State private var selectedTemplate: Template? = nil
     @State private var selectedTexture: Texture = .leather
+    @State private var journalPages: [JournalPage]? = nil
     
     var body: some View {
         NavigationView {
@@ -70,9 +71,10 @@ struct JournalFormView: View {
                                  selected.coverColor,
                                  selected.pageColor,
                                  selected.titleColor,
-                                 selected.texture)
+                                 selected.texture,
+                                 selected.journalPages)
                     } else {
-                        onCreate(title, coverColor, pageColor, titleColor, selectedTexture)
+                        onCreate(title, coverColor, pageColor, titleColor, selectedTexture, nil)
                     }
                     isPresented = false
                 }
@@ -87,6 +89,7 @@ struct JournalFormView: View {
         pageColor = template.pageColor
         titleColor = template.titleColor
         selectedTexture = template.texture
+        journalPages = template.journalPages
     }
 }
 
@@ -94,13 +97,37 @@ struct JournalFormView: View {
 struct JournalFormView_Previews: PreviewProvider {
     static var previews: some View {
         let sampleTemplates = [
-            Template(name: "Classic", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .leather),
-            Template(name: "Modern", coverColor: .gray, pageColor: .white, titleColor: .blue, texture: .blackLeather)
+            Template(
+                name: "Classic",
+                coverColor: .blue,
+                pageColor: .white,
+                titleColor: .black,
+                texture: .leather,
+                journalPages: [
+                    JournalPage(number: 1),
+                    JournalPage(number: 2),
+                    JournalPage(number: 3),
+                    JournalPage(number: 4),
+                    JournalPage(number: 5)
+                ]
+            ),
+            Template(
+                name: "Modern",
+                coverColor: .gray,
+                pageColor: .white,
+                titleColor: .blue,
+                texture: .blackLeather,
+                journalPages: [
+                    JournalPage(number: 1),
+                    JournalPage(number: 2),
+                    JournalPage(number: 3)
+                ]
+            )
         ]
         
         JournalFormView(
             isPresented: .constant(true),
-            onCreate: { title, coverColor, pageColor, titleColor, texture in
+            onCreate: { title, coverColor, pageColor, titleColor, texture, journalPages in
                 print("Creating journal: \(title)")
             },
             templates: sampleTemplates
