@@ -13,6 +13,7 @@ struct ContentView: View {
     @ObservedObject var fbVM: FirebaseViewModel
 
     var body: some View {
+
         NavigationView {
             TabView {
                 Tab("Home", systemImage: "house") {
@@ -35,6 +36,7 @@ struct ContentView: View {
                 let navigationBarAppearance = UINavigationBarAppearance()
                 navigationBarAppearance.configureWithOpaqueBackground()
                 UINavigationBar.appearance().scrollEdgeAppearance = navigationBarAppearance
+
             }
         }
     }
@@ -46,5 +48,5 @@ struct ContentView: View {
         Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
         Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
         Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
-    ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), fbVM: FirebaseViewModel())
+    ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [], savedTemplates: [])), aiVM: AIViewModel(), fbVM: FirebaseViewModel())
 }

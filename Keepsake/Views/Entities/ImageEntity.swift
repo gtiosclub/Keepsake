@@ -23,7 +23,7 @@ class ImageEntity: Entity {
         var material = UnlitMaterial()
         material.blending = .transparent(opacity: PhysicallyBasedMaterial.Opacity.init(floatLiteral: 1))
         let fixedImage = fixedOrientationImage(from: image)
-        let roundedImage = roundedImage(from: fixedImage, cornerRadius: 500)
+        let roundedImage = roundedImage(from: fixedImage, cornerRadius: image.size.width * 0.05)
         if let cgImage = roundedImage.cgImage {
             do {
                 let textureResource = try await TextureResource(image: cgImage, options: .init(semantic: .color))
