@@ -115,7 +115,7 @@ struct FriendsView: View {
                                 scrapbookShelves: [],
                                 savedTemplates: [],
                                 friends: friendData["friends"] as? [String] ?? [],
-                                lastUsedShelfID: "InitialShelf",
+                                lastUsedShelfID: friendData["lastUsedShelfID"] as? UUID ?? UUID(),
                                 isJournalLastUsed: true
                             )
 

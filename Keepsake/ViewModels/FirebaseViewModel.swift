@@ -83,9 +83,8 @@ class FirebaseViewModel: ObservableObject {
         do {
             let result = try await auth.createUser(withEmail: email, password: password)
             let initialShelf = JournalShelf(name: "Initial Shelf", id: UUID(), journals: [])
-            await self.addJournalShelf(journalShelf: initialShelf)
             self.userSession = result.user
-            let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedShelfID: "InitialShelf", isJournalLastUsed: true)
+            let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedShelfID: initialShelf.id, isJournalLastUsed: true)
             let userData: [String: Any] = [
                 "uid": user.id,
                 "name": user.name,
@@ -98,6 +97,7 @@ class FirebaseViewModel: ObservableObject {
                 "isJournalLastUsed": true
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
+            await self.addJournalShelf(journalShelf: initialShelf, userID: user.id)
             await fetchUser()
             
         } catch {
@@ -139,7 +139,14 @@ class FirebaseViewModel: ObservableObject {
                     let shelf = await getJournalShelfFromID(id: astr)!
                     journalShelves.append(shelf)
                 }
-                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsed, isJournalLastUsed: isJournalLastUsed)
+                let lastUsedID: UUID
+                if let temp = UUID(uuidString: lastUsed) {
+                    lastUsedID = temp
+                } else {
+                    print("Error getting last used ID")
+                    lastUsedID = UUID()
+                }
+                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed)
                 
                 // Assign the user object to currentUser
                 self.currentUser = user
@@ -254,12 +261,16 @@ class FirebaseViewModel: ObservableObject {
     JOURNAL SHELF
      #########################################################################################**/
     
-    func addJournalShelf(journalShelf: JournalShelf) async -> Bool {
+    func addJournalShelf(journalShelf: JournalShelf, userID: String) async -> Bool {
         let journalShelfReference = db.collection("JOURNAL_SHELVES").document(journalShelf.id.uuidString)
         do {
             // Chains together each Model's "toDictionary()" method for simplicity in code and scalability in editing each Model
             let journalShelfData = journalShelf.toDictionary()
             try await journalShelfReference.setData(journalShelfData)
+            
+            try await db.collection("USERS").document(userID).updateData([
+                "journalShelves": FieldValue.arrayUnion([journalShelf.id.uuidString])
+            ])
             return true
         } catch {
             print("Error adding Journal Shelf: \(error.localizedDescription)")
@@ -295,6 +306,18 @@ class FirebaseViewModel: ObservableObject {
         } catch {
             print("Error fetching Journal Shelf: \(error.localizedDescription)")
             return nil
+        }
+    }
+    
+    func updateUserLastUsedShelf(user: User) async {
+        let userRef = db.collection("USERS").document(user.id)
+        do {
+            try await userRef.updateData([
+                "lastUsedShelfId": user.lastUsedShelfID.uuidString,
+                "isJournalLastUsed": user.isJournalLastUsed
+            ])
+        } catch {
+            print("error setting last used shelf")
         }
     }
     

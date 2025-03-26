@@ -14,19 +14,18 @@ class User: Identifiable, ObservableObject {
     @Published var journalShelves: [JournalShelf]
     @Published var scrapbookShelves: [ScrapbookShelf]
     @Published var savedTemplates: [Template]
-    var lastUsedShelfID: String
+    var lastUsedShelfID: UUID
     var isJournalLastUsed: Bool
     @Published var shelfIndex: Int = 0
     @Published var friends: [String]
     
-    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String], lastUsedShelfID: String, isJournalLastUsed: Bool) {
+    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String], lastUsedShelfID: UUID, isJournalLastUsed: Bool) {
         self.id = id
         self.name = name
         self.username = username
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = savedTemplates
-        self.lastUsedShelfID = ""
         self.isJournalLastUsed = true
         self.friends = friends
         self.lastUsedShelfID = lastUsedShelfID
@@ -40,7 +39,7 @@ class User: Identifiable, ObservableObject {
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = savedTemplates
         self.friends = []
-        self.lastUsedShelfID = ""
+        self.lastUsedShelfID = UUID()
         self.isJournalLastUsed = true
     }
     
@@ -52,7 +51,7 @@ class User: Identifiable, ObservableObject {
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = []
-        self.lastUsedShelfID = ""
+        self.lastUsedShelfID = UUID()
         self.isJournalLastUsed = true
         self.friends = []
 

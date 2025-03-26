@@ -8,6 +8,7 @@
 import Foundation
 
 struct ScrapbookShelf {
+    var id: UUID
     var name: String
     var scrapbooks: [Scrapbook]
 }

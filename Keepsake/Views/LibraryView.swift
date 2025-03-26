@@ -46,7 +46,10 @@ struct LibraryBookshelfView: View {
                 ForEach(user.journalShelves.indices, id: \.self) { index in
                     BookshelfView(shelf: user.journalShelves[index])
                         .onTapGesture {
-                            userVM.setShelfIndex(index: index)
+                            userVM.setShelfIndex(index: index, shelfID: user.journalShelves[index].id, isJournal: true)
+                            Task {
+                                await fbVM.updateUserLastUsedShelf(user: user)
+                            }
                             selectedOption = .journal_shelf
                         }
                 }
@@ -60,6 +63,9 @@ struct LibraryBookshelfView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     userVM.addJournalShelfToUser(JournalShelf(name: "new", journals: []))
+                    Task {
+                        await fbVM.addJournalShelf(journalShelf: userVM.getJournalShelves()[userVM.getJournalShelves().count - 1], userID: user.id)
+                    }
                 } label: {
                     Image(systemName: "plus.circle")
                 }
@@ -80,7 +86,7 @@ struct LibraryScrapbookView: View {
                 ForEach(user.scrapbookShelves.indices, id: \.self) { index in
                     BookshelfForScrapbookView(shelf: user.scrapbookShelves[index])
                         .onTapGesture {
-                            userVM.setShelfIndex(index: index)
+                            userVM.setShelfIndex(index: index, shelfID: user.scrapbookShelves[index].id, isJournal: false)
                             selectedOption = .journal_shelf
                         }
                 }
@@ -93,7 +99,7 @@ struct LibraryScrapbookView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
-                    userVM.addScrapbookShelfToUser(ScrapbookShelf(name: "new", scrapbooks: []))
+                    userVM.addScrapbookShelfToUser(ScrapbookShelf(id: UUID(), name: "new", scrapbooks: []))
                 } label: {
                     Image(systemName: "plus.circle")
                 }
@@ -111,7 +117,7 @@ struct LibraryScrapbookView: View {
             Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [
-            ScrapbookShelf(name: "Travel Memories", scrapbooks: [
+            ScrapbookShelf(id: UUID(), name: "Travel Memories", scrapbooks: [
                 Scrapbook(
                     name: "Paris Trip",
                     createdDate: "1/15/25",
