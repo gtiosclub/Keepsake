@@ -12,7 +12,7 @@ struct FirstView: View {
     var body: some View {
         Group {
             if let user = viewModel.currentUser {
-                HomeView(userVM: UserViewModel(user: user), aiVM: AIViewModel(), fbVM: viewModel, selectedOption: .journal_shelf)
+                ContentView(userVM: UserViewModel(user: user), aiVM: AIViewModel(), fbVM: viewModel)
             } else {
                 LoginView()
             }

@@ -25,7 +25,6 @@ struct KeepsakeApp: App {
     //@StateObject private var authViewModel = AuthViewModel()
     var body: some Scene {
         WindowGroup {
-
              FirstView()
                  .environmentObject(firebaseViewModel)
 //           ContentView(userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", id: UUID(), journals: [

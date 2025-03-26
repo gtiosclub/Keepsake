@@ -11,31 +11,32 @@ struct ContentView: View {
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var aiVM: AIViewModel
     @ObservedObject var fbVM: FirebaseViewModel
-
+    
     var body: some View {
-        TabView {
-            Tab("Home", systemImage: "house") {
-                HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: .journal_shelf)
+        
+            
+            
+            NavigationView {
+                TabView {
+                    Tab("Home", systemImage: "house") {
+                        HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: .journal_shelf)
+                    }
+                    
+                    
+                    Tab("Community", systemImage: "person.2") {
+                        CommunityView()
+                    }
+                    Tab("Scrapbooks", systemImage: "ellipsis.viewfinder") {
+                        ScrapbookView()
+                    }
+                    Tab("Profile", systemImage:"person.crop.circle") {
+                        ProfileView()
+                    }
+                }
+                
             }
-
-
-            Tab("Community", systemImage: "person.2") {
-                CommunityView()
-            }
-            Tab("Scrapbooks", systemImage: "ellipsis.viewfinder") {
-                ScrapbookView()
-            }
-        }.onAppear {
-            // correct the transparency bug for Tab bars
-            let tabBarAppearance = UITabBarAppearance()
-            tabBarAppearance.configureWithOpaqueBackground()
-            UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-            // correct the transparency bug for Navigation bars
-            let navigationBarAppearance = UINavigationBarAppearance()
-            navigationBarAppearance.configureWithOpaqueBackground()
-            UINavigationBar.appearance().scrollEdgeAppearance = navigationBarAppearance
         }
-    }
+    
 }
 
 #Preview {
