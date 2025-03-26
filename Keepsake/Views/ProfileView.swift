@@ -14,7 +14,7 @@ struct ProfileView: View {
     var body: some View {
         VStack {
 //            if let user = viewModel.currentUser {
-            let user = User(id: "123", name: "Eleven Hopper", journalShelves: [], scrapbookShelves: [])
+            let user = User(id: "123", name: viewModel.currentUser?.name ?? "Nitya", journalShelves: [], scrapbookShelves: [])
                 List {
                     Section {
                         HStack {

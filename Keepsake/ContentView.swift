@@ -17,7 +17,7 @@ struct ContentView: View {
         NavigationView {
             TabView {
                 Tab("Home", systemImage: "house") {
-                    LibraryView(userVM: userVM, aiVM: aiVM, fbVM: fbVM)
+                    HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM)
                 }
                 
                 
@@ -26,6 +26,9 @@ struct ContentView: View {
                 }
                 Tab("Scrapbooks", systemImage: "ellipsis.viewfinder") {
                     ScrapbookView()
+                }
+                Tab("Profile", systemImage:"person.crop.circle") {
+                    ProfileView()
                 }
             }.onAppear {
                 // correct the transparency bug for Tab bars
