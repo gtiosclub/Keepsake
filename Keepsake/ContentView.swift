@@ -18,23 +18,24 @@ struct ContentView: View {
                 HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: .journal_shelf)
             }
 
-
-            Tab("Community", systemImage: "person.2") {
-                CommunityView()
+        NavigationView {
+            TabView {
+                Tab("Home", systemImage: "house") {
+                    HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM)
+                }
+                
+                
+                Tab("Community", systemImage: "person.2") {
+                    CommunityView()
+                }
+                Tab("Scrapbooks", systemImage: "ellipsis.viewfinder") {
+                    ScrapbookView()
+                }
+                Tab("Profile", systemImage:"person.crop.circle") {
+                    ProfileView()
+                }
             }
-            Tab("Scrapbooks", systemImage: "ellipsis.viewfinder") {
-                ScrapbookView()
-            }
-        }.onAppear {
-            // correct the transparency bug for Tab bars
-            let tabBarAppearance = UITabBarAppearance()
-            tabBarAppearance.configureWithOpaqueBackground()
-            UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-            // correct the transparency bug for Navigation bars
-            let navigationBarAppearance = UINavigationBarAppearance()
-            navigationBarAppearance.configureWithOpaqueBackground()
-            UINavigationBar.appearance().scrollEdgeAppearance = navigationBarAppearance
-        }
+                
     }
 }
 
