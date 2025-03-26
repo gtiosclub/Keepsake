@@ -11,32 +11,32 @@ struct ContentView: View {
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var aiVM: AIViewModel
     @ObservedObject var fbVM: FirebaseViewModel
-
+    
     var body: some View {
-        TabView {
-            Tab("Home", systemImage: "house") {
-                HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: .journal_shelf)
+        
+            
+            
+            NavigationView {
+                TabView {
+                    Tab("Home", systemImage: "house") {
+                        HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: .journal_shelf)
+                    }
+                    
+                    
+                    Tab("Community", systemImage: "person.2") {
+                        CommunityView()
+                    }
+                    Tab("Scrapbooks", systemImage: "ellipsis.viewfinder") {
+                        ScrapbookView()
+                    }
+                    Tab("Profile", systemImage:"person.crop.circle") {
+                        ProfileView()
+                    }
+                }
+                
             }
-
-        NavigationView {
-            TabView {
-                Tab("Home", systemImage: "house") {
-                    HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM)
-                }
-                
-                
-                Tab("Community", systemImage: "person.2") {
-                    CommunityView()
-                }
-                Tab("Scrapbooks", systemImage: "ellipsis.viewfinder") {
-                    ScrapbookView()
-                }
-                Tab("Profile", systemImage:"person.crop.circle") {
-                    ProfileView()
-                }
-            }
-                
-    }
+        }
+    
 }
 
 #Preview {
