@@ -9,9 +9,21 @@ import Foundation
 import SwiftUI
 
 enum EntryType: Encodable {
-    case written, chat, image
+    case written, chat, image, voiceMemo
 }
 
+extension JournalEntry {
+    var entrySize: EntrySize {
+        switch (width, height) {
+        case (1, 1):
+            return .small
+        case (2, 1), (1, 2):
+            return .medium
+        default:
+            return .large
+        }
+    }
+}
 struct JournalEntry: Encodable, Hashable  {
     var date: String
     var title: String
@@ -100,6 +112,7 @@ struct JournalEntry: Encodable, Hashable  {
         self.type = type
     }
 }
+
 
 extension JournalEntry: CustomStringConvertible {
     func toDictionary() -> [String: Any] {
