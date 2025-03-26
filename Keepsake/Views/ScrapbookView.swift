@@ -10,6 +10,8 @@ import RealityKit
 import PhotosUI
 
 struct ScrapbookView: View {
+    @StateObject private var arvm = ARViewModel()
+    
     // variables for editing entity positions
     @State var currentScale: CGFloat = 1.0
     @State var finalScale: CGFloat = 1.0
@@ -25,6 +27,9 @@ struct ScrapbookView: View {
     
     // entity that is tapped on and currently "selected"
     @State var selectedEntity: Entity? = nil
+    
+    // determining if any edits have been made to save
+    @State var needsSaving: Bool = false
     
     // counter value is used to identify entities
     @State var counter: Int = 0
@@ -77,6 +82,7 @@ struct ScrapbookView: View {
                         } else {
                             print("No image loaded")
                         }
+                        needsSaving = true
                     }
                 }
             }
@@ -124,6 +130,7 @@ struct ScrapbookView: View {
                     // Store final translation offsets
                     entityPos[Int(selectedEntity?.name ?? "0") ?? 0].x += value.translation.width
                     entityPos[Int(selectedEntity?.name ?? "0") ?? 0].y += value.translation.height
+                    needsSaving = true
                 }
             )
             .gesture(
@@ -134,6 +141,7 @@ struct ScrapbookView: View {
                     }
                     .onEnded { value in
                         finalScale = currentScale
+                        needsSaving = true
                     }
             )
 
@@ -156,6 +164,7 @@ struct ScrapbookView: View {
                             updateTextBox()
                             isEditing = false
                             textInput = "[Enter text]"
+                            needsSaving = true
                         }
                         .padding()
                         .background(Color.blue)
@@ -208,13 +217,28 @@ struct ScrapbookView: View {
                                 .foregroundStyle(.black)
                         }.disabled(selectedEntity == nil)
                     }
+                    Spacer()
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10.0)
+                            .frame(width: 80, height: 40)
+                        Button {
+                            print("pressed")
+                        } label : {
+                            Text("Save").foregroundStyle(.black)
+                        }.disabled(needsSaving == false)
+                    }
+
+                    
                 }
                 .padding()
-                .frame(width: 250, height: 100)
+                .frame(width: 325, height: 100)
                 .background(Color.white.opacity(0.5)) // Semi-transparent background
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .padding(.bottom, 20) // Lifted up slightly
             }
+        }.task {
+            let result = await FirebaseViewModel.vm.testRead()
+            print("Firebase test result:", result)
         }
     }
     
@@ -233,4 +257,5 @@ struct ScrapbookView: View {
             editingTextEntity.updateText(textInput)
         }
     }
+    
 }

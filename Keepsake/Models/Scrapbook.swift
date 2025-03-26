@@ -14,5 +14,5 @@ struct Scrapbook: Book {
     var category: String
     var isSaved: Bool
     var isShared: Bool
-    var template: Template
+    var template: Template // template is not abiding to decodable
 }
