@@ -85,7 +85,7 @@ struct JournalVoiceMemoInputView: View {
                 }
             }
             ScrollView {
-                let transcript = audioRecording.transcript == "" ? "Tap the microphone to start recording" : audioRecording.transcript
+                let transcript = audioRecording.transcript == "" ? "Tap the microphone to start transcribing" : audioRecording.transcript
                 Text(transcript)
                     .padding()
                     .font(.body)
@@ -117,6 +117,9 @@ struct JournalVoiceMemoInputView: View {
                 .padding(.bottom, 10)
                 Spacer()
             }
+        }
+        .sheet(isPresented: $showPromptSheet) {
+            SuggestedPromptsView(aiVM: aiVM, selectedPrompt: $selectedPrompt, isPresented: $showPromptSheet)
         }
     }
 }
