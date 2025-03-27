@@ -99,9 +99,9 @@ struct ShelfView: View {
                                         .transition(.identity)
                                         .matchedGeometryEffect(id: "journal_\(index)", in: shelfNamespace, properties: .position, anchor: .center)
                                         .onTapGesture {
-//                                            print(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index))
-//                                            selectedJournal = index
-//                                            displayPage = userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).currentPage
+                                            //print(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index))
+                                            selectedJournal = index
+                                            displayPage = userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).currentPage
                                             
                                             Task {
                                                 await aiVM.fetchSmartPrompts(for: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index), count: 5)

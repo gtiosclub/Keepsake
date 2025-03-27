@@ -348,9 +348,9 @@ class FirebaseViewModel: ObservableObject {
         var previousEntryIds: [String] = []
         do {
             let document = try await db.collection("JOURNALS").document(journalID.uuidString).getDocument()
-            if let data = document.data() {
-                previousEntryIds = data["pages.\(pageNumber + 1)"] as? [String] ?? []
-                print(previousEntryIds)
+            if let data = document.data(),
+               let pages = data["pages"] as? [String: [String]] {  // First get the pages dictionary
+                previousEntryIds = pages["\(pageNumber + 1)"] as? [String] ?? []
             } else {
                 print("Couldn't get page entries")
             }
