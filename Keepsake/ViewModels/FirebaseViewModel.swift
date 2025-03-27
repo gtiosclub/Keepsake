@@ -345,12 +345,20 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func updateJournalPage(entries: [JournalEntry], journalID: UUID, pageNumber: Int) async {
+        var previousEntryIds: [String] = []
         do {
+            let document = try await db.collection("JOURNALS").document(journalID.uuidString).getDocument()
+            if let data = document.data() {
+                previousEntryIds = data["pages.\(pageNumber + 1)"] as? [String] ?? []
+                print(previousEntryIds)
+            } else {
+                print("Couldn't get page entries")
+            }
             try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
                 "pages.\(pageNumber + 1)": []
             ])
         } catch {
-            "error reseting page entries"
+            print("error reseting page entries")
             return
         }
         for entry in entries {
@@ -365,9 +373,28 @@ class FirebaseViewModel: ObservableObject {
                 try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
                     "pages.\(pageNumber + 1)": FieldValue.arrayUnion([entry.id.uuidString])
                 ])
+                if let removalIndex = previousEntryIds.firstIndex(of: entry.id.uuidString) {
+                    previousEntryIds.remove(at: removalIndex)
+                }
             } catch {
                 await addJournalEntry(journalEntry: entry, journalID: journalID, pageNumber: pageNumber)
             }
+        }
+        for entry in previousEntryIds {
+            if let uuid = UUID(uuidString: entry) {
+                    await removeJournalEntry(entryID: uuid)
+                } else {
+                    print("Invalid UUID string: \(entry)")
+                }
+        }
+    }
+    
+    func removeJournalEntry(entryID: UUID) async {
+        do {
+            try await db.collection("JOURNAL_ENTRIES").document(entryID.uuidString).delete()
+            print("Document successfully removed!")
+        } catch {
+            print("Error removing document: \(error)")
         }
     }
          

@@ -47,8 +47,10 @@ struct WidgetView: View {
 
                     // Always keep the button in the view, but control visibility with opacity
                     Button {
+                        let entryID = page.entries[index].id
                         userVM.removeJournalEntry(page: page, index: index)
                         Task {
+                            await fbVM.removeJournalEntry(entryID: entryID)
                             await fbVM.updateJournalPage(entries: page.entries, journalID: journal.id, pageNumber: pageNum)
                         }
                         withAnimation {

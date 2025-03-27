@@ -53,7 +53,7 @@ class Journal: Book, ObservableObject {
 extension Journal: CustomStringConvertible {
     func toDictionary() -> [String: Any] {
         var pageDict: [String: [String]] = [:]
-        print(pages)
+//        print(pages)
         for page in pages {
             pageDict[String(page.number)] = []
             for entry in page.entries {
