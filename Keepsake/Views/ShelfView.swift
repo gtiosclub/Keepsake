@@ -30,6 +30,7 @@ struct ShelfView: View {
     @State var displayPage: Int = 2
     @State private var showJournalForm = false
     @Binding var selectedOption: ViewOption
+    @State var showDeleteButton: Bool = false
     var body: some View {
         if !show {
             VStack(alignment: .leading, spacing: 10) {
@@ -89,22 +90,22 @@ struct ShelfView: View {
                 //Journals
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 45) {
-                        ForEach(userVM.user.getJournalShelves()[shelfIndex].journals.indices, id: \.self) { index in
+                        ForEach(userVM.user.journalShelves[shelfIndex].journals) { journal in
                             GeometryReader { geometry in
                                 let verticalOffset = calculateVerticalOffset(proxy: geometry)
                                 VStack(spacing: 35) {
-                                    JournalCover(template: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).template, degrees: 0, title: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).name)
+                                    JournalCover(template: journal.template, degrees: 0, title: journal.name)
                                         .scaleEffect(scaleEffect)
                                         .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                                         .transition(.identity)
-                                        .matchedGeometryEffect(id: "journal_\(index)", in: shelfNamespace, properties: .position, anchor: .center)
+                                        .matchedGeometryEffect(id: "journal_\(journal.id)", in: shelfNamespace, properties: .position, anchor: .center)
                                         .onTapGesture {
                                             //print(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index))
-                                            selectedJournal = index
-                                            displayPage = userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).currentPage
+                                            selectedJournal = userVM.getJournalIndex(journal: journal, shelfIndex: shelfIndex)
+                                            displayPage = journal.currentPage
                                             
                                             Task {
-                                                await aiVM.fetchSmartPrompts(for: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index), count: 5)
+                                                await aiVM.fetchSmartPrompts(for: journal, count: 5)
                                             }
                                             
                                             withAnimation(.linear(duration: 0.7)) {
@@ -128,15 +129,38 @@ struct ShelfView: View {
                                                         frontDegrees -= 90
                                                     }
                                                 }
+                                                
                                             }
                                         }
+                                        .onLongPressGesture(minimumDuration: 0.5) {
+                                            withAnimation(.spring()) {
+                                                showDeleteButton.toggle()
+                                            }
+                                        }
+                                    if showDeleteButton {
+                                        Button {
+                                            userVM.removeJournalFromShelf(shelfIndex: shelfIndex, journalID: journal.id)
+                                            Task {
+                                                await fbVM.deleteJournal(journal: journal, journalShelfID: shelf.id)
+                                            }
+                                            showDeleteButton.toggle()                                                 
+                                        } label: {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .font(.system(size: 28))
+                                                .foregroundColor(.red)
+                                                .background(Circle().fill(Color.white))
+                                                .padding(8)
+                                        }
+                                        .transition(.scale.combined(with: .opacity))
+                                        .zIndex(1)
+                                    }
                                     VStack(spacing: 10) {
                                         //Journal name, date, created by you
-                                        Text(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).name)
+                                        Text(journal.name)
                                             .font(.title2)
                                             .foregroundColor(.primary)
                                         
-                                        Text(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).createdDate)
+                                        Text(journal.createdDate)
                                             .font(.subheadline)
                                             .foregroundColor(.gray)
                                         
@@ -162,6 +186,11 @@ struct ShelfView: View {
                 }
                 .frame(height: 500)
             }
+            .onTapGesture(perform: {
+                if showDeleteButton {
+                    showDeleteButton.toggle()
+                }
+            })
             //            .onAppear() {
             //                print(userVM.user.journalShelves)
             //            }
@@ -198,7 +227,7 @@ struct ShelfView: View {
                           inTextEntry: $inTextEntry,
                           selectedEntry: $selectedEntry
                           )
-                    .matchedGeometryEffect(id: "journal_\(selectedJournal)", in: shelfNamespace, properties: .position, anchor: .center)
+                .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
                     .scaleEffect(scaleEffect)
                     .transition(.slide)
                     .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)

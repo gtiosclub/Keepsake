@@ -61,6 +61,16 @@ class UserViewModel: ObservableObject {
         return user.getJournalShelves()[shelfIndex].journals[bookIndex]
     }
     
+    func getJournalIndex(journal: Journal, shelfIndex: Int) -> Int {
+        var journals = getJournalShelves()[shelfIndex].journals
+        for index in journals.indices {
+            if journals[index].id == journal.id {
+                return index
+            }
+        }
+        return 0
+    }
+    
     func getJournalEntry(shelfIndex: Int, bookIndex: Int, pageNum: Int, entryIndex: Int) -> JournalEntry {
         return user.getJournalShelves()[shelfIndex].journals[bookIndex].pages[pageNum].entries[entryIndex]
     }
@@ -132,8 +142,14 @@ class UserViewModel: ObservableObject {
         user.getJournalShelves()[shelfIndex].journals.append(journal)
     }
     
-    func removeJournalFromShelf(shelfIndex: Int, journalIndex: Int) {
-        user.getJournalShelves()[shelfIndex].journals.remove(at: journalIndex)
+    func removeJournalFromShelf(shelfIndex: Int, journalID: UUID) {
+        var journals = user.getJournalShelves()[shelfIndex].journals
+        for index in journals.indices {
+            if journalID == journals[index].id {
+                user.getJournalShelves()[shelfIndex].journals.remove(at: index)
+                return
+            }
+        }
     }
     
     func addJournalToShelfAndAddEntries(journal: Journal, shelfIndex: Int) {

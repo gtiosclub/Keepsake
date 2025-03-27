@@ -206,10 +206,13 @@ class FirebaseViewModel: ObservableObject {
             let document = try await db.collection("JOURNALS").document(journal.id.uuidString).getDocument()
             if let data = document.data(),
                let pages = data["pages"] as? [String: [String]] {
-                let allEntryIds = pages.values.flatMap { $0 }
+                for (page, entry) in pages {
+                    allEntryIds.append(contentsOf: entry)
+                }
             } else {
                 print("Couldn't get all page entries")
             }
+            print(allEntryIds)
             for entry in allEntryIds {
                 if let uuid = UUID(uuidString: entry) {
                     await removeJournalEntry(entryID: uuid)
