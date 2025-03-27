@@ -220,18 +220,18 @@ struct ShelfView: View {
     func createJournal(from template: Template, shelfIndex: Int, shelfID: UUID) async {
         let newJournal = Journal(
             name: template.name,
+            id: UUID(),
             createdDate: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short),
-            entries: [],
             category: "General",
             isSaved: false,
             isShared: false,
             template: template,
-//            pages: [JournalPage(number: 1)],
             pages: template.journalPages ?? [],
             currentPage: 0
         )
-        userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
-        await fbVM.addJournal(journal: newJournal, journalShelfID: shelfID)
+//        userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
+        userVM.addJournalToShelfAndAddEntries(journal: newJournal, shelfIndex: shelfIndex)
+        _ = await fbVM.addJournal(journal: newJournal, journalShelfID: shelfID)
     }
     
     private func calculateVerticalOffset(proxy: GeometryProxy) -> CGFloat {

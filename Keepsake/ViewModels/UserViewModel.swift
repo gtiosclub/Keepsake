@@ -132,6 +132,28 @@ class UserViewModel: ObservableObject {
         user.getJournalShelves()[shelfIndex].journals.append(journal)
     }
     
+    func addJournalToShelfAndAddEntries(journal: Journal, shelfIndex: Int) {
+        user.getJournalShelves()[shelfIndex].journals.append(journal)
+        
+        if !journal.pages.isEmpty {
+            for pageIndex in journal.pages.indices {
+                let page = journal.pages[pageIndex]
+                let originalEntries = page.entries.filter { !$0.date.isEmpty || !$0.title.isEmpty || !$0.text.isEmpty }
+                
+                // Only reset and process if there are non-empty entries
+                if !originalEntries.isEmpty {
+                    let fakeEntry = JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: true, color: [0.5, 0.5, 0.5])
+                    page.entries = Array(repeating: fakeEntry, count: 8)
+                    page.realEntryCount = 0
+                    
+                    for entry in originalEntries {
+                        _ = newAddJournalEntry(journal: journal, pageNum: pageIndex, entry: entry)
+                    }
+                }
+            }
+        }
+    }
+    
     func removeJournalEntry(page: JournalPage, index: Int) {
         switch page.realEntryCount {
         case 0:
