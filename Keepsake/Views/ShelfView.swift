@@ -31,6 +31,7 @@ struct ShelfView: View {
     @State private var showJournalForm = false
     @Binding var selectedOption: ViewOption
     @State var showDeleteButton: Bool = false
+    @State var deleteJournalID: String = ""
     var body: some View {
         if !show {
             VStack(alignment: .leading, spacing: 10) {
@@ -100,44 +101,49 @@ struct ShelfView: View {
                                         .transition(.identity)
                                         .matchedGeometryEffect(id: "journal_\(journal.id)", in: shelfNamespace, properties: .position, anchor: .center)
                                         .onTapGesture {
-                                            //print(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index))
-                                            selectedJournal = userVM.getJournalIndex(journal: journal, shelfIndex: shelfIndex)
-                                            displayPage = journal.currentPage
-                                            
-                                            Task {
-                                                await aiVM.fetchSmartPrompts(for: journal, count: 5)
-                                            }
-                                            
-                                            withAnimation(.linear(duration: 0.7)) {
-                                                show.toggle()
-                                            } completion: {
-                                                withAnimation(.linear(duration: 0.7).delay(0.0)) {
-                                                    scaleEffect = 1
+                                            if showDeleteButton {
+                                                showDeleteButton.toggle()
+                                            } else {
+                                                selectedJournal = userVM.getJournalIndex(journal: journal, shelfIndex: shelfIndex)
+                                                displayPage = journal.currentPage
+                                                
+                                                Task {
+                                                    await aiVM.fetchSmartPrompts(for: journal, count: 5)
                                                 }
-                                                circleStart = 1
-                                                circleEnd = 1
-                                                withAnimation(.linear(duration: 0.7).delay(0.0)) {
-                                                    circleStart -= 0.25
-                                                    degrees -= 90
-                                                    frontDegrees -= 90
+                                                
+                                                withAnimation(.linear(duration: 0.7)) {
+                                                    show.toggle()
                                                 } completion: {
-                                                    coverZ = -1
-                                                    isHidden = true
-                                                    withAnimation(.linear(duration: 0.7).delay(0)) {
+                                                    withAnimation(.linear(duration: 0.7).delay(0.0)) {
+                                                        scaleEffect = 1
+                                                    }
+                                                    circleStart = 1
+                                                    circleEnd = 1
+                                                    withAnimation(.linear(duration: 0.7).delay(0.0)) {
                                                         circleStart -= 0.25
                                                         degrees -= 90
                                                         frontDegrees -= 90
+                                                    } completion: {
+                                                        coverZ = -1
+                                                        isHidden = true
+                                                        withAnimation(.linear(duration: 0.7).delay(0)) {
+                                                            circleStart -= 0.25
+                                                            degrees -= 90
+                                                            frontDegrees -= 90
+                                                        }
                                                     }
+                                                    
                                                 }
-                                                
                                             }
+                                            //print(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index))
                                         }
                                         .onLongPressGesture(minimumDuration: 0.5) {
                                             withAnimation(.spring()) {
                                                 showDeleteButton.toggle()
+                                                deleteJournalID = journal.id.uuidString
                                             }
                                         }
-                                    if showDeleteButton {
+                                    if showDeleteButton && deleteJournalID == journal.id.uuidString {
                                         Button {
                                             userVM.removeJournalFromShelf(shelfIndex: shelfIndex, journalID: journal.id)
                                             Task {
