@@ -45,7 +45,7 @@ struct ShelfView: View {
                         }.padding(.leading, 5)
                     }
                     HStack {
-                        Text("Welcome back, Rik")
+                        Text("Welcome back, \(userVM.user.name)")
                             .font(.title2)
                             .foregroundColor(.gray)
                             .fontWeight(.semibold)
@@ -99,7 +99,7 @@ struct ShelfView: View {
                                         .transition(.identity)
                                         .matchedGeometryEffect(id: "journal_\(index)", in: shelfNamespace, properties: .position, anchor: .center)
                                         .onTapGesture {
-                                            print(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index))
+                                            //print(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index))
                                             selectedJournal = index
                                             displayPage = userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).currentPage
                                             
