@@ -65,7 +65,34 @@ struct OpenJournal: View {
                         .foregroundColor(.black)
                 }
                 Button {
-                    
+                    circleStart = 0.5
+                    circleEnd = 1
+                    withAnimation(.linear(duration: 1).delay(0.5)) {
+                        circleStart += 0.25
+                        degrees += 90
+                        frontDegrees += 90
+                    } completion: {
+                        coverZ = 0
+                        isHidden = false
+                        withAnimation {
+                            circleStart += 0.25
+                            degrees += 90
+                            frontDegrees += 90
+                        } completion: {
+                            withAnimation(.linear(duration: 0.7)) {
+                                scaleFactor = 0.6
+                            } completion: {
+                                withAnimation {
+                                    show.toggle()
+                                } completion: {
+                                    userVM.removeJournalFromShelf(shelfIndex: shelfIndex, journalIndex: bookIndex)
+                                }
+                            }
+                        }
+                    }
+                    Task {
+                        await fbVM.deleteJournal(journal: journal, journalShelfID: userVM.getJournalShelves()[shelfIndex].id)
+                    }
                 } label: {
                     Image(systemName: "square.and.arrow.up")
                         .resizable()

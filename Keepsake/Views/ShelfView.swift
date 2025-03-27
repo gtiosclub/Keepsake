@@ -226,7 +226,7 @@ struct ShelfView: View {
             isSaved: false,
             isShared: false,
             template: template,
-            pages: template.journalPages ?? [],
+            pages: template.journalPages ?? [JournalPage(number: 1)],
             currentPage: 0
         )
 //        userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)

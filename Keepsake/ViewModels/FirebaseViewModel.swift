@@ -199,6 +199,44 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func deleteJournal(journal: Journal, journalShelfID: UUID) async {
+        var allEntryIds: [String] = []
+        // Delete all entries
+        do {
+            let document = try await db.collection("JOURNALS").document(journal.id.uuidString).getDocument()
+            if let data = document.data(),
+               let pages = data["pages"] as? [String: [String]] {
+                let allEntryIds = pages.values.flatMap { $0 }
+            } else {
+                print("Couldn't get all page entries")
+            }
+            for entry in allEntryIds {
+                if let uuid = UUID(uuidString: entry) {
+                    await removeJournalEntry(entryID: uuid)
+                } else {
+                    print("Invalid UUID string: \(entry)")
+                }
+            }
+        } catch {
+            print("error deleting entries")
+            return
+        }
+        // Remove Journal Id from journal Shelf
+        let documentRef = db.collection("JOURNAL_SHELVES").document(journalShelfID.uuidString)
+        do {
+            try await documentRef.updateData(["journals": FieldValue.arrayRemove([journal.id.uuidString])])
+        } catch {
+            print("could not remove journal ID from shelf")
+            return
+        }
+        //Remove Journal
+        do {
+            try await db.collection("JOURNALS").document(journal.id.uuidString).delete()
+        } catch {
+            print("Error removing document: \(error)")
+        }
+    }
+    
     func getJournalFromID(id: String) async -> Journal? {
         let journalReference = db.collection("JOURNALS").document(id)
         
@@ -382,17 +420,16 @@ class FirebaseViewModel: ObservableObject {
         }
         for entry in previousEntryIds {
             if let uuid = UUID(uuidString: entry) {
-                    await removeJournalEntry(entryID: uuid)
-                } else {
-                    print("Invalid UUID string: \(entry)")
-                }
+                await removeJournalEntry(entryID: uuid)
+            } else {
+                print("Invalid UUID string: \(entry)")
+            }
         }
     }
     
     func removeJournalEntry(entryID: UUID) async {
         do {
             try await db.collection("JOURNAL_ENTRIES").document(entryID.uuidString).delete()
-            print("Document successfully removed!")
         } catch {
             print("Error removing document: \(error)")
         }

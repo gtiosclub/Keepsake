@@ -19,7 +19,7 @@ class JournalPage: ObservableObject {
     }
     
     convenience init(number: Int) {
-        self.init(number: number, entries: [], realEntryCount: 0)
+        self.init(number: number, entries: [JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry()], realEntryCount: 0)
     }
     
 }
