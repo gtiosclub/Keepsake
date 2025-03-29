@@ -8,14 +8,14 @@
 import Foundation
 import SwiftUI
 //
-//// Reminder Model
-struct Reminder: Identifiable {
+// Reminder Model
+struct Reminder: Identifiable, Codable {
     let id = UUID()
     var title: String
     var date: Date
     var body: String
 }
-//extension Color {
+//extension Color 
 init(hex: String) {
     var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
     hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
