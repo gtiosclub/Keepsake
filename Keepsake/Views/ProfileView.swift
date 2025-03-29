@@ -13,8 +13,8 @@ struct ProfileView: View {
     
     var body: some View {
         VStack {
-//            if let user = viewModel.currentUser {
-            let user = User(id: "123", name: viewModel.currentUser?.name ?? "Nitya", journalShelves: [], scrapbookShelves: [])
+            if let user = viewModel.currentUser {
+
                 List {
                     Section {
                         HStack {
@@ -99,7 +99,7 @@ struct ProfileView: View {
                 }
                 .navigationTitle("Profile")
             }
-//        }
+        }
     }
 }
 
