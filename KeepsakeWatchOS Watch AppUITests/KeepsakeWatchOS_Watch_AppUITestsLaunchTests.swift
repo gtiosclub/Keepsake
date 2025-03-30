@@ -1,13 +1,13 @@
 //
-//  KeepsakeWatch_Watch_AppUITestsLaunchTests.swift
-//  KeepsakeWatch Watch AppUITests
+//  KeepsakeWatchOS_Watch_AppUITestsLaunchTests.swift
+//  KeepsakeWatchOS Watch AppUITests
 //
-//  Created by Nitya Potti on 2/10/25.
+//  Created by Nitya Potti on 3/29/25.
 //
 
 import XCTest
 
-final class KeepsakeWatch_Watch_AppUITestsLaunchTests: XCTestCase {
+final class KeepsakeWatchOS_Watch_AppUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

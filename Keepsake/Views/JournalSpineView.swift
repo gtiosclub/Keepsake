@@ -14,7 +14,7 @@ struct JournalSpine: View {
                 .frame(width: UIScreen.main.bounds.width * 0.4, height: UIScreen.main.bounds.height * 0.56)
                 .shadow(radius: 5)
                 .overlay(
-                    Image("leather") // Load texture image from assets
+                    Image("\(book.template.texture)") // Load texture image from assets
                         .resizable()
                         .frame(width: UIScreen.main.bounds.width * 0.4, height: UIScreen.main.bounds.height * 0.56)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
