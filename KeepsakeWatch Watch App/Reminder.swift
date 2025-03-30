@@ -37,7 +37,7 @@ struct RemindersListView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                ForEach(viewModel.reminders) { reminder in
+                ForEach($viewModel.reminders) { $reminder in
                     VStack(alignment: .leading) {
                         Text(reminder.title)
                             .font(.headline)
@@ -47,7 +47,7 @@ struct RemindersListView: View {
                             .font(.body)
                         
                         // Display play button if there's an audio file URL
-                        if let audioFileURL = reminder.audioFileURL {
+                        if let audioFileURL = reminder.audioFileUrl {
                             Button(action: {
                                 playAudio(from: audioFileURL)
                             }) {
@@ -58,6 +58,7 @@ struct RemindersListView: View {
                     }
                     .padding(.vertical, 5)
                 }
+
 
                 // Add button for new reminders
                 #if os(iOS)
@@ -94,31 +95,34 @@ struct RemindersListView: View {
         }
     }
 }
+
 import AVFoundation
+#if os(iOS)
+import AVKit
+#endif
+
+var audioPlayer: AVPlayer?
 
 func playAudio(from url: String) {
-    // Check if the URL is valid and load the audio file using AVPlayer
-    if let audioURL = URL(string: url) {
-        let player = AVPlayer(url: audioURL)
-        let playerViewController = AVPlayerViewController()
-        playerViewController.player = player
-        
-        // Present the player view controller (for iOS)
-        #if os(iOS)
-        if let rootVC = UIApplication.shared.windows.first?.rootViewController {
-            rootVC.present(playerViewController, animated: true) {
-                player.play()
-            }
-        }
-        #endif
-        
-        // For watchOS, you may need to handle playback differently as watchOS has no AVPlayerViewController
-        #if os(watchOS)
-        // Use AVPlayer for watchOS as well, but you may want to handle UI separately
-        let player = AVPlayer(url: audioURL)
-        player.play()
-        #endif
-    } else {
+    guard let audioURL = URL(string: url) else {
         print("Invalid audio URL")
+        return
     }
+
+    #if os(iOS)
+    let player = AVPlayer(url: audioURL)
+    let playerViewController = AVPlayerViewController()
+    playerViewController.player = player
+
+    if let rootVC = UIApplication.shared.windows.first?.rootViewController {
+        rootVC.present(playerViewController, animated: true) {
+            player.play()
+        }
+    }
+    #endif
+
+    #if os(watchOS)
+    audioPlayer = AVPlayer(url: audioURL)
+    audioPlayer?.play()
+    #endif
 }
