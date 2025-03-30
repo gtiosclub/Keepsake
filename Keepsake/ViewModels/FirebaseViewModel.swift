@@ -411,7 +411,7 @@ class FirebaseViewModel: ObservableObject {
             let entry_ref = db.collection("JOURNAL_ENTRIES").document(entry.id.uuidString)
             do {
                 let journalEntryData = entry.toDictionary(journalID: journalID)
-                try await entry_ref.setData(journalEntryData)
+                try await entry_ref.updateData(journalEntryData)
                 
                 try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
                     "pages.\(pageNumber + 1)": FieldValue.arrayUnion([entry.id.uuidString])
