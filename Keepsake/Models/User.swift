@@ -18,9 +18,9 @@ class User: Identifiable, ObservableObject {
     var isJournalLastUsed: Bool
     @Published var shelfIndex: Int = 0
     @Published var friends: [String]
-    var profileImageURL: String
+    var profileImageURL: String = ""
     
-    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String], lastUsedShelfID: UUID, isJournalLastUsed: Bool, profileImageURL: String = "") {
+    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String], lastUsedShelfID: UUID, isJournalLastUsed: Bool) {
         self.id = id
         self.name = name
         self.username = username
@@ -31,7 +31,6 @@ class User: Identifiable, ObservableObject {
         self.friends = friends
         self.lastUsedShelfID = lastUsedShelfID
         self.isJournalLastUsed = isJournalLastUsed
-        self.profileImageURL = profileImageURL
     }
     init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String]) {
         self.id = id

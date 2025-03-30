@@ -132,6 +132,7 @@ class FirebaseViewModel: ObservableObject {
                let templates = snapshot.get("templates") as? [String],
                let friends = snapshot.get("friends") as? [String],
                let lastUsed = snapshot.get("lastUsedShelfId") as? String,
+               let profileImageURL = snapshot.get("profileImageURL") as? String,
                let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
             {
                 var journalShelves: [JournalShelf] = []
@@ -508,6 +509,43 @@ class FirebaseViewModel: ObservableObject {
         } catch {
             print("Error loading image from URL: \(error.localizedDescription)")
             return nil
+        }
+    }
+    
+    func uploadProfileImage(_ image: UIImage, userId: String) {
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else { return }
+        
+        let storageRef = Storage.storage().reference()
+        let profileImageRef = storageRef.child("profile_images/\(userId).jpg")
+        
+        // Upload image to Firebase Storage
+        profileImageRef.putData(imageData, metadata: nil) { _, error in
+            if let error = error {
+                print("🚨 Error uploading image: \(error.localizedDescription)")
+                return
+            }
+            
+            // Get download URL
+            profileImageRef.downloadURL { url, error in
+                guard let downloadURL = url else {
+                    print("🚨 Error getting URL: \(error?.localizedDescription ?? "")")
+                    return
+                }
+                
+                // Update Firestore user document
+                Firestore.firestore().collection("users").document(userId).updateData([
+                    "profileImageUrl": downloadURL.absoluteString
+                ]) { error in
+                    if let error = error {
+                        print("🚨 Firestore update error: \(error.localizedDescription)")
+                    } else {
+                        // Update local user data
+                        DispatchQueue.main.async {
+                            self.currentUser?.profileImageURL = downloadURL.absoluteString
+                        }
+                    }
+                }
+            }
         }
     }
     

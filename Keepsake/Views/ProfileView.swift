@@ -100,6 +100,12 @@ struct ProfileView: View {
                     }
                     .navigationTitle("Profile")
                 }
+            .onChange(of: profileImage) { newImage in
+                    guard let image = newImage,
+                          let userId = viewModel.currentUser?.id else { return }
+                    
+                    viewModel.uploadProfileImage(image, userId: userId)
+                }
           //  }
         
     }
