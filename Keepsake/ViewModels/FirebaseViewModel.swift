@@ -365,10 +365,21 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func updateShelfName(shelfID: UUID, newName: String) async {
-        let userRef = db.collection("JOURNAL_SHELVES").document(shelfID.uuidString)
+        let shelfRef = db.collection("JOURNAL_SHELVES").document(shelfID.uuidString)
+        do {
+            try await shelfRef.updateData([
+                "name": newName
+            ])
+        } catch {
+            print("error renaming shelf")
+        }
+    }
+    
+    func deleteShelf(shelfID: UUID, userID: String) async {
+        let userRef = db.collection("USERS").document(userID)
         do {
             try await userRef.updateData([
-                "name": newName
+                "journalShelves": FieldValue.arrayRemove([shelfID.uuidString])
             ])
         } catch {
             print("error renaming shelf")

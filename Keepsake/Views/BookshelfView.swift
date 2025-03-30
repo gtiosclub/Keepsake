@@ -39,7 +39,7 @@ struct BookshelfView: View {
                     }
                 }) {
                     Image(systemName: "pencil")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.black)
                 }
             }
             
