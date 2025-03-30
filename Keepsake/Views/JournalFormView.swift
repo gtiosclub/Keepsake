@@ -2,7 +2,7 @@ import SwiftUI
 
 struct JournalFormView: View {
     @Binding var isPresented: Bool
-    var onCreate: (String, Color, Color, Color) -> Void
+    var onCreate: (String, Color, Color, Color, Texture, [JournalPage]?) -> Void
     var templates: [Template]
     
     @State private var title: String = ""
@@ -10,6 +10,8 @@ struct JournalFormView: View {
     @State private var pageColor: Color = .white
     @State private var titleColor: Color = .black
     @State private var selectedTemplate: Template? = nil
+    @State private var selectedTexture: Texture = .leather
+    @State private var journalPages: [JournalPage]? = nil
     
     var body: some View {
         NavigationView {
@@ -21,6 +23,13 @@ struct JournalFormView: View {
                         ColorPicker("Cover Color", selection: $coverColor)
                         ColorPicker("Page Color", selection: $pageColor)
                         ColorPicker("Title Color", selection: $titleColor)
+                        // Create a drop down for the texture enums
+                        
+                        Picker("Cover Texture", selection: $selectedTexture) {
+                            ForEach(Texture.allCases, id: \.self) { texture in
+                                Text(texture.rawValue.capitalized).tag(texture)
+                            }
+                        }
                     }
                 }
                 
@@ -61,9 +70,11 @@ struct JournalFormView: View {
                         onCreate(title.isEmpty ? selected.name : title,
                                  selected.coverColor,
                                  selected.pageColor,
-                                 selected.titleColor)
+                                 selected.titleColor,
+                                 selected.texture,
+                                 selected.journalPages)
                     } else {
-                        onCreate(title, coverColor, pageColor, titleColor)
+                        onCreate(title, coverColor, pageColor, titleColor, selectedTexture, nil)
                     }
                     isPresented = false
                 }
@@ -77,5 +88,49 @@ struct JournalFormView: View {
         coverColor = template.coverColor
         pageColor = template.pageColor
         titleColor = template.titleColor
+        selectedTexture = template.texture
+        journalPages = template.journalPages
+    }
+}
+
+
+struct JournalFormView_Previews: PreviewProvider {
+    static var previews: some View {
+        let sampleTemplates = [
+            Template(
+                name: "Classic",
+                coverColor: .blue,
+                pageColor: .white,
+                titleColor: .black,
+                texture: .leather,
+                journalPages: [
+                    JournalPage(number: 1),
+                    JournalPage(number: 2),
+                    JournalPage(number: 3),
+                    JournalPage(number: 4),
+                    JournalPage(number: 5)
+                ]
+            ),
+            Template(
+                name: "Modern",
+                coverColor: .gray,
+                pageColor: .white,
+                titleColor: .blue,
+                texture: .blackLeather,
+                journalPages: [
+                    JournalPage(number: 1),
+                    JournalPage(number: 2),
+                    JournalPage(number: 3)
+                ]
+            )
+        ]
+        
+        JournalFormView(
+            isPresented: .constant(true),
+            onCreate: { title, coverColor, pageColor, titleColor, texture, journalPages in
+                print("Creating journal: \(title)")
+            },
+            templates: sampleTemplates
+        )
     }
 }

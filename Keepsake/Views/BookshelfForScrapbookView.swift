@@ -58,7 +58,7 @@ struct BookshelfForScrapbookView: View {
 }
 
 #Preview {
-    BookshelfForScrapbookView(shelf: ScrapbookShelf(name: "Bookshelf", scrapbooks: [
+    BookshelfForScrapbookView(shelf: ScrapbookShelf(id: UUID(), name: "Bookshelf", scrapbooks: [
         Scrapbook(name: "Scrapbook 1", createdDate: "2/2/25", entries: [
             ScrapbookEntry(id: "1", imageURL: "image1.jpg", caption: "Trip to the mountains", date: "03/04/25"),
             ScrapbookEntry(id: "2", imageURL: "image2.jpg", caption: "Beach sunset", date: "03/04/25")

@@ -10,26 +10,62 @@ import Foundation
 class User: Identifiable, ObservableObject {
     var id: String
     var name: String
+    var username: String
     @Published var journalShelves: [JournalShelf]
     @Published var scrapbookShelves: [ScrapbookShelf]
     @Published var savedTemplates: [Template]
+    var lastUsedShelfID: UUID
+    var isJournalLastUsed: Bool
+    @Published var shelfIndex: Int = 0
+    @Published var friends: [String]
     
-    init(id: String, name: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
+    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String], lastUsedShelfID: UUID, isJournalLastUsed: Bool) {
         self.id = id
         self.name = name
+        self.username = username
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = savedTemplates
-
+        self.isJournalLastUsed = true
+        self.friends = friends
+        self.lastUsedShelfID = lastUsedShelfID
+        self.isJournalLastUsed = isJournalLastUsed
+    }
+    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String]) {
+        self.id = id
+        self.name = name
+        self.username = username
+        self.journalShelves = journalShelves
+        self.scrapbookShelves = scrapbookShelves
+        self.savedTemplates = savedTemplates
+        self.isJournalLastUsed = true
+        self.friends = friends
+        self.lastUsedShelfID = UUID()
+        self.isJournalLastUsed = true
+    }
+    init(id: String, name: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
+        self.id = id
+        self.name = name
+        self.username = name + "@gmail.com"
+        self.journalShelves = journalShelves
+        self.scrapbookShelves = scrapbookShelves
+        self.savedTemplates = savedTemplates
+        self.friends = []
+        self.lastUsedShelfID = UUID()
+        self.isJournalLastUsed = true
     }
     
     // Provide default values for id and name
     init(journalShelves: [JournalShelf] = [], scrapbookShelves: [ScrapbookShelf] = [], savedTemplates: [Template] = []) {
         self.id = UUID().uuidString
         self.name = "Default User"
+        self.username = "default@gmail.com"
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = []
+        self.lastUsedShelfID = UUID()
+        self.isJournalLastUsed = true
+        self.friends = []
 
     }
     
