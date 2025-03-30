@@ -8,12 +8,25 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject private var remindersViewModel: RemindersViewModel
     var body: some View {
+        
         VStack {
-            Image(systemName: "globe")
+            Text("Keepsake")
+            Image(systemName: "Logo")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Hello, world!")
+            NavigationLink(
+                destination: RemindersListView()
+                    .environmentObject(remindersViewModel),
+                label: {
+                        
+                        font(.title)
+                        padding()
+                        shadow(radius: 10)
+                        cornerRadius(10)
+                }
+            )
         }
         .padding()
     }
