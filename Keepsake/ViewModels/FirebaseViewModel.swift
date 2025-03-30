@@ -364,6 +364,17 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func updateShelfName(shelfID: UUID, newName: String) async {
+        let userRef = db.collection("JOURNAL_SHELVES").document(shelfID.uuidString)
+        do {
+            try await userRef.updateData([
+                "name": newName
+            ])
+        } catch {
+            print("error renaming shelf")
+        }
+    }
+    
     //#########################################################################################
     
     /****######################################################################################

@@ -11,12 +11,37 @@ import SwiftUI
 struct BookshelfView: View {
     @ObservedObject var shelf: JournalShelf
     @State var scale: CGFloat = 0.24
+    @State var isEditing: Bool = false
+    @State var editedName: String = ""
+    @ObservedObject var fbVM: FirebaseViewModel
     var body: some View {
         VStack(alignment: .leading) {
-            Text(shelf.name)
-                .font(.headline)
-                .padding(.leading, 8)
-                .padding(.top, 8)
+            HStack {
+                if isEditing {
+                    TextField("Enter name", text: $editedName, onCommit: {
+                        shelf.name = editedName
+                        isEditing = false
+                        Task {
+                            await fbVM.updateShelfName(shelfID: shelf.id, newName: editedName)
+                        }
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .frame(width: 150)
+                } else {
+                    Text(shelf.name)
+                        .font(.headline)
+                }
+                
+                Button(action: {
+                    isEditing.toggle()
+                    if isEditing {
+                        editedName = shelf.name
+                    }
+                }) {
+                    Image(systemName: "pencil")
+                        .foregroundColor(.blue)
+                }
+            }
             
             HStack {
                 if !shelf.journals.isEmpty {
@@ -62,5 +87,5 @@ struct BookshelfView: View {
         Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
         Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
         Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
-    ]))
+    ]), fbVM: FirebaseViewModel())
 }

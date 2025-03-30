@@ -44,7 +44,7 @@ struct LibraryBookshelfView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(user.journalShelves.indices, id: \.self) { index in
-                    BookshelfView(shelf: user.journalShelves[index])
+                    BookshelfView(shelf: user.journalShelves[index], fbVM: fbVM)
                         .onTapGesture {
                             userVM.setShelfIndex(index: index, shelfID: user.journalShelves[index].id, isJournal: true)
                             Task {
