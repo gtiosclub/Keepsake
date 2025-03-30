@@ -12,6 +12,7 @@ struct ProfileView: View {
   
     
     var body: some View {
+
         VStack {
             if let user = viewModel.currentUser {
 
@@ -46,60 +47,10 @@ struct ProfileView: View {
 
                                 Text(user.username)
 
-                                    .font(.footnote)
-                                    .accentColor(.pink)
-                            }
-                        }
-                    }
-                    
-
-                    Section("Friends") {
-                        NavigationLink(destination: FriendsView()) {
-                            SettingsRowView(imageName: "person.2.fill",
-                                            title: "View Friends",
-                                            tintColor: .blue)
-                        }
-                    }
-
-                    Section("Account") {
-                        Button {
-                            viewModel.signOut()
-                        } label: {
-
-                            SettingsRowView(imageName: "arrow.backward.circle.fill",
-
-                                            title: "Sign Out",
-                                            tintColor: .red)
-                        }
-                        .foregroundColor(.pink)
-                    }
-
-                }
-                .actionSheet(isPresented: $showImageOptions) {
-                    ActionSheet(
-                        title: Text("Choose an option"),
-                        message: Text("Select a photo source"),
-                        buttons: [
-                            .default(Text("Take Photo")) {
-                                showCamera.toggle()
-                            },
-                            .default(Text("Choose from Gallery")) {
-                                showImagePicker.toggle()
-                            },
-                            .cancel()
-                        ]
-                    )
-                }
-                .sheet(isPresented: $showImagePicker) {
-                    ImagePickerController(image: $profileImage)
-                }
-                .sheet(isPresented: $showCamera) {
-                    ImagePickerController(image: $profileImage, isCamera: true)
-
-                }
                 .navigationTitle("Profile")
             }
         }
+
     }
 }
 

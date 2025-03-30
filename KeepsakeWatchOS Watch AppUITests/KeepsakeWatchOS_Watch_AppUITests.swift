@@ -1,13 +1,13 @@
 //
-//  KeepsakeWatch_Watch_AppUITests.swift
-//  KeepsakeWatch Watch AppUITests
+//  KeepsakeWatchOS_Watch_AppUITests.swift
+//  KeepsakeWatchOS Watch AppUITests
 //
-//  Created by Nitya Potti on 2/10/25.
+//  Created by Nitya Potti on 3/29/25.
 //
 
 import XCTest
 
-final class KeepsakeWatch_Watch_AppUITests: XCTestCase {
+final class KeepsakeWatchOS_Watch_AppUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

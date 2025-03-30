@@ -13,8 +13,31 @@ class UserViewModel: ObservableObject {
     init(user: User) {
         if user.savedTemplates.isEmpty {
             user.savedTemplates = [
-                Template(name: "Classic", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather),
-                Template(name: "Minimalist", coverColor: .gray, pageColor: .white, titleColor: .black, texture: .blackLeather),
+                Template(name: "Classic", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather, journalPages: [
+                    JournalPage(number: 1),
+                    JournalPage(number: 2,
+                                entries: [
+                                    JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")],
+                                realEntryCount: 1),
+                    JournalPage(number: 3,
+                                entries: [
+                                    JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"),
+                                    JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"),
+                                    JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")],
+                                realEntryCount: 3),
+                    JournalPage(number: 4,
+                                entries: [
+                                    JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"),
+                                    JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")],
+                                realEntryCount: 2),
+                    JournalPage(number: 5)]),
+                Template(name: "Minimalist", coverColor: .gray, pageColor: .white, titleColor: .black, texture: .blackLeather, journalPages: [JournalPage(
+                    number: 1,
+                    entries: [JournalEntry(date: "2025-03-26",title: "Entry 1",text: "Sample text for entry 1",summary: "Summary of entry 1"),
+                              JournalEntry(date: "2025-03-26",title: "Entry 2",text: "Sample text for entry 2",summary: "Summary of entry 2"),
+                              JournalEntry(date: "2025-03-26",title: "Entry 8",text: "Sample text for entry 8",summary: "Summary of entry 8")],
+                    realEntryCount: 0
+                )]),
                 Template(name: "Creative", coverColor: .blue, pageColor: .yellow, titleColor: .white, texture: .flower1),
                 Template(name: "Snoopy", coverColor: .black, pageColor: .white, titleColor: .white, texture: .snoopy)
             ]
@@ -36,6 +59,16 @@ class UserViewModel: ObservableObject {
     
     func getJournal(shelfIndex: Int, bookIndex: Int) -> Journal {
         return user.getJournalShelves()[shelfIndex].journals[bookIndex]
+    }
+    
+    func getJournalIndex(journal: Journal, shelfIndex: Int) -> Int {
+        var journals = getJournalShelves()[shelfIndex].journals
+        for index in journals.indices {
+            if journals[index].id == journal.id {
+                return index
+            }
+        }
+        return 0
     }
     
     func getJournalEntry(shelfIndex: Int, bookIndex: Int, pageNum: Int, entryIndex: Int) -> JournalEntry {
@@ -107,6 +140,38 @@ class UserViewModel: ObservableObject {
     func addJournalToShelf(journal: Journal, shelfIndex: Int) {
 //        user.journalShelves[shelfIndex].journals.append(journal)
         user.getJournalShelves()[shelfIndex].journals.append(journal)
+    }
+    
+    func removeJournalFromShelf(shelfIndex: Int, journalID: UUID) {
+        var journals = user.getJournalShelves()[shelfIndex].journals
+        for index in journals.indices {
+            if journalID == journals[index].id {
+                user.getJournalShelves()[shelfIndex].journals.remove(at: index)
+                return
+            }
+        }
+    }
+    
+    func addJournalToShelfAndAddEntries(journal: Journal, shelfIndex: Int) {
+        user.getJournalShelves()[shelfIndex].journals.append(journal)
+        
+        if !journal.pages.isEmpty {
+            for pageIndex in journal.pages.indices {
+                let page = journal.pages[pageIndex]
+//                let originalEntries = page.entries.filter { !$0.date.isEmpty || !$0.title.isEmpty || !$0.text.isEmpty }
+                let originalEntries = page.entries.filter { !$0.isFake }
+                // Only reset and process if there are non-empty entries
+                if !originalEntries.isEmpty {
+                    let fakeEntry = JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: true, color: [0.5, 0.5, 0.5])
+                    page.entries = Array(repeating: fakeEntry, count: 8)
+                    page.realEntryCount = 0
+                    
+                    for entry in originalEntries {
+                        _ = newAddJournalEntry(journal: journal, pageNum: pageIndex, entry: entry)
+                    }
+                }
+            }
+        }
     }
     
     func removeJournalEntry(page: JournalPage, index: Int) {

@@ -22,11 +22,13 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct KeepsakeApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var firebaseViewModel = FirebaseViewModel.vm
+    @StateObject private var reminderViewModel = RemindersViewModel()
     //@StateObject private var authViewModel = AuthViewModel()
     var body: some Scene {
         WindowGroup {
-             FirstView()
+             isLoggedInView()
                  .environmentObject(firebaseViewModel)
+                 .environmentObject(reminderViewModel)
 //           ContentView(userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", id: UUID(), journals: [
 //               Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake", width: 2, height: 2, isFake: false, color: [0.55, 0.8, 0.8]), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry()], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake", width: 1, height: 2, isFake: false, color: [0.5, 0.9, 0.7]), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff", width: 1, height: 2, isFake: false, color: [0.6, 0.7, 0.6]), JournalEntry(), JournalEntry(), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club", width: 2, height: 2, isFake: false, color: [0.9, 0.5, 0.8]), JournalEntry(), JournalEntry(), JournalEntry()], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake", width: 2, height: 2, isFake: false, color: [0.5, 0.9, 0.7]), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club", width: 2, height: 2, isFake: false, color: [0.6, 0.55, 0.8]), JournalEntry(), JournalEntry(), JournalEntry()], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
 //               Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .bears), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),

@@ -30,6 +30,8 @@ struct ShelfView: View {
     @State var displayPage: Int = 2
     @State private var showJournalForm = false
     @Binding var selectedOption: ViewOption
+    @State var showDeleteButton: Bool = false
+    @State var deleteJournalID: String = ""
     var body: some View {
         if !show {
             VStack(alignment: .leading, spacing: 10) {
@@ -45,7 +47,7 @@ struct ShelfView: View {
                         }.padding(.leading, 5)
                     }
                     HStack {
-                        Text("Welcome back, Rik")
+                        Text("Welcome back, \(userVM.user.name)")
                             .font(.title2)
                             .foregroundColor(.gray)
                             .fontWeight(.semibold)
@@ -89,54 +91,82 @@ struct ShelfView: View {
                 //Journals
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 45) {
-                        ForEach(userVM.user.getJournalShelves()[shelfIndex].journals.indices, id: \.self) { index in
+                        ForEach(userVM.user.journalShelves[shelfIndex].journals) { journal in
                             GeometryReader { geometry in
                                 let verticalOffset = calculateVerticalOffset(proxy: geometry)
                                 VStack(spacing: 35) {
-                                    JournalCover(template: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).template, degrees: 0, title: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).name)
+                                    JournalCover(template: journal.template, degrees: 0, title: journal.name)
                                         .scaleEffect(scaleEffect)
                                         .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                                         .transition(.identity)
-                                        .matchedGeometryEffect(id: "journal_\(index)", in: shelfNamespace, properties: .position, anchor: .center)
+                                        .matchedGeometryEffect(id: "journal_\(journal.id)", in: shelfNamespace, properties: .position, anchor: .center)
                                         .onTapGesture {
-                                            print(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index))
-                                            selectedJournal = index
-                                            displayPage = userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).currentPage
-                                            
-                                            Task {
-                                                await aiVM.fetchSmartPrompts(for: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index), count: 5)
-                                            }
-                                            
-                                            withAnimation(.linear(duration: 0.7)) {
-                                                show.toggle()
-                                            } completion: {
-                                                withAnimation(.linear(duration: 0.7).delay(0.0)) {
-                                                    scaleEffect = 1
+                                            if showDeleteButton {
+                                                showDeleteButton.toggle()
+                                            } else {
+                                                selectedJournal = userVM.getJournalIndex(journal: journal, shelfIndex: shelfIndex)
+                                                displayPage = journal.currentPage
+                                                
+                                                Task {
+                                                    await aiVM.fetchSmartPrompts(for: journal, count: 5)
                                                 }
-                                                circleStart = 1
-                                                circleEnd = 1
-                                                withAnimation(.linear(duration: 0.7).delay(0.0)) {
-                                                    circleStart -= 0.25
-                                                    degrees -= 90
-                                                    frontDegrees -= 90
+                                                
+                                                withAnimation(.linear(duration: 0.7)) {
+                                                    show.toggle()
                                                 } completion: {
-                                                    coverZ = -1
-                                                    isHidden = true
-                                                    withAnimation(.linear(duration: 0.7).delay(0)) {
+                                                    withAnimation(.linear(duration: 0.7).delay(0.0)) {
+                                                        scaleEffect = 1
+                                                    }
+                                                    circleStart = 1
+                                                    circleEnd = 1
+                                                    withAnimation(.linear(duration: 0.7).delay(0.0)) {
                                                         circleStart -= 0.25
                                                         degrees -= 90
                                                         frontDegrees -= 90
+                                                    } completion: {
+                                                        coverZ = -1
+                                                        isHidden = true
+                                                        withAnimation(.linear(duration: 0.7).delay(0)) {
+                                                            circleStart -= 0.25
+                                                            degrees -= 90
+                                                            frontDegrees -= 90
+                                                        }
                                                     }
+                                                    
                                                 }
                                             }
+                                            //print(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index))
                                         }
+                                        .onLongPressGesture(minimumDuration: 0.5) {
+                                            withAnimation(.spring()) {
+                                                showDeleteButton.toggle()
+                                                deleteJournalID = journal.id.uuidString
+                                            }
+                                        }
+                                    if showDeleteButton && deleteJournalID == journal.id.uuidString {
+                                        Button {
+                                            userVM.removeJournalFromShelf(shelfIndex: shelfIndex, journalID: journal.id)
+                                            Task {
+                                                await fbVM.deleteJournal(journal: journal, journalShelfID: shelf.id)
+                                            }
+                                            showDeleteButton.toggle()                                                 
+                                        } label: {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .font(.system(size: 28))
+                                                .foregroundColor(.red)
+                                                .background(Circle().fill(Color.white))
+                                                .padding(8)
+                                        }
+                                        .transition(.scale.combined(with: .opacity))
+                                        .zIndex(1)
+                                    }
                                     VStack(spacing: 10) {
                                         //Journal name, date, created by you
-                                        Text(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).name)
+                                        Text(journal.name)
                                             .font(.title2)
                                             .foregroundColor(.primary)
                                         
-                                        Text(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index).createdDate)
+                                        Text(journal.createdDate)
                                             .font(.subheadline)
                                             .foregroundColor(.gray)
                                         
@@ -162,6 +192,11 @@ struct ShelfView: View {
                 }
                 .frame(height: 500)
             }
+            .onTapGesture(perform: {
+                if showDeleteButton {
+                    showDeleteButton.toggle()
+                }
+            })
             //            .onAppear() {
             //                print(userVM.user.journalShelves)
             //            }
@@ -169,10 +204,10 @@ struct ShelfView: View {
             .sheet(isPresented: $showJournalForm) {
                 JournalFormView(
                     isPresented: $showJournalForm,
-                    onCreate: { title, coverColor, pageColor, titleColor, texture in
+                    onCreate: { title, coverColor, pageColor, titleColor, texture, journalPages in
                         Task {
                             await createJournal(
-                                from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: texture),
+                                from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: texture, journalPages: journalPages),
                                 shelfIndex: shelfIndex, shelfID: shelf.id
                             )
                         }
@@ -198,7 +233,7 @@ struct ShelfView: View {
                           inTextEntry: $inTextEntry,
                           selectedEntry: $selectedEntry
                           )
-                    .matchedGeometryEffect(id: "journal_\(selectedJournal)", in: shelfNamespace, properties: .position, anchor: .center)
+                .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
                     .scaleEffect(scaleEffect)
                     .transition(.slide)
                     .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
@@ -220,17 +255,18 @@ struct ShelfView: View {
     func createJournal(from template: Template, shelfIndex: Int, shelfID: UUID) async {
         let newJournal = Journal(
             name: template.name,
+            id: UUID(),
             createdDate: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short),
-            entries: [],
             category: "General",
             isSaved: false,
             isShared: false,
             template: template,
-            pages: [JournalPage(number: 1)],
+            pages: template.journalPages ?? [JournalPage(number: 1)],
             currentPage: 0
         )
-        userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
-        await fbVM.addJournal(journal: newJournal, journalShelfID: shelfID)
+//        userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
+        userVM.addJournalToShelfAndAddEntries(journal: newJournal, shelfIndex: shelfIndex)
+        _ = await fbVM.addJournal(journal: newJournal, journalShelfID: shelfID)
     }
     
     private func calculateVerticalOffset(proxy: GeometryProxy) -> CGFloat {

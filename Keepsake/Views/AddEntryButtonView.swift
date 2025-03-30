@@ -151,14 +151,14 @@ struct SelectedPhotoView: View {
                                 if let url = url {
                                     imageURLs.append(url)
                                     count += 1
-                                    print()
-                                    print("added")
+//                                    print()
+//                                    print("added")
                                 }
                                 if count == selectedImages.count {
                                     selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }, images: imageURLs))
-                                    print()
-                                    print(journal.pages[displayPage].entries[selectedEntry])
-                                    print()
+//                                    print()
+//                                    print(journal.pages[displayPage].entries[selectedEntry])
+//                                    print()
                                     Task {
                                         await fbVM.updateJournalPage(entries: journal.pages[displayPage].entries, journalID: journal.id, pageNumber: displayPage)
                                         selectedImages = []
