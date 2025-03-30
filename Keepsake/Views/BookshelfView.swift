@@ -11,48 +11,46 @@ import SwiftUI
 struct BookshelfView: View {
     @ObservedObject var shelf: JournalShelf
     @State var scale: CGFloat = 0.24
+    let angles: [Double] = [0, 0, -2, -10, -30]
+
     var body: some View {
-        VStack(alignment: .leading) {
-            Text(shelf.name)
-                .font(.headline)
-                .padding(.leading, 8)
-                .padding(.top, 8)
-            
-            HStack {
-                if !shelf.journals.isEmpty {
-                    // Placeholder to maintain height and width
-//                    Rectangle()
-//                        .fill(Color.gray.opacity(0.2))
-//                        .frame(height: 100)
-//                        .cornerRadius(8)
-//                        .padding(.horizontal)
-//                        .padding(.vertical)
+        ZStack(alignment: .bottom) {
+            Color.white
+                .frame(height: 150)
+                .cornerRadius(10)
+                .shadow(radius: 2)
+
+            HStack(alignment: .bottom) {
+                HStack(spacing: 2) { // Align spines to the left
                     ForEach(shelf.journals.indices, id: \.self) { index in
-                        JournalSpine(book: shelf.journals[index], degrees: 0)
+                        let angle = angles[index % angles.count]
+                        let spacing = abs(angle) * 0.8 // Increase spacing for larger angles
+
+                        JournalSpine(book: shelf.journals[index], degrees: angle)
                             .scaleEffect(scale)
+                            .rotationEffect(.degrees(angle))
+                            .offset(x: spacing, y: 0) // Adjust offset based on angle
                             .frame(width: scale * UIScreen.main.bounds.width * 0.4, height: scale * UIScreen.main.bounds.height * 0.56)
+                            .alignmentGuide(.bottom) { _ in 0 } // Ensure all spines align at the bottom
                     }
                 }
-//                else {
-//                    ForEach(shelf.books.indices, id: \.self) { _ in
-//                        Rectangle()
-//                            .fill(Color.gray.opacity(0.3))
-//                            .frame(height: 100)
-//                            .cornerRadius(8)
-//                            .padding(.horizontal)
-//                            .padding(.vertical)
-//                    }
-//                }
-                
+                .padding(.leading, 4)
+
+                Spacer()
+
+                VStack(alignment: .trailing) {
+                    Text(shelf.name)
+                        .font(.headline)
+                        .padding(.trailing, 20)
+                        .padding(.top, -20)
+                    
+                    Spacer()
+                }
             }
-            .frame(maxWidth: .infinity)
+            .padding(.bottom, 2)
             .frame(height: 120)
-            .background(Color.white)
         }
-//        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.white)
-        .cornerRadius(10)
-        .shadow(radius: 2)
+        .frame(height: 150)
     }
 }
 
