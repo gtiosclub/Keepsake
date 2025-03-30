@@ -37,7 +37,7 @@ struct RemindersListView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                ForEach(viewModel.reminders, id: \.id) { reminder in
+                ForEach(viewModel.reminders) { reminder in
                     VStack(alignment: .leading) {
                         Text(reminder.title) // ✅ Works because it's a String
                             .font(.headline)
@@ -46,7 +46,7 @@ struct RemindersListView: View {
                         Text(reminder.body)
                             .font(.body)
 
-                        if let audioFileURL = reminder.audioFileUrl {
+                        if let audioFileURL = reminder.audioFileURL {
                             Button(action: {
                                 playAudio(from: audioFileURL)
                             }) {

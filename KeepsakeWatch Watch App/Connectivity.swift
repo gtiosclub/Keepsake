@@ -17,7 +17,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
     static let shared = Connectivity()
     #if os(iOS)
     @Published private var firebaseVM = FirebaseViewModel()
-    var authViewModel: AuthViewModel?
+    //var authViewModel: AuthViewModel?
     #endif
     @Published var reminders: [Reminder] = []
 
@@ -26,16 +26,18 @@ final class Connectivity: NSObject, WCSessionDelegate {
         loadReminders()
         #if !os(watchOS)
         guard WCSession.isSupported() else { return }
+        print(firebaseVM.currentUser?.username)
         #endif
+        
         WCSession.default.delegate = self
         WCSession.default.activate()
         print("WCSession activated")
     }
 #if os(iOS)
     
-    func setAuthViewModel(_ viewModel: AuthViewModel) {
-        self.authViewModel = viewModel
-    }
+//    func setAuthViewModel(_ viewModel: AuthViewModel) {
+//        self.authViewModel = viewModel
+//    }
 #endif
     private func loadReminders() {
         #if os(watchOS)
@@ -90,7 +92,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
     }
     func fetchAudioFiles() {
         #if os(iOS)
-        guard let uid = authViewModel?.currentUser?.id else {
+        guard let uid = firebaseVM.currentUser?.id else {
             print("No UID found")
             return
         }
@@ -107,19 +109,24 @@ final class Connectivity: NSObject, WCSessionDelegate {
             var audioFiles: [String] = [] // Array to hold audio file download URLs
             let dispatchGroup = DispatchGroup()
 
-            for item in result.items {
-                dispatchGroup.enter()
+            if let items = result?.items {
+                for item in items {
+                    dispatchGroup.enter()
 
-                // Get the download URL for each audio file
-                item.downloadURL { url, error in
-                    if let error = error {
-                        print("Error getting download URL for file: \(error.localizedDescription)")
-                    } else if let url = url {
-                        audioFiles.append(url.absoluteString) // Store the download URL
+                    // Get the download URL for each audio file
+                    item.downloadURL { url, error in
+                        if let error = error {
+                            print("Error getting download URL for file: \(error.localizedDescription)")
+                        } else if let url = url {
+                            audioFiles.append(url.absoluteString) // Store the download URL
+                        }
+                        dispatchGroup.leave()
                     }
-                    dispatchGroup.leave()
                 }
+            } else {
+                print("No items found.")
             }
+
 
             // Once all URLs have been fetched, update reminders with the corresponding URLs
             dispatchGroup.notify(queue: .main) {
@@ -153,7 +160,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
     }
     func uploadAudioToFirebase(fileURL: URL) {
         #if os(iOS)
-        guard let uid = authViewModel?.currentUser?.id else {
+        guard let uid = firebaseVM.currentUser?.id else {
             print("no uid")
             return
         }
@@ -186,8 +193,8 @@ final class Connectivity: NSObject, WCSessionDelegate {
         #if os(iOS)
             let db = firebaseVM.db
             var uid: String?
-        if authViewModel?.userSession != nil {
-            uid = authViewModel?.currentUser!.id
+        if firebaseVM.userSession != nil {
+            uid = firebaseVM.currentUser!.id
             } else {
                 print("no user")
             }

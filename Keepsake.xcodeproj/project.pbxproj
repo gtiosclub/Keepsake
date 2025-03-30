@@ -81,6 +81,16 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5B2B3C5E2D98E179008E1593 /* Exceptions for "KeepsakeWatch Watch App" folder in "Keepsake" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Connectivity.swift,
+				Reminder.swift,
+				ReminderViewModel.swift,
+				TextReminder.swift,
+			);
+			target = F751BD242D50049D00EDB703 /* Keepsake */;
+		};
 		5BA743782D98D36900055877 /* Exceptions for "KeepsakeWatch Watch App" folder in "KeepsakeWatchOS Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -117,6 +127,7 @@
 		5B27A5122D5AB33400327B51 /* KeepsakeWatch Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				5B2B3C5E2D98E179008E1593 /* Exceptions for "KeepsakeWatch Watch App" folder in "Keepsake" target */,
 				5BA743782D98D36900055877 /* Exceptions for "KeepsakeWatch Watch App" folder in "KeepsakeWatchOS Watch App" target */,
 			);
 			path = "KeepsakeWatch Watch App";
