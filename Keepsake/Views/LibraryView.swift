@@ -44,7 +44,7 @@ struct LibraryBookshelfView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(user.journalShelves.indices, id: \.self) { index in
-                    BookshelfView(shelf: user.journalShelves[index])
+                    BookshelfView(shelf: user.journalShelves[index], isEven: index.isMultiple(of: 2))
                         .onTapGesture {
                             userVM.setShelfIndex(index: index, shelfID: user.journalShelves[index].id, isJournal: true)
                             Task {
@@ -58,7 +58,7 @@ struct LibraryBookshelfView: View {
             .frame(maxWidth: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .navigationTitle("Your Journals")
+        .navigationTitle("Your Library")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
