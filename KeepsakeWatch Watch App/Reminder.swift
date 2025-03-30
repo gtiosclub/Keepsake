@@ -14,7 +14,7 @@ struct Reminder: Identifiable, Codable {
     var title: String
     var date: Date
     var body: String
-    var audioFileUrl: String?
+    var audioFileURL: String?
 }
 extension Color {
     init(hex: String) {
@@ -37,16 +37,15 @@ struct RemindersListView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                ForEach($viewModel.reminders) { $reminder in
+                ForEach(viewModel.reminders, id: \.id) { reminder in
                     VStack(alignment: .leading) {
-                        Text(reminder.title)
+                        Text(reminder.title) // ✅ Works because it's a String
                             .font(.headline)
                         Text(reminder.date, style: .date)
                             .font(.subheadline)
                         Text(reminder.body)
                             .font(.body)
-                        
-                        // Display play button if there's an audio file URL
+
                         if let audioFileURL = reminder.audioFileUrl {
                             Button(action: {
                                 playAudio(from: audioFileURL)
@@ -58,6 +57,7 @@ struct RemindersListView: View {
                     }
                     .padding(.vertical, 5)
                 }
+
 
 
                 // Add button for new reminders
