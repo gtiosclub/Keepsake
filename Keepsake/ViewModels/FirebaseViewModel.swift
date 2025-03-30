@@ -534,7 +534,7 @@ class FirebaseViewModel: ObservableObject {
                 
                 // Update Firestore user document
                 Firestore.firestore().collection("users").document(userId).updateData([
-                    "profileImageUrl": downloadURL.absoluteString
+                    "profileImageURL": downloadURL.absoluteString
                 ]) { error in
                     if let error = error {
                         print("🚨 Firestore update error: \(error.localizedDescription)")

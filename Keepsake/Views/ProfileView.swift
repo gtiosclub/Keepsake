@@ -14,7 +14,7 @@ struct ProfileView: View {
     var body: some View {
 
             VStack {
-                //if let user = viewModel.currentUser {
+//                let user = viewModel.currentUser
                 let user = User(id: "123", name: viewModel.currentUser?.name ?? "Nitya", username: viewModel.currentUser?.username ?? "hi@gmail.com", journalShelves: [], scrapbookShelves: [], friends: viewModel.currentUser?.friends ?? [])
                     List {
                         Section {
@@ -40,7 +40,7 @@ struct ProfileView: View {
                                 }
                                 
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(user.name)
+                                    Text((!user).name)
                                         .font(.subheadline)
                                         .fontWeight(.semibold)
                                         .padding(.top)
