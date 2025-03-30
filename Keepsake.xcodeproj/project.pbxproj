@@ -81,7 +81,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		5B2B3C5E2D98E179008E1593 /* Exceptions for "KeepsakeWatch Watch App" folder in "Keepsake" target */ = {
+		5B71E5892D9996FA0010D9E1 /* Exceptions for "KeepsakeWatchOS Watch App" folder in "Keepsake" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				AudioFiles.swift,
@@ -91,22 +91,6 @@
 				TextReminder.swift,
 			);
 			target = F751BD242D50049D00EDB703 /* Keepsake */;
-		};
-		5BA743782D98D36900055877 /* Exceptions for "KeepsakeWatch Watch App" folder in "KeepsakeWatchOS Watch App" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				AudioFiles.swift,
-				AudioRecording.swift,
-				Choice.swift,
-				Connectivity.swift,
-				ContentView.swift,
-				KeepsakeWatchApp.swift,
-				Reminder.swift,
-				ReminderViewModel.swift,
-				TextReminder.swift,
-				VoiceRecording.swift,
-			);
-			target = 5BA743492D98D27700055877 /* KeepsakeWatchOS Watch App */;
 		};
 		5BA743802D98D39500055877 /* Exceptions for "KeepsakeWatchOS Watch App" folder in "KeepsakeWatchOS Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -126,28 +110,10 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		5B27A5122D5AB33400327B51 /* KeepsakeWatch Watch App */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				5B2B3C5E2D98E179008E1593 /* Exceptions for "KeepsakeWatch Watch App" folder in "Keepsake" target */,
-				5BA743782D98D36900055877 /* Exceptions for "KeepsakeWatch Watch App" folder in "KeepsakeWatchOS Watch App" target */,
-			);
-			path = "KeepsakeWatch Watch App";
-			sourceTree = "<group>";
-		};
-		5B27A5232D5AB33500327B51 /* KeepsakeWatch Watch AppTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "KeepsakeWatch Watch AppTests";
-			sourceTree = "<group>";
-		};
-		5B27A52D2D5AB33500327B51 /* KeepsakeWatch Watch AppUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "KeepsakeWatch Watch AppUITests";
-			sourceTree = "<group>";
-		};
 		5BA7434B2D98D27700055877 /* KeepsakeWatchOS Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				5B71E5892D9996FA0010D9E1 /* Exceptions for "KeepsakeWatchOS Watch App" folder in "Keepsake" target */,
 				5BA743802D98D39500055877 /* Exceptions for "KeepsakeWatchOS Watch App" folder in "KeepsakeWatchOS Watch App" target */,
 			);
 			path = "KeepsakeWatchOS Watch App";
@@ -251,9 +217,6 @@
 				F751BD272D50049D00EDB703 /* Keepsake */,
 				F751BD382D50049F00EDB703 /* KeepsakeTests */,
 				F751BD422D50049F00EDB703 /* KeepsakeUITests */,
-				5B27A5122D5AB33400327B51 /* KeepsakeWatch Watch App */,
-				5B27A5232D5AB33500327B51 /* KeepsakeWatch Watch AppTests */,
-				5B27A52D2D5AB33500327B51 /* KeepsakeWatch Watch AppUITests */,
 				5BA7434B2D98D27700055877 /* KeepsakeWatchOS Watch App */,
 				5BA7435C2D98D27900055877 /* KeepsakeWatchOS Watch AppTests */,
 				5BA743662D98D27900055877 /* KeepsakeWatchOS Watch AppUITests */,
