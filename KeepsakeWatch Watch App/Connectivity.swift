@@ -88,6 +88,59 @@ final class Connectivity: NSObject, WCSessionDelegate {
         WCSession.default.transferFile(audioFileUrl, metadata: nil)
         print("Audio file sent: \(audioFileUrl)")
     }
+    func fetchAudioFiles() {
+        #if os(iOS)
+        guard let uid = authViewModel?.currentUser?.id else {
+            print("No UID found")
+            return
+        }
+
+        let storageRef = Storage.storage().reference().child("audio/\(uid)/")
+        
+        // List all files in the audio folder for the current user
+        storageRef.listAll { (result, error) in
+            if let error = error {
+                print("Error fetching audio files: \(error.localizedDescription)")
+                return
+            }
+
+            var audioFiles: [String] = [] // Array to hold audio file download URLs
+            let dispatchGroup = DispatchGroup()
+
+            for item in result.items {
+                dispatchGroup.enter()
+
+                // Get the download URL for each audio file
+                item.downloadURL { url, error in
+                    if let error = error {
+                        print("Error getting download URL for file: \(error.localizedDescription)")
+                    } else if let url = url {
+                        audioFiles.append(url.absoluteString) // Store the download URL
+                    }
+                    dispatchGroup.leave()
+                }
+            }
+
+            // Once all URLs have been fetched, update reminders with the corresponding URLs
+            dispatchGroup.notify(queue: .main) {
+                self.updateRemindersWithAudioFiles(audioFiles)
+            }
+        }
+        #endif
+    }
+
+    func updateRemindersWithAudioFiles(_ audioFiles: [String]) {
+        for (index, reminder) in reminders.enumerated() {
+            // Here, you can match reminders to audio files based on some criteria
+            // For simplicity, just associate an audio file to each reminder in a 1-to-1 fashion
+            if index < audioFiles.count {
+                reminders[index].audioFileURL = audioFiles[index]
+            }
+        }
+        // You can then save these reminders again to UserDefaults if needed
+        saveReminders()
+    }
+
     func session(_ session: WCSession, didReceive file: WCSessionFile) {
         let destinationURL = FileManager.default.temporaryDirectory.appendingPathComponent(file.fileURL.lastPathComponent)
         do {
