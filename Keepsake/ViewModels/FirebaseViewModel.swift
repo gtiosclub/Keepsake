@@ -70,13 +70,13 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func signIn(withEmail email: String, password: String) async throws {
-        do {
+        
             let result = try await auth.signIn(withEmail: email, password: password)
-            self.userSession = result.user
+            await MainActor.run {
+                self.userSession = result.user
+            }
+               
             await fetchUser()
-        } catch {
-            
-        }
     }
     
     func createUser(withEmail email: String, password: String, fullname: String) async throws {
@@ -149,7 +149,9 @@ class FirebaseViewModel: ObservableObject {
                 let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed)
                 
                 // Assign the user object to currentUser
-                self.currentUser = user
+                await MainActor.run {
+                                self.currentUser = user
+                }
                 
             }
         }

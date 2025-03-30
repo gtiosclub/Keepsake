@@ -11,6 +11,7 @@ struct ContentView: View {
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var aiVM: AIViewModel
     @ObservedObject var fbVM: FirebaseViewModel
+    @EnvironmentObject var reminderViewModel: RemindersViewModel
     
     var body: some View {
         
@@ -21,7 +22,10 @@ struct ContentView: View {
                     Tab("Home", systemImage: "house") {
                         HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: .journal_shelf)
                     }
-                    
+                    Tab("Reminders", systemImage:"house") {
+                        RemindersListView()
+                            .environmentObject(reminderViewModel)
+                    }
                     
                     Tab("Community", systemImage: "person.2") {
                         CommunityView()
