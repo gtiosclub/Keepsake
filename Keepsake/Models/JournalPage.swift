@@ -18,11 +18,8 @@ class JournalPage: ObservableObject {
         self.realEntryCount = realEntryCount
     }
     
-    init(number: Int) {
-        let fakeEntry = JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: true, color: [0.5, 0.5, 0.5])
-        self.number = number
-        self.entries = [fakeEntry, fakeEntry, fakeEntry, fakeEntry, fakeEntry, fakeEntry, fakeEntry, fakeEntry]
-        self.realEntryCount = 0
+    convenience init(number: Int) {
+        self.init(number: number, entries: [JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry()], realEntryCount: 0)
     }
     
 }

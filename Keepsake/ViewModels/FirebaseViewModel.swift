@@ -70,13 +70,13 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func signIn(withEmail email: String, password: String) async throws {
-        do {
+        
             let result = try await auth.signIn(withEmail: email, password: password)
-            self.userSession = result.user
+            await MainActor.run {
+                self.userSession = result.user
+            }
+               
             await fetchUser()
-        } catch {
-            
-        }
     }
     
     func createUser(withEmail email: String, password: String, fullname: String) async throws {
@@ -149,7 +149,9 @@ class FirebaseViewModel: ObservableObject {
                 let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed)
                 
                 // Assign the user object to currentUser
-                self.currentUser = user
+                await MainActor.run {
+                                self.currentUser = user
+                }
                 
             }
         }
@@ -196,6 +198,47 @@ class FirebaseViewModel: ObservableObject {
         } catch {
             print("Error adding journal: \(error.localizedDescription)")
             return false
+        }
+    }
+    
+    func deleteJournal(journal: Journal, journalShelfID: UUID) async {
+        var allEntryIds: [String] = []
+        // Delete all entries
+        do {
+            let document = try await db.collection("JOURNALS").document(journal.id.uuidString).getDocument()
+            if let data = document.data(),
+               let pages = data["pages"] as? [String: [String]] {
+                for (page, entry) in pages {
+                    allEntryIds.append(contentsOf: entry)
+                }
+            } else {
+                print("Couldn't get all page entries")
+            }
+            print(allEntryIds)
+            for entry in allEntryIds {
+                if let uuid = UUID(uuidString: entry) {
+                    await removeJournalEntry(entryID: uuid)
+                } else {
+                    print("Invalid UUID string: \(entry)")
+                }
+            }
+        } catch {
+            print("error deleting entries")
+            return
+        }
+        // Remove Journal Id from journal Shelf
+        let documentRef = db.collection("JOURNAL_SHELVES").document(journalShelfID.uuidString)
+        do {
+            try await documentRef.updateData(["journals": FieldValue.arrayRemove([journal.id.uuidString])])
+        } catch {
+            print("could not remove journal ID from shelf")
+            return
+        }
+        //Remove Journal
+        do {
+            try await db.collection("JOURNALS").document(journal.id.uuidString).delete()
+        } catch {
+            print("Error removing document: \(error)")
         }
     }
     
@@ -345,12 +388,20 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func updateJournalPage(entries: [JournalEntry], journalID: UUID, pageNumber: Int) async {
+        var previousEntryIds: [String] = []
         do {
+            let document = try await db.collection("JOURNALS").document(journalID.uuidString).getDocument()
+            if let data = document.data(),
+               let pages = data["pages"] as? [String: [String]] {  // First get the pages dictionary
+                previousEntryIds = pages["\(pageNumber + 1)"] as? [String] ?? []
+            } else {
+                print("Couldn't get page entries")
+            }
             try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
                 "pages.\(pageNumber + 1)": []
             ])
         } catch {
-            "error reseting page entries"
+            print("error reseting page entries")
             return
         }
         for entry in entries {
@@ -365,9 +416,27 @@ class FirebaseViewModel: ObservableObject {
                 try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
                     "pages.\(pageNumber + 1)": FieldValue.arrayUnion([entry.id.uuidString])
                 ])
+                if let removalIndex = previousEntryIds.firstIndex(of: entry.id.uuidString) {
+                    previousEntryIds.remove(at: removalIndex)
+                }
             } catch {
                 await addJournalEntry(journalEntry: entry, journalID: journalID, pageNumber: pageNumber)
             }
+        }
+        for entry in previousEntryIds {
+            if let uuid = UUID(uuidString: entry) {
+                await removeJournalEntry(entryID: uuid)
+            } else {
+                print("Invalid UUID string: \(entry)")
+            }
+        }
+    }
+    
+    func removeJournalEntry(entryID: UUID) async {
+        do {
+            try await db.collection("JOURNAL_ENTRIES").document(entryID.uuidString).delete()
+        } catch {
+            print("Error removing document: \(error)")
         }
     }
          
