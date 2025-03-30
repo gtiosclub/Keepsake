@@ -153,6 +153,7 @@ struct ImagePickerViewController: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
 }
 
+
 #Preview {
     ProfileView()
         .environmentObject(FirebaseViewModel())
