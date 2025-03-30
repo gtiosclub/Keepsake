@@ -39,28 +39,32 @@ struct RemindersListView: View {
             VStack {
                 ForEach(viewModel.reminders) { reminder in
                     VStack(alignment: .leading) {
-                        Text(reminder.title) 
+                        Text(reminder.title)
                             .font(.headline)
                         Text(reminder.date, style: .date)
                             .font(.subheadline)
                         Text(reminder.body)
                             .font(.body)
-
-                        if let audioFileURL = reminder.audioFileURL {
-                            Button(action: {
-                                playAudio(from: audioFileURL)
-                            }) {
-                                Text("Play Audio")
-                                    .foregroundColor(.blue)
-                            }
-                        }
                     }
                     .padding(.vertical, 5)
                 }
-
-
-
-                // Add button for new reminders
+                
+                NavigationLink(
+                    destination: AudioFilesView(),
+                    label: {
+                        HStack {
+                            Image(systemName: "headphones")
+                                .foregroundColor(Color(hex: "FFADF4"))
+                            Text("Audio Recordings")
+                                .foregroundColor(.primary)
+                        }
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.3)))
+                        .shadow(radius: 5)
+                    }
+                )
+                .padding(.vertical)
+                
                 #if os(iOS)
                 NavigationLink(
                     destination: TextReminder()
@@ -74,60 +78,9 @@ struct RemindersListView: View {
                             .shadow(radius: 10)
                     }
                 )
-                .buttonStyle(PlainButtonStyle()) // To remove default button style
-                #endif
-                #if os(watchOS)
-                NavigationLink(
-                    destination: Choice()
-                        .environmentObject(viewModel),
-                    label: {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundColor(Color(hex: "FFADF4"))
-                            .font(.title)
-                            .padding()
-                            .background(Circle().fill(Color.white.opacity(0.3)))
-                            .shadow(radius: 10)
-                    }
-                )
-                .buttonStyle(PlainButtonStyle()) // To remove default button style
+                .buttonStyle(PlainButtonStyle())
                 #endif
             }
         }
-        .onAppear {
-            Task {
-                await Connectivity.shared.fetchAudioFiles()
-            }
-        }
     }
-}
-
-import AVFoundation
-#if os(iOS)
-import AVKit
-#endif
-
-var audioPlayer: AVPlayer?
-
-func playAudio(from url: String) {
-    guard let audioURL = URL(string: url) else {
-        print("Invalid audio URL")
-        return
-    }
-
-    #if os(iOS)
-    let player = AVPlayer(url: audioURL)
-    let playerViewController = AVPlayerViewController()
-    playerViewController.player = player
-
-    if let rootVC = UIApplication.shared.windows.first?.rootViewController {
-        rootVC.present(playerViewController, animated: true) {
-            player.play()
-        }
-    }
-    #endif
-
-    #if os(watchOS)
-    audioPlayer = AVPlayer(url: audioURL)
-    audioPlayer?.play()
-    #endif
 }

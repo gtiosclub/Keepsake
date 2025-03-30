@@ -25,7 +25,7 @@ struct Choice: View {
                         .shadow(radius: 10)
                 }
             )
-            .buttonStyle(PlainButtonStyle()) // To remove default button style
+            .buttonStyle(PlainButtonStyle())
             NavigationLink(
                 destination: VoiceRecordingView(onRecordingComplete: { _ in }),
                 label: {
@@ -37,7 +37,7 @@ struct Choice: View {
                         .shadow(radius: 10)
                 }
             )
-            .buttonStyle(PlainButtonStyle()) // To remove default button style
+            .buttonStyle(PlainButtonStyle())
         }
     }
 }

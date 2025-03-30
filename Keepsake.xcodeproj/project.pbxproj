@@ -84,6 +84,7 @@
 		5B2B3C5E2D98E179008E1593 /* Exceptions for "KeepsakeWatch Watch App" folder in "Keepsake" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				AudioFiles.swift,
 				Connectivity.swift,
 				Reminder.swift,
 				ReminderViewModel.swift,
@@ -94,6 +95,7 @@
 		5BA743782D98D36900055877 /* Exceptions for "KeepsakeWatch Watch App" folder in "KeepsakeWatchOS Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				AudioFiles.swift,
 				AudioRecording.swift,
 				Choice.swift,
 				Connectivity.swift,

@@ -20,6 +20,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
     //var authViewModel: AuthViewModel?
     #endif
     @Published var reminders: [Reminder] = []
+    @Published var audioFiles: [String] = []
 
     override private init() {
         super.init()
@@ -90,81 +91,59 @@ final class Connectivity: NSObject, WCSessionDelegate {
         WCSession.default.transferFile(audioFileUrl, metadata: nil)
         print("Audio file sent: \(audioFileUrl)")
     }
-    private var isFetchingAudio = false
+    
     func fetchAudioFiles() async {
-        print("method called")
+        print("Starting audio files fetch")
         #if os(iOS)
         guard let uid = firebaseVM.currentUser?.id else {
-            print("No UID found")
+            print("No uid found")
             return
         }
-        print(uid)
+        print("this is the uid: \(uid)")
         
-        // Prevent concurrent fetches
-        guard !isFetchingAudio else {
-            print("Fetch already in progress, skipping")
-            return
-        }
-        isFetchingAudio = true
-
-        let storageRef = Storage.storage().reference(withPath: "audio/\(uid)")
-
-        // List all files in the audio folder for the current user
-        storageRef.listAll { (result, error) in
+        let storageRef = Storage.storage().reference().child("audio").child(uid)
+        
+        let listTask = storageRef.list(maxResults: 50) { (result, error) in
             if let error = error {
-                print("Error fetching audio files: \(error.localizedDescription)")
-                self.isFetchingAudio = false  // Ensure the flag is reset in case of error
+                print("error getting the audio files: \(error.localizedDescription)")
                 return
             }
             guard let items = result?.items, !items.isEmpty else {
-                print("No audio files found in Firebase Storage for user: \(uid)")
-                self.isFetchingAudio = false  // Reset the flag
+                print("there isn't any audio files yet: \(uid)")
                 return
             }
-            print("Found \(items.count) audio files for user: \(uid)")
-
-            var audioFiles: [String] = [] // Array to hold audio file download URLs
+            
+            print("audio file count: \(items.count)")
+            var audioFilesUrl: [String] = []
             let dispatchGroup = DispatchGroup()
-
+            
             for item in items {
                 dispatchGroup.enter()
-
-                // Get the download URL for each audio file
                 item.downloadURL { url, error in
+                   
+                    
                     if let error = error {
-                        print("Error getting download URL for file: \(error.localizedDescription)")
+                        print("error with download url \(item.name): \(error.localizedDescription)")
                     } else if let url = url {
-                        print("Audio file found: \(url.absoluteString)") // Debugging line
-                        audioFiles.append(url.absoluteString) // Store the download URL
-                    } else {
-                        print("Error getting URL for file: \(error?.localizedDescription ?? "Unknown error")")
+                        print("found the audio file: \(url.absoluteString)")
+                        audioFilesUrl.append(url.absoluteString)
                     }
                     dispatchGroup.leave()
                 }
             }
-
-            // Once all URLs have been fetched, update reminders with the corresponding URLs
+            
+            
             dispatchGroup.notify(queue: .main) {
-                self.updateRemindersWithAudioFiles(audioFiles)
-                DispatchQueue.main.async {
-                    self.reminders = self.reminders // Force UI update
-                }
-                self.isFetchingAudio = false // Reset the flag after finishing
+                print("audio processed")
+                self.audioFiles = audioFilesUrl
+                
             }
         }
         #endif
     }
 
-
-    func updateRemindersWithAudioFiles(_ audioFiles: [String]) {
-        for (index, reminder) in reminders.enumerated() {
-            if index < audioFiles.count {
-                reminders[index].audioFileURL = audioFiles[index]
-                print("Updated reminder \(reminder.title) with audio URL: \(audioFiles[index])")
-            }
-        }
-        saveReminders()
-    }
+    
+    
 
 
     func session(_ session: WCSession, didReceive file: WCSessionFile) {
