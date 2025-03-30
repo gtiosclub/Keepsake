@@ -21,7 +21,11 @@ final class RemindersViewModel: ObservableObject {
             .assign(to: &$reminders)
 
         #if os(iOS)
-        Connectivity.shared.fetchAudioFiles()
+        print("RemindersViewModel initialized")
+//        Connectivity.shared.fetchAudioFiles()
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+//            self.reminders = Connectivity.shared.reminders
+//        }
         #endif
     }
 

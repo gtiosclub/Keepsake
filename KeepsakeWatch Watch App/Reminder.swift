@@ -39,7 +39,7 @@ struct RemindersListView: View {
             VStack {
                 ForEach(viewModel.reminders) { reminder in
                     VStack(alignment: .leading) {
-                        Text(reminder.title) // ✅ Works because it's a String
+                        Text(reminder.title) 
                             .font(.headline)
                         Text(reminder.date, style: .date)
                             .font(.subheadline)
@@ -91,6 +91,11 @@ struct RemindersListView: View {
                 )
                 .buttonStyle(PlainButtonStyle()) // To remove default button style
                 #endif
+            }
+        }
+        .onAppear {
+            Task {
+                await Connectivity.shared.fetchAudioFiles()
             }
         }
     }

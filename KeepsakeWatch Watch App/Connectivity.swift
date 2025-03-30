@@ -90,63 +90,82 @@ final class Connectivity: NSObject, WCSessionDelegate {
         WCSession.default.transferFile(audioFileUrl, metadata: nil)
         print("Audio file sent: \(audioFileUrl)")
     }
-    func fetchAudioFiles() {
+    private var isFetchingAudio = false
+    func fetchAudioFiles() async {
+        print("method called")
         #if os(iOS)
         guard let uid = firebaseVM.currentUser?.id else {
             print("No UID found")
             return
         }
-
-        let storageRef = Storage.storage().reference().child("audio/\(uid)/")
+        print(uid)
         
+        // Prevent concurrent fetches
+        guard !isFetchingAudio else {
+            print("Fetch already in progress, skipping")
+            return
+        }
+        isFetchingAudio = true
+
+        let storageRef = Storage.storage().reference(withPath: "audio/\(uid)")
+
         // List all files in the audio folder for the current user
         storageRef.listAll { (result, error) in
             if let error = error {
                 print("Error fetching audio files: \(error.localizedDescription)")
+                self.isFetchingAudio = false  // Ensure the flag is reset in case of error
                 return
             }
+            guard let items = result?.items, !items.isEmpty else {
+                print("No audio files found in Firebase Storage for user: \(uid)")
+                self.isFetchingAudio = false  // Reset the flag
+                return
+            }
+            print("Found \(items.count) audio files for user: \(uid)")
 
             var audioFiles: [String] = [] // Array to hold audio file download URLs
             let dispatchGroup = DispatchGroup()
 
-            if let items = result?.items {
-                for item in items {
-                    dispatchGroup.enter()
+            for item in items {
+                dispatchGroup.enter()
 
-                    // Get the download URL for each audio file
-                    item.downloadURL { url, error in
-                        if let error = error {
-                            print("Error getting download URL for file: \(error.localizedDescription)")
-                        } else if let url = url {
-                            audioFiles.append(url.absoluteString) // Store the download URL
-                        }
-                        dispatchGroup.leave()
+                // Get the download URL for each audio file
+                item.downloadURL { url, error in
+                    if let error = error {
+                        print("Error getting download URL for file: \(error.localizedDescription)")
+                    } else if let url = url {
+                        print("Audio file found: \(url.absoluteString)") // Debugging line
+                        audioFiles.append(url.absoluteString) // Store the download URL
+                    } else {
+                        print("Error getting URL for file: \(error?.localizedDescription ?? "Unknown error")")
                     }
+                    dispatchGroup.leave()
                 }
-            } else {
-                print("No items found.")
             }
-
 
             // Once all URLs have been fetched, update reminders with the corresponding URLs
             dispatchGroup.notify(queue: .main) {
                 self.updateRemindersWithAudioFiles(audioFiles)
+                DispatchQueue.main.async {
+                    self.reminders = self.reminders // Force UI update
+                }
+                self.isFetchingAudio = false // Reset the flag after finishing
             }
         }
         #endif
     }
 
+
     func updateRemindersWithAudioFiles(_ audioFiles: [String]) {
         for (index, reminder) in reminders.enumerated() {
-            // Here, you can match reminders to audio files based on some criteria
-            // For simplicity, just associate an audio file to each reminder in a 1-to-1 fashion
             if index < audioFiles.count {
                 reminders[index].audioFileURL = audioFiles[index]
+                print("Updated reminder \(reminder.title) with audio URL: \(audioFiles[index])")
             }
         }
-        // You can then save these reminders again to UserDefaults if needed
         saveReminders()
     }
+
 
     func session(_ session: WCSession, didReceive file: WCSessionFile) {
         let destinationURL = FileManager.default.temporaryDirectory.appendingPathComponent(file.fileURL.lastPathComponent)
