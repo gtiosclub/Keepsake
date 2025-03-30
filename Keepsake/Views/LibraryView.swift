@@ -40,31 +40,61 @@ struct LibraryBookshelfView: View {
     @ObservedObject var aiVM: AIViewModel
     @ObservedObject var fbVM: FirebaseViewModel
     @Binding var selectedOption: ViewOption
+
+    @State private var longPressedShelfIndex: Int? = nil
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(user.journalShelves.indices, id: \.self) { index in
-                    BookshelfView(shelf: user.journalShelves[index], isEven: index.isMultiple(of: 2))
-                        .onTapGesture {
-                            userVM.setShelfIndex(index: index, shelfID: user.journalShelves[index].id, isJournal: true)
-                            Task {
-                                await fbVM.updateUserLastUsedShelf(user: user)
+                    ZStack(alignment: index.isMultiple(of: 2) ? .topTrailing : .topLeading) {
+                        BookshelfView(shelf: user.journalShelves[index], isEven: index.isMultiple(of: 2), fbVM: fbVM)
+                            .onTapGesture {
+                                if longPressedShelfIndex == nil {
+                                    userVM.setShelfIndex(index: index, shelfID: user.journalShelves[index].id, isJournal: true)
+                                    Task {
+                                        await fbVM.updateUserLastUsedShelf(user: user)
+                                    }
+                                    selectedOption = .journal_shelf
+                                } else {
+                                    longPressedShelfIndex = nil
+                                }
                             }
-                            selectedOption = .journal_shelf
+                            .onLongPressGesture {
+                                longPressedShelfIndex = index
+                            }
+                        if longPressedShelfIndex == index {
+                            Button {
+                                let shelfID = user.journalShelves[index].id
+                                Task {
+                                    await fbVM.deleteShelf(shelfID: shelfID, userID: user.id)
+                                }
+                                userVM.removeJournaShelf(index: index)
+                                longPressedShelfIndex = nil
+                            } label: {
+                                Image(systemName: "minus.circle.fill")
+                                    .foregroundColor(.red)
+                                    .background(Circle().fill(Color.white))
+                            }
+                            .offset(x: index.isMultiple(of: 2) ? -10 : 10, y: 10)
                         }
+
+                    }
                 }
             }
             .padding()
             .frame(maxWidth: .infinity)
+        }.onTapGesture {
+            longPressedShelfIndex = nil
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .navigationTitle("Your Library")
+        .navigationTitle("Your Journals")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     userVM.addJournalShelfToUser(JournalShelf(name: "new", journals: []))
                     Task {
-                        await fbVM.addJournalShelf(journalShelf: userVM.getJournalShelves()[userVM.getJournalShelves().count - 1], userID: user.id)
+                        await fbVM.addJournalShelf(journalShelf: userVM.getJournalShelves().last!, userID: user.id)
                     }
                 } label: {
                     Image(systemName: "plus.circle")

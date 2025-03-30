@@ -201,11 +201,11 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    func deleteJournal(journal: Journal, journalShelfID: UUID) async {
+    func deleteJournal(journalID: String, journalShelfID: UUID) async {
         var allEntryIds: [String] = []
         // Delete all entries
         do {
-            let document = try await db.collection("JOURNALS").document(journal.id.uuidString).getDocument()
+            let document = try await db.collection("JOURNALS").document(journalID).getDocument()
             if let data = document.data(),
                let pages = data["pages"] as? [String: [String]] {
                 for (page, entry) in pages {
@@ -229,14 +229,14 @@ class FirebaseViewModel: ObservableObject {
         // Remove Journal Id from journal Shelf
         let documentRef = db.collection("JOURNAL_SHELVES").document(journalShelfID.uuidString)
         do {
-            try await documentRef.updateData(["journals": FieldValue.arrayRemove([journal.id.uuidString])])
+            try await documentRef.updateData(["journals": FieldValue.arrayRemove([journalID])])
         } catch {
             print("could not remove journal ID from shelf")
             return
         }
         //Remove Journal
         do {
-            try await db.collection("JOURNALS").document(journal.id.uuidString).delete()
+            try await db.collection("JOURNALS").document(journalID).delete()
         } catch {
             print("Error removing document: \(error)")
         }
@@ -361,6 +361,49 @@ class FirebaseViewModel: ObservableObject {
             ])
         } catch {
             print("error setting last used shelf")
+        }
+    }
+    
+    func updateShelfName(shelfID: UUID, newName: String) async {
+        let shelfRef = db.collection("JOURNAL_SHELVES").document(shelfID.uuidString)
+        do {
+            try await shelfRef.updateData([
+                "name": newName
+            ])
+        } catch {
+            print("error renaming shelf")
+        }
+    }
+    
+    func deleteShelf(shelfID: UUID, userID: String) async {
+        // Delete all journals
+        do {
+            let document = try await db.collection("JOURNAL_SHELVES").document(shelfID.uuidString).getDocument()
+            if let data = document.data(),
+               let journals = data["journals"] as? [String] {
+                for journal in journals {
+                    await deleteJournal(journalID: journal, journalShelfID: shelfID)
+                }
+            } else {
+                print("Error getting journals to delete")
+            }
+        } catch {
+            print("error deleting journals from shelf")
+            return
+        }
+        // Remove shelf Id from user shelves
+        let documentRef = db.collection("USERS").document(userID)
+        do {
+            try await documentRef.updateData(["journalShelves": FieldValue.arrayRemove([shelfID.uuidString])])
+        } catch {
+            print("could not remove shelf from user")
+            return
+        }
+        //Remove Journal
+        do {
+            try await db.collection("JOURNAL_SHELVES").document(shelfID.uuidString).delete()
+        } catch {
+            print("Error removing shelf: \(error)")
         }
     }
     
