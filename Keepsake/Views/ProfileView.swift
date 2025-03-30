@@ -8,14 +8,14 @@ struct ProfileView: View {
     @State private var showImagePicker = false
     @State private var showImageOptions = false
     @State private var showCamera = false
-
-  
+    
+    
     
     var body: some View {
-
+        
         VStack {
             if let user = viewModel.currentUser {
-
+                
                 List {
                     Section {
                         HStack {
@@ -44,13 +44,17 @@ struct ProfileView: View {
                                     .font(.subheadline)
                                     .fontWeight(.semibold)
                                     .padding(.top)
-
+                                
                                 Text(user.username)
-
-                .navigationTitle("Profile")
+                                
+                                    .navigationTitle("Profile")
+                            }
+                        }
+                        
+                    }
+                }
             }
         }
-
     }
 }
 
