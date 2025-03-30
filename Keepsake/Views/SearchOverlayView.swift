@@ -12,6 +12,7 @@ struct SearchOverlayView: View {
     @State private var searchText = ""
     @State private var debounceTask: DispatchWorkItem?
     @ObservedObject var firebaseVM: FirebaseViewModel
+    var journalID = ""
 
     var body: some View {
         ZStack {
@@ -52,6 +53,9 @@ struct SearchOverlayView: View {
             .transition(.opacity.combined(with: .scale(scale: 0.9)))
 
         }
+        .onDisappear {
+            firebaseVM.searchedEntries.removeAll()
+        }
        
     }
 
@@ -59,7 +63,7 @@ struct SearchOverlayView: View {
         debounceTask?.cancel()
         let task = DispatchWorkItem {
             Task {
-                await FirebaseViewModel.vm.performVectorSearch(searchTerm: term, journal_id: "A2DCB0BE-0714-419A-9489-D530ABB027FA")
+                await FirebaseViewModel.vm.performVectorSearch(searchTerm: term, journal_id: journalID)
             }
         }
         debounceTask = task
@@ -69,5 +73,5 @@ struct SearchOverlayView: View {
 
 #Preview("iPhone Preview") {
     @State var var1 = true
-    SearchOverlayView(isPresented: $var1, firebaseVM: FirebaseViewModel.vm)
+    SearchOverlayView(isPresented: $var1, firebaseVM: FirebaseViewModel.vm, journalID: "A2DCB0BE-0714-419A-9489-D530ABB027FA")
 }
