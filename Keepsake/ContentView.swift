@@ -23,7 +23,7 @@ struct ContentView: View {
                 CommunityView()
             }
             Tab("Scrapbooks", systemImage: "ellipsis.viewfinder") {
-                ScrapbookView()
+                TestARView()
             }
         }.onAppear {
             // correct the transparency bug for Tab bars
