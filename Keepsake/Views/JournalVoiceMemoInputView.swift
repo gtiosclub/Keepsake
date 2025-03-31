@@ -50,6 +50,7 @@ struct JournalVoiceMemoInputView: View {
                             newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(audioRecording.transcript.prefix(15))
                         }
                         newEntry.type = .voice
+                        newEntry.audio = audioRecording.getAudioData()
                         userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
                         await MainActor.run {
                             inVoiceEntry = false
@@ -62,7 +63,7 @@ struct JournalVoiceMemoInputView: View {
                 }.padding(UIScreen.main.bounds.width * 0.025)
             }
             HStack {
-                Text("voice memos")
+                Text("voice memo")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundStyle(.secondary)
@@ -70,7 +71,7 @@ struct JournalVoiceMemoInputView: View {
                 Spacer()
             }
             VoiceRecordingView(audioRecording: audioRecording)
-                .frame(width: UIScreen.main.bounds.width / 5)
+//                .frame(width: UIScreen.main.bounds.width / 5)
                 .font(.title)
             
             if selectedPrompt != nil {
@@ -104,7 +105,7 @@ struct JournalVoiceMemoInputView: View {
                         }
                     }
                 } label: {
-                    Image(systemName: "plus.circle")
+                    Image(systemName: "lightbulb.circle")
                         .resizable()
                         .scaledToFit()
                         .foregroundStyle(.black)
@@ -134,12 +135,14 @@ struct JournalVoiceMemoInputView: View {
 }
 
 final class AudioRecording: NSObject, ObservableObject {
-    private var audioRecorder: AVAudioRecorder?
     private var audioEngine: AVAudioEngine?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
     private let audioSession = AVAudioSession.sharedInstance()
+
+    private var audioFile: AVAudioFile?
+    private var audioURL: URL?
 
     @Published var isRecording = false
     @Published var transcript: String = ""
@@ -155,12 +158,18 @@ final class AudioRecording: NSObject, ObservableObject {
             }
 
             DispatchQueue.main.async {
-                self.startSpeechRecognition()
+                do {
+                    try self.audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
+                    try self.audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+                } catch {
+                    print("Error resetting audio session for recording: \(error)")
+                }
+                self.startAudioEngineWithRecordingAndTranscription()
             }
         }
     }
 
-    private func startSpeechRecognition() {
+    private func startAudioEngineWithRecordingAndTranscription() {
         audioEngine = AVAudioEngine()
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
 
@@ -188,9 +197,28 @@ final class AudioRecording: NSObject, ObservableObject {
         }
 
         let recordingFormat = inputNode.outputFormat(forBus: 0)
+
+        // Prepare file for saving audio
+        let fileName = UUID().uuidString + ".caf"
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        audioURL = documentsPath.appendingPathComponent(fileName)
+
+        do {
+            audioFile = try AVAudioFile(forWriting: audioURL!, settings: recordingFormat.settings)
+        } catch {
+            print("Failed to create audio file: \(error)")
+            return
+        }
+
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) {
             (buffer, _) in
             self.recognitionRequest?.append(buffer)
+
+            do {
+                try self.audioFile?.write(from: buffer)
+            } catch {
+                print("Error writing audio buffer to file: \(error)")
+            }
         }
 
         do {
@@ -207,6 +235,34 @@ final class AudioRecording: NSObject, ObservableObject {
         audioEngine?.inputNode.removeTap(onBus: 0)
         recognitionRequest?.endAudio()
         isRecording = false
+    }
+
+    func getAudioData() -> Data? {
+        guard let url = audioURL else { return nil }
+        return try? Data(contentsOf: url)
+    }
+    
+    private var audioPlayer: AVAudioPlayer?
+
+    func playRecording() {
+        guard let url = audioURL else {
+            print("Error playing audio: No audio file found")
+            return
+        }
+        do {
+            try audioSession.setCategory(.playback, mode: .default)
+            try audioSession.setActive(true)
+            
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.prepareToPlay()
+            audioPlayer?.play()
+        } catch {
+            print("Error playing audio: \(error)")
+        }
+    }
+
+    func hasRecording() -> Bool {
+        return audioURL != nil
     }
 }
 
@@ -230,18 +286,14 @@ struct VoiceRecordingView: View {
     @State private var isRecording = false
     var audioRecording: AudioRecording
 
-    @State private var recordedAudio: String? // Placeholder for recorded file name
-
-    @Environment(\.dismiss) private var dismiss  // Dismiss when done
-
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
+            // Record Button
             Button(action: {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     isRecording.toggle()
                     if audioRecording.isRecording {
                         audioRecording.stopRecording()
-
                     } else {
                         audioRecording.startRecording()
                     }
@@ -250,9 +302,39 @@ struct VoiceRecordingView: View {
                 recordingButton
             }
             .buttonStyle(PlainButtonStyle())
+            .frame(width: UIScreen.main.bounds.width / 5)
+
+            // Playback Button – only show if audio exists
+            if audioRecording.hasRecording() {
+                Button(action: {
+                    audioRecording.playRecording()
+                }) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "play.circle.fill")
+                            .font(.title2)
+                        Text("Play Recording")
+                            .font(.headline)
+                            .fontWeight(.medium)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(hex: "#FFADF4").opacity(0.2))
+                    )
+                    .foregroundColor(Color(hex: "#FFADF4"))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color(hex: "#FFADF4"), lineWidth: 1)
+                    )
+                    .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 2)
+                }
+                .transition(.opacity.combined(with: .scale))
+            }
         }
+        .animation(.easeInOut, value: audioRecording.hasRecording())
     }
-    
+
     private var recordingButton: some View {
         let animatedOverlay = Circle()
             .stroke(Color.white.opacity(audioRecording.isRecording ? 0.5 : 0), lineWidth: 5)
@@ -263,16 +345,11 @@ struct VoiceRecordingView: View {
         return ZStack {
             Circle()
                 .fill(isRecording ? Color(hex: "#FFADF4").opacity(0.7) : Color(hex: "#FFADF4"))
-                .overlay(
-                    Circle()
-                        .stroke(Color.white, lineWidth: 1)
-                )
+                .overlay(Circle().stroke(Color.white, lineWidth: 1))
             isRecording ? Image(systemName: "stop.circle") : Image(systemName: "mic")
             animatedOverlay
         }
-        .scaleEffect(isRecording ? 1.1 : 1.0) // Slightly larger when recording
+        .scaleEffect(isRecording ? 1.1 : 1.0)
         .animation(.easeInOut(duration: 0.2), value: isRecording)
-
     }
 }
-
