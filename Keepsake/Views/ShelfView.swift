@@ -147,7 +147,7 @@ struct ShelfView: View {
                                         Button {
                                             userVM.removeJournalFromShelf(shelfIndex: shelfIndex, journalID: journal.id)
                                             Task {
-                                                await fbVM.deleteJournal(journal: journal, journalShelfID: shelf.id)
+                                                await fbVM.deleteJournal(journalID: journal.id.uuidString, journalShelfID: userVM.getJournalShelves()[shelfIndex].id)
                                             }
                                             showDeleteButton.toggle()                                                 
                                         } label: {

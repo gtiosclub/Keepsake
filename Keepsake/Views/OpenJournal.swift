@@ -102,7 +102,7 @@ struct OpenJournal: View {
                 }.offset(x: UIScreen.main.bounds.width * -0.45)
                 
                 if showSearch {
-                    SearchOverlayView(isPresented: $showSearch, firebaseVM: FirebaseViewModel.vm)
+                    SearchOverlayView(isPresented: $showSearch, firebaseVM: FirebaseViewModel.vm, journalID: journal.id.uuidString)
                         .transition(.opacity.combined(with: .scale(scale: 1.1)))
                         .zIndex(1) // Ensure the search overlay is on top
                 }
