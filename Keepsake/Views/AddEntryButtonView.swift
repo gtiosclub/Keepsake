@@ -18,6 +18,7 @@ struct AddEntryButtonView: View {
     @Binding var selectedEntry: Int
     @State var selectedItems = [PhotosPickerItem]()
     @State var selectedImages = [UIImage]()
+    @State private var widgetsOrStickers: Int = 0
     var body: some View {
         VStack {
             if !isExpanded {
@@ -37,74 +38,194 @@ struct AddEntryButtonView: View {
                     SelectedPhotoView(journal: journal, displayPage: displayPage, selectedEntry: selectedEntry, userVM: userVM, selectedImages: $selectedImages, selectedItems: $selectedItems, fbVM: fbVM)
                 }
             }
-            if isExpanded {
-                
-                HStack {
-                    Button(action: {
-                        
-                        if journal.pages[journal.currentPage].entries.count <= 8 {
-                            selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
-                            var newIndex = 0
-                            switch journal.pages[journal.currentPage].realEntryCount {
-                            case 1: newIndex = 0
-                            case 2: newIndex = 4
-                            case 3: newIndex = 1
-                            case 4: newIndex = 3
-                            case 5: newIndex = 6
-                            case 6: newIndex = 7
-                            case 7: newIndex = 5
-                            default: newIndex = 2
-                            }
-                        } else {
-                            //handle too many entries
-                        }
-                        withTransaction(Transaction(animation: .none)) {
-                            inTextEntry.toggle()
-                        }
-                    }) { Image(systemName: "t.square.fill")
-                            .resizable()
-                            .frame(width: 45, height: 45)
-                        .foregroundColor(.black)}
-                    PhotosPicker(selection: $selectedItems, label: {
-                        Image(systemName: "photo.fill")
-                            .resizable()
-                            .frame(width: 45, height: 45)
-                            .foregroundColor(.blue)
-                    }).onChange(of: selectedItems) {
-                        Task {
-                            selectedImages.removeAll()
-                            for item in selectedItems {
-                                if let data = try? await item.loadTransferable(type: Data.self),
-                                   let uiImage = UIImage(data: data) {
-                                    selectedImages.append(uiImage)
-                                }
-                            }
-                        }
-                        withTransaction(Transaction(animation: .none)) {
-                            isExpanded.toggle()
+        }
+        .sheet(isPresented: $isExpanded) {
+            VStack {
+                ZStack {
+                    Text("Components")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    HStack {
+                        Spacer()
+                        Button {
+                            isExpanded = false
+                        } label: {
+                            Image(systemName: "xmark.circle")
+                                .font(.title)
                         }
                     }
-                    Button {
-                        
-                    } label: {
-                        Image(systemName: "face.smiling.inverse")
-                            .resizable()
-                            .frame(width: 45, height: 45)
-                            .foregroundColor(.yellow)
-                    }
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            isExpanded.toggle()
+                }
+                .padding()
+                Picker("", selection: $widgetsOrStickers) {
+                    Text("Widgets").tag(0)
+                    Text("Stickers").tag(1)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding()
+                if widgetsOrStickers == 0 {
+                    let columns = [
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ]
+                    LazyVGrid(columns: columns, spacing: 20) {
+                        Button {
+                            
+                        } label: {
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: 20)
+                                    .frame(width: UIScreen.main.bounds.width / 2 - 30,
+                                           height: UIScreen.main.bounds.width / 2 - 40)
+                                    .foregroundStyle(Color(hex: "#8cc0ff"))
+                                
+                                Text("Blank\nwidget")
+                                    .multilineTextAlignment(.leading)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.white)
+                                    .padding(25)
+                            }
                         }
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .resizable()
-                            .frame(width: 45, height: 45)
-                        .foregroundColor(.red)}
-                }.transition(.move(edge: .trailing).combined(with: .opacity))
-                    .padding(.trailing, 10)
+                        Button {
+                            
+                        } label: {
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: 20)
+                                    .frame(width: UIScreen.main.bounds.width / 2 - 30, height: UIScreen.main.bounds.width / 2 - 40)
+                                    .foregroundStyle(Gradient(colors: [Color(hex: "#5087c8"), Color(hex: "#2c486a")]))
+                                
+                                Text("Prompt of\nthe Day 💭")
+                                    .multilineTextAlignment(.leading)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.white)
+                                    .padding(25)
+                            }
+                        }
+                        Button {
+                            
+                        } label: {
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: 20)
+                                    .frame(width: UIScreen.main.bounds.width / 2 - 30, height: UIScreen.main.bounds.width / 2 - 40)
+                                    .foregroundStyle(Color(hex: "#3468a5"))
+                                
+                                Text("Voice\nmemo 🎙️")
+                                    .multilineTextAlignment(.leading)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.white)
+                                    .padding(25)
+                            }
+                        }
+                        Button {
+                            
+                        } label: {
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: 20)
+                                    .frame(width: UIScreen.main.bounds.width / 2 - 30, height: UIScreen.main.bounds.width / 2 - 40)
+                                    .foregroundStyle(Color(hex: "#a9cef9"))
+                                
+                                Text("Echo 🌐")
+                                    .multilineTextAlignment(.leading)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.white)
+                                    .padding(25)
+                            }
+                        }
+                        Button {
+                            
+                        } label: {
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: 20)
+                                    .frame(width: UIScreen.main.bounds.width / 2 - 30, height: UIScreen.main.bounds.width / 2 - 40)
+                                    .foregroundStyle(.white)
+                                    .shadow(radius: 4)
+                                
+                                Text("📷\nUpload\nphotos")
+                                    .multilineTextAlignment(.leading)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.gray)
+                                    .padding(25)
+                            }
+                        }
+                    }
+                    .padding()
+                } else {
+                    Text("Sticker Stuff")
+                }
+                Spacer()
             }
         }
+//            if isExpanded {
+//                
+//                HStack {
+//                    Button(action: {
+//                        
+//                        if journal.pages[journal.currentPage].entries.count <= 8 {
+//                            selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+//                            var newIndex = 0
+//                            switch journal.pages[journal.currentPage].realEntryCount {
+//                            case 1: newIndex = 0
+//                            case 2: newIndex = 4
+//                            case 3: newIndex = 1
+//                            case 4: newIndex = 3
+//                            case 5: newIndex = 6
+//                            case 6: newIndex = 7
+//                            case 7: newIndex = 5
+//                            default: newIndex = 2
+//                            }
+//                        } else {
+//                            //handle too many entries
+//                        }
+//                        withTransaction(Transaction(animation: .none)) {
+//                            inTextEntry.toggle()
+//                        }
+//                    }) { Image(systemName: "t.square.fill")
+//                            .resizable()
+//                            .frame(width: 45, height: 45)
+//                        .foregroundColor(.black)}
+//                    PhotosPicker(selection: $selectedItems, label: {
+//                        Image(systemName: "photo.fill")
+//                            .resizable()
+//                            .frame(width: 45, height: 45)
+//                            .foregroundColor(.blue)
+//                    }).onChange(of: selectedItems) {
+//                        Task {
+//                            selectedImages.removeAll()
+//                            for item in selectedItems {
+//                                if let data = try? await item.loadTransferable(type: Data.self),
+//                                   let uiImage = UIImage(data: data) {
+//                                    selectedImages.append(uiImage)
+//                                }
+//                            }
+//                        }
+//                        withTransaction(Transaction(animation: .none)) {
+//                            isExpanded.toggle()
+//                        }
+//                    }
+//                    Button {
+//                        
+//                    } label: {
+//                        Image(systemName: "face.smiling.inverse")
+//                            .resizable()
+//                            .frame(width: 45, height: 45)
+//                            .foregroundColor(.yellow)
+//                    }
+//                    Button(action: {
+//                        withAnimation(.easeInOut(duration: 0.3)) {
+//                            isExpanded.toggle()
+//                        }
+//                    }) {
+//                        Image(systemName: "xmark.circle.fill")
+//                            .resizable()
+//                            .frame(width: 45, height: 45)
+//                        .foregroundColor(.red)}
+//                }.transition(.move(edge: .trailing).combined(with: .opacity))
+//                    .padding(.trailing, 10)
+//            }
+//        }
     }
 }
 
