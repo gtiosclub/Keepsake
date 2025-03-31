@@ -33,7 +33,7 @@ class UserLookupViewModel: ObservableObject {
                       let friends = data["friends"] as? [String] else { return nil }
                 
 
-                if name.lowercased().hasPrefix(searchTextLowercased) || username.lowercased().hasPrefix(searchTextLowercased) {
+                if name.lowercased().hasPrefix(searchTextLowercased) {
                     return User(id: doc.documentID, name: name, username: username, journalShelves: [], scrapbookShelves: [], friends: friends, lastUsedShelfID: UUID(), isJournalLastUsed: true)
                 }
                 return nil
