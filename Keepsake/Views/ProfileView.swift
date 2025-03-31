@@ -14,8 +14,8 @@ struct ProfileView: View {
     var body: some View {
 
             VStack {
-//                let user = viewModel.currentUser
-                let user = User(id: "123", name: viewModel.currentUser?.name ?? "Nitya", username: viewModel.currentUser?.username ?? "hi@gmail.com", journalShelves: [], scrapbookShelves: [], friends: viewModel.currentUser?.friends ?? [])
+                let user = viewModel.currentUser
+//                let user = User(id: "123", name: viewModel.currentUser?.name ?? "Nitya", username: viewModel.currentUser?.username ?? "hi@gmail.com", journalShelves: [], scrapbookShelves: [], friends: viewModel.currentUser?.friends ?? [])
                     List {
                         Section {
                             HStack {
@@ -164,3 +164,4 @@ struct ImagePickerViewController: UIViewControllerRepresentable {
     ProfileView()
         .environmentObject(FirebaseViewModel())
 }
+
