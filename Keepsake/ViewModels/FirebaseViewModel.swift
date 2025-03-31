@@ -70,13 +70,13 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func signIn(withEmail email: String, password: String) async throws {
-        do {
+        
             let result = try await auth.signIn(withEmail: email, password: password)
-            self.userSession = result.user
+            await MainActor.run {
+                self.userSession = result.user
+            }
+               
             await fetchUser()
-        } catch {
-            
-        }
     }
     
     func createUser(withEmail email: String, password: String, fullname: String) async throws {
@@ -150,7 +150,9 @@ class FirebaseViewModel: ObservableObject {
                 let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed)
                 
                 // Assign the user object to currentUser
-                self.currentUser = user
+                await MainActor.run {
+                                self.currentUser = user
+                }
                 
             }
         }
@@ -200,11 +202,11 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    func deleteJournal(journal: Journal, journalShelfID: UUID) async {
+    func deleteJournal(journalID: String, journalShelfID: UUID) async {
         var allEntryIds: [String] = []
         // Delete all entries
         do {
-            let document = try await db.collection("JOURNALS").document(journal.id.uuidString).getDocument()
+            let document = try await db.collection("JOURNALS").document(journalID).getDocument()
             if let data = document.data(),
                let pages = data["pages"] as? [String: [String]] {
                 for (page, entry) in pages {
@@ -228,14 +230,14 @@ class FirebaseViewModel: ObservableObject {
         // Remove Journal Id from journal Shelf
         let documentRef = db.collection("JOURNAL_SHELVES").document(journalShelfID.uuidString)
         do {
-            try await documentRef.updateData(["journals": FieldValue.arrayRemove([journal.id.uuidString])])
+            try await documentRef.updateData(["journals": FieldValue.arrayRemove([journalID])])
         } catch {
             print("could not remove journal ID from shelf")
             return
         }
         //Remove Journal
         do {
-            try await db.collection("JOURNALS").document(journal.id.uuidString).delete()
+            try await db.collection("JOURNALS").document(journalID).delete()
         } catch {
             print("Error removing document: \(error)")
         }
@@ -363,6 +365,49 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func updateShelfName(shelfID: UUID, newName: String) async {
+        let shelfRef = db.collection("JOURNAL_SHELVES").document(shelfID.uuidString)
+        do {
+            try await shelfRef.updateData([
+                "name": newName
+            ])
+        } catch {
+            print("error renaming shelf")
+        }
+    }
+    
+    func deleteShelf(shelfID: UUID, userID: String) async {
+        // Delete all journals
+        do {
+            let document = try await db.collection("JOURNAL_SHELVES").document(shelfID.uuidString).getDocument()
+            if let data = document.data(),
+               let journals = data["journals"] as? [String] {
+                for journal in journals {
+                    await deleteJournal(journalID: journal, journalShelfID: shelfID)
+                }
+            } else {
+                print("Error getting journals to delete")
+            }
+        } catch {
+            print("error deleting journals from shelf")
+            return
+        }
+        // Remove shelf Id from user shelves
+        let documentRef = db.collection("USERS").document(userID)
+        do {
+            try await documentRef.updateData(["journalShelves": FieldValue.arrayRemove([shelfID.uuidString])])
+        } catch {
+            print("could not remove shelf from user")
+            return
+        }
+        //Remove Journal
+        do {
+            try await db.collection("JOURNAL_SHELVES").document(shelfID.uuidString).delete()
+        } catch {
+            print("Error removing shelf: \(error)")
+        }
+    }
+    
     //#########################################################################################
     
     /****######################################################################################
@@ -410,7 +455,7 @@ class FirebaseViewModel: ObservableObject {
             let entry_ref = db.collection("JOURNAL_ENTRIES").document(entry.id.uuidString)
             do {
                 let journalEntryData = entry.toDictionary(journalID: journalID)
-                try await entry_ref.setData(journalEntryData)
+                try await entry_ref.updateData(journalEntryData)
                 
                 try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
                     "pages.\(pageNumber + 1)": FieldValue.arrayUnion([entry.id.uuidString])

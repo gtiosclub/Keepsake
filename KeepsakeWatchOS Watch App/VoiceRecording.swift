@@ -9,27 +9,9 @@ import Foundation
 import SwiftUI
 
 import AVFoundation
-
-extension Color {
-    init(hex: String) {
-        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
-        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
-
-        var rgb: UInt64 = 0
-        Scanner(string: hexSanitized).scanHexInt64(&rgb)
-
-        let red = Double((rgb >> 16) & 0xFF) / 255.0
-        let green = Double((rgb >> 8) & 0xFF) / 255.0
-        let blue = Double(rgb & 0xFF) / 255.0
-
-        self.init(red: red, green: green, blue: blue)
-    }
-}
-
-
+import WatchConnectivity
 
 struct VoiceRecordingView: View {
-//    @ObservedObject private var audioRecorder = AudioRecorder()
     @State private var isRecording = false
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
@@ -57,6 +39,7 @@ struct VoiceRecordingView: View {
                         isRecording.toggle()
                         if audioRecording.isRecording {
                             audioRecording.stopRecording()
+                            showDateTimeSelection = true
                             stopTimer()
 
                         } else {
@@ -72,7 +55,7 @@ struct VoiceRecordingView: View {
             }
         }
         .fullScreenCover(isPresented: $showDateTimeSelection) {
-            if let recordedAudio = recordedAudio {
+            if let recordedAudio = audioRecording.recordedAudio {
                 DateTimeSelectionView(recordedAudio: recordedAudio) { newReminder in
                     onRecordingComplete(newReminder)
                     dismiss() // Close everything
@@ -133,7 +116,7 @@ struct VoiceRecordingView: View {
 
 
 struct DateTimeSelectionView: View {
-    let recordedAudio: String?  // Or whatever type it is
+    let recordedAudio: String?
     var onComplete: (Reminder) -> Void
     @State private var selectedDate = Date()
     @State private var selectedHour = Calendar.current.component(.hour, from: Date()) % 12
@@ -193,26 +176,32 @@ struct DateTimeSelectionView: View {
                 }.pickerStyle(WheelPickerStyle())
             }
             
-            //            Button("Confirm") {
-            //                let finalDate = combineDateAndTime()
-            //                print("Final Date Selected: \(finalDate)")
-            //            }
             Button {
                 let finalDate = combineDateAndTime()
+                
+                // Create a dictionary with the reminder details
+                
+                    
                 let formatter = DateFormatter()
                 formatter.dateStyle = .long
                 formatter.timeStyle = .long
                 formatter.timeZone = TimeZone.current
                 print("Final Date Selected: (\(formatter.string(from: finalDate))")
+                if let audioFilePath = recordedAudio {
+                    let reminderData: [String: Any] = [
+                        "audioFilePath": audioFilePath,
+                        "reminderDate": finalDate
+                    ]
+//                    WatchSessionManager.shared.sendMessageToPhone(data: reminderData)
+                } else {
+                    print("No audio file path available!")
+                }
+
             } label: {
                 Text("Confirm")
             }
-            //            Button(action: {
-            //                let finalDate = combineDateAndTime()
-            //                print("Final Date Selected: \(finalDate)")
-            //                        }) {
-            //                            Text("Confirm")
-            //                        }
+
+            
             .padding()
         }
     }
@@ -237,6 +226,3 @@ struct DateTimeSelectionView: View {
         return Calendar.current.date(from: components) ?? Date()
     }
 }
-
-
-
