@@ -142,9 +142,11 @@ struct JournalEntry: Encodable, Hashable {
     
     // Voice Journal Entry
     init(entry: JournalEntry, audio: Data) {
+        self.id = UUID()
         self.date = entry.date
         self.text = entry.text
         self.title = entry.title
+        self.conversationLog = []
         self.summary = entry.summary
         self.width = entry.width
         self.height = entry.height
