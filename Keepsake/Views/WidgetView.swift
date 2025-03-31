@@ -144,45 +144,55 @@ struct PictureEntryView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .ignoresSafeArea()
 
-                // Carousel
-                TabView(selection: $selected) {
-                    ForEach(0..<uiImages.count, id: \.self) { index in
-                        ZStack {
-                            Image(uiImage: uiImages[index])
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: entry.frameWidth, height: entry.frameHeight)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                .tag(index)
-
-                            // Navigation Dots (Stacked on top of images)
-                            VStack {
-                                Spacer()
-                                Spacer()
-                                Spacer()
-                                HStack {
-                                    ForEach(uiImages.indices, id: \.self) { dotIndex in
-                                        Capsule()
-                                            .fill(Color.white.opacity(selected == dotIndex ? 1 : 0.33))
-                                            .frame(width: UIScreen.main.bounds.width * 0.07, height: UIScreen.main.bounds.height * 0.005)
-                                            .onTapGesture {
-                                                selected = dotIndex
-                                            }
-                                    }
-                                }
+                if uiImages.count != 0 {
+                    TabView(selection: $selected) {
+                        ForEach(0..<uiImages.count, id: \.self) { index in
+                            ZStack {
+                                Image(uiImage: uiImages[index])
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: entry.frameWidth, height: entry.frameHeight)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    .tag(index)
                                 
-                                .background(RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.3)))
-                                 // Adjust dot position
-                                Spacer()
-                            }.frame(width: entry.frameWidth, height: entry.frameHeight)
+                                // Navigation Dots (Stacked on top of images)
+                                VStack {
+                                    Spacer()
+                                    Spacer()
+                                    Spacer()
+                                    HStack {
+                                        ForEach(uiImages.indices, id: \.self) { dotIndex in
+                                            Capsule()
+                                                .fill(Color.white.opacity(selected == dotIndex ? 1 : 0.33))
+                                                .frame(width: UIScreen.main.bounds.width * 0.07, height: UIScreen.main.bounds.height * 0.005)
+                                                .onTapGesture {
+                                                    selected = dotIndex
+                                                }
+                                        }
+                                    }
+                                    
+                                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2])))
+                                    // Adjust dot position
+                                    Spacer()
+                                }.frame(width: entry.frameWidth, height: entry.frameHeight)
+                            }
                         }
                     }
+                    .frame(width: entry.frameWidth, height: entry.frameHeight)
+                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never)) // Hides default dots
+                    .ignoresSafeArea()
+                } else {
+                    HStack {
+                        Text("Upload")
+                        Image(systemName: "camera")
+                    }.frame(width: entry.frameWidth, height: entry.frameHeight)
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2])))
+                        
                 }
-                .frame(width: entry.frameWidth, height: entry.frameHeight)
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never)) // Hides default dots
-                .ignoresSafeArea()
+                // Carousel
             }.frame(height: height, alignment: .top)
             .onAppear {
+                
                 isActive = true
                 selected = 0
                 // Create a new timer instance for each carousel
@@ -194,14 +204,17 @@ struct PictureEntryView: View {
                         }
                     }
                 }
-                timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
-                    guard isActive else {
-                        selected = 0
-                        return
+                if (uiImages.count != 0) {
+                    timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+                        guard isActive else {
+                            selected = 0
+                            return
+                        }
+                        
+                        selected = (selected + 1) % entry.images.count
                     }
-                    
-                    selected = (selected + 1) % entry.images.count
                 }
+                
             }
             .onDisappear {
                 isActive = false
@@ -212,23 +225,32 @@ struct PictureEntryView: View {
 }
 
 
+//#Preview {
+//    struct Preview: View {
+//        @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1)
+//        @State var selectedImageIndex: Int = 0
+//        @State var inTextEntry = false
+//        @State var selectedEntry: Int = 0
+//        @State var deleteEntry: Int = -1
+//        var body: some View {
+//            WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: 10, pageNum: 2, page: page, isDisplay: true, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
+//                Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
+//                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
+//                Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
+//                Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
+//            ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), showDeleteButton: $deleteEntry, journal: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3), fbVM: FirebaseViewModel() )
+//        }
+//    }
+//
+//    return Preview()
+//}
+
 #Preview {
     struct Preview: View {
-        @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1)
-        @State var selectedImageIndex: Int = 0
-        @State var inTextEntry = false
-        @State var selectedEntry: Int = 0
-        @State var deleteEntry: Int = -1
         var body: some View {
-            WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: 10, pageNum: 2, page: page, isDisplay: true, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
-                Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
-                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
-                Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
-                Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
-            ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), showDeleteButton: $deleteEntry, journal: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3), fbVM: FirebaseViewModel() )
+            PictureEntryView(entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: [0.5, 0.5, 0.5], images: [], type: .image), width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, isDisplay: false, fbVM: FirebaseViewModel())
         }
     }
 
     return Preview()
 }
-
