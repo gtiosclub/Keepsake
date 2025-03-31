@@ -20,66 +20,94 @@ var sortOptions: [String] = ["↑↓", "Your Friends", "Travel", "Near You"]
 
 struct CommunityView: View {
     @State var scaleEffect = 0.4
+    @State private var searchText = ""
+    @StateObject private var viewModel = UserLookupViewModel()
     var body: some View {
-        ScrollView (.vertical, showsIndicators: false) {
-            VStack (alignment: .leading) {
-                HStack {
-                    Text("Your Community")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .padding()
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.gray)
-                        .font(.system(size: 25))
-                }
-        
-                // Sorting buttons
+        NavigationView {
+            ScrollView (.vertical, showsIndicators: false) {
+                VStack (alignment: .leading) {
+                    HStack {
+                        Text("Your Community")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .padding()
+                    }
+                    NavigationLink(destination: UserSearchView()) {
+                        HStack {
+                            
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.gray)
+                            
+
+                            Text("Search for users...")
+                                .foregroundColor(.gray)
+                                
+                            Spacer()
+                            
+                            
+                        }
+                        .padding(12)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(25)
+                        .overlay( // Adding a black outline
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(Color.black, lineWidth: 0.5)
+                        )
+                        .padding(.horizontal)
+                    }
+                    .padding(.bottom)
+
+                    
+                    
+                    // Sorting buttons
                     HStack (spacing: 10){
                         ForEach(sortOptions, id:\.self) { option in
                             SortOptionButton(label: option) {print("option")}}
                     }
                     .padding(.horizontal)
-                
-                ForEach(0..<(journals.count / 2) + (journals.count % 2), id: \.self) { row in
-                    // logic because Journals are not currently from db
-                    HStack(spacing: 25) {
-                        ForEach(0..<2, id: \.self) { column in
-                            let index = row * 2 + column
-                            if index < journals.count {
-                                VStack(alignment: .leading) {
-//                                    Rectangle()
-//                                        .fill(Color.gray.opacity(0.5))
-//                                        .frame(width: 150, height: 200)
-//                                        .cornerRadius(10)
-                                    JournalCover(book: journals[index], degrees: 0)
-                                        .scaleEffect(scaleEffect)
-                                        .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
-                                    VStack(alignment: .leading, spacing: 3) {
-                                        Text(journals[index].name)
-                                            .font(.headline)
-                                            .fontWeight(.medium)
-                                            .foregroundColor(.primary)
-                                        HStack(spacing: 5) {
-                                            Circle()
-                                                .fill(Color.gray.opacity(0.5))
-                                                .frame(width: 15, height: 15)
-                                            
-                                            Text("by User")
-                                                .font(.footnote)
-                                                .foregroundColor(.gray)
+                    
+                    ForEach(0..<(journals.count / 2) + (journals.count % 2), id: \.self) { row in
+                        // logic because Journals are not currently from db
+                        HStack(spacing: 25) {
+                            ForEach(0..<2, id: \.self) { column in
+                                let index = row * 2 + column
+                                if index < journals.count {
+                                    VStack(alignment: .leading) {
+                                        //                                    Rectangle()
+                                        //                                        .fill(Color.gray.opacity(0.5))
+                                        //                                        .frame(width: 150, height: 200)
+                                        //                                        .cornerRadius(10)
+                                        JournalCover(template: journals[index].template, degrees: 0, title: journals[index].name)
+                                            .scaleEffect(scaleEffect)
+                                            .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(journals[index].name)
+                                                .font(.headline)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.primary)
+                                            HStack(spacing: 5) {
+                                                Circle()
+                                                    .fill(Color.gray.opacity(0.5))
+                                                    .frame(width: 15, height: 15)
+                                                
+                                                Text("by User")
+                                                    .font(.footnote)
+                                                    .foregroundColor(.gray)
+                                            }
                                         }
                                     }
+                                } else {
+                                    Spacer()
+                                        .frame(width: 150, height: 200)
                                 }
-                            } else {
-                                Spacer()
-                                    .frame(width: 150, height: 200)
+                            }
                         }
-                        }
+                        .padding()
                     }
-                    .padding()
                 }
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
