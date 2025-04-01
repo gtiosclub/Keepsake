@@ -176,7 +176,7 @@ struct PictureEntryView: View {
                                     }
                                 }
                                 
-                                .background(RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.3)))
+                                .background(RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.2)))
                                  // Adjust dot position
                                 Spacer()
                             }.frame(width: entry.frameWidth, height: entry.frameHeight)
@@ -224,18 +224,17 @@ struct VoiceMemoEntryView: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.black)
                 .fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]))
                 .frame(width: entry.frameWidth, height: entry.frameHeight)
                 .opacity(entry.isFake ? 0 : 1)
-                .frame(height: height, alignment: .top)
+                .frame(height: height, alignment: .center)
 
             VStack(spacing: 8) {
                 Image(systemName: "waveform.circle.fill")
                     .resizable()
                     .scaledToFit()
                     .frame(width: iconSize, height: iconSize)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.black)
 
                 Text(entry.title)
                     .font(.headline)
