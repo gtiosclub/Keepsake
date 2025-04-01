@@ -8,6 +8,19 @@
 import Foundation
 import SwiftUI
 
+extension JournalEntry {
+    var entrySize: EntrySize {
+        switch (width, height) {
+        case (1, 1):
+            return .small
+        case (2, 1), (1, 2):
+            return .medium
+        default:
+            return .large
+        }
+    }
+}
+
 enum EntryType: String, Encodable {
     case written = "written"
     case chat = "chat"
@@ -157,6 +170,7 @@ struct JournalEntry: Encodable, Hashable {
         self.type = .voice
     }
 }
+
 
 extension JournalEntry: CustomStringConvertible {
     func toDictionary(journalID: UUID) -> [String: Any] {

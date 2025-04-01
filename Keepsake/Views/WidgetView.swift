@@ -7,6 +7,9 @@
 
 import SwiftUI
 
+enum EntrySize {
+    case small, medium, large
+}
 struct WidgetView: View {
     var width: CGFloat
     var height: CGFloat
@@ -122,6 +125,8 @@ func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDis
     switch widget.type {
     case .written:
         TextEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
+    case .voice:
+        VoiceMemoEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
     default:
         PictureEntryView(entry: widget, width: width, height: height, isDisplay: isDisplay, fbVM: fbVM).opacity(widget.isFake ? 0 : 1)
     }
@@ -171,7 +176,7 @@ struct PictureEntryView: View {
                                     }
                                 }
                                 
-                                .background(RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.3)))
+                                .background(RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.2)))
                                  // Adjust dot position
                                 Spacer()
                             }.frame(width: entry.frameWidth, height: entry.frameHeight)
@@ -211,6 +216,55 @@ struct PictureEntryView: View {
         }
 }
 
+struct VoiceMemoEntryView: View {
+    var entry: JournalEntry
+    var width: CGFloat
+    var height: CGFloat
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]))
+                .frame(width: entry.frameWidth, height: entry.frameHeight)
+                .opacity(entry.isFake ? 0 : 1)
+                .frame(height: height, alignment: .center)
+
+            VStack(spacing: 8) {
+                Image(systemName: "waveform.circle.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: iconSize, height: iconSize)
+                    .foregroundColor(.black)
+
+                Text(entry.title)
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(titleLineLimit)
+                    .frame(width: entry.frameWidth - 16)
+            }
+            .padding(.horizontal, 8)
+        }
+    }
+
+    var iconSize: CGFloat {
+        switch entry.entrySize {
+        case .small: return 25
+        case .medium: return 35
+        case .large: return 45
+        }
+    }
+
+    var titleLineLimit: Int {
+        switch entry.entrySize {
+        case .small: return 1
+        case .medium: return 2
+        case .large: return 3
+        }
+    }
+}
+
+
+
 
 #Preview {
     struct Preview: View {
@@ -231,4 +285,3 @@ struct PictureEntryView: View {
 
     return Preview()
 }
-
