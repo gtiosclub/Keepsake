@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct WidgetView: View {
     var width: CGFloat
@@ -28,7 +29,7 @@ struct WidgetView: View {
         LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
             ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
                 ZStack(alignment: .topLeading) {
-                    createView(for: widget, width: width, height: height, isDisplay: isDisplay, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, fbVM: fbVM)
+                    createView(for: widget, width: width, height: height, isDisplay: isDisplay, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: index)
                         .onTapGesture {
                             if showDeleteButton != -1 {
                                 showDeleteButton = -1
@@ -118,17 +119,17 @@ struct TextEntryView: View {
 }
 
 @ViewBuilder
-func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool, inTextEntry: Binding<Bool>, selectedEntry: Binding<Int>, fbVM: FirebaseViewModel) -> some View {
+func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool, inTextEntry: Binding<Bool>, selectedEntry: Binding<Int>, fbVM: FirebaseViewModel, journal: Journal, userVM: UserViewModel, pageNum: Int, entryIndex: Int) -> some View {
     switch widget.type {
     case .written:
         TextEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
     default:
-        PictureEntryView(entry: widget, width: width, height: height, isDisplay: isDisplay, fbVM: fbVM).opacity(widget.isFake ? 0 : 1)
+        PictureEntryView(entry: widget, width: width, height: height, isDisplay: isDisplay, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: entryIndex).opacity(widget.isFake ? 0 : 1)
     }
 }
 
 struct PictureEntryView: View {
-    var entry: JournalEntry
+    @State var entry: JournalEntry
     var width: CGFloat
     var height: CGFloat
     @State private var timer: Timer?
@@ -137,6 +138,14 @@ struct PictureEntryView: View {
     @State var isActive: Bool = true
     @State var uiImages: [UIImage] = []
     @ObservedObject var fbVM: FirebaseViewModel
+    @State var selectedItems = [PhotosPickerItem]()
+    @State var selectedImages = [UIImage]()
+    @State var imageURLs: [String] = []
+    @ObservedObject var journal: Journal
+    @ObservedObject var userVM: UserViewModel
+    @State var pageNum: Int
+    @State var entryIndex: Int
+    @State var isPickerPresented: Bool = false
     var body: some View {
             ZStack {
                 // Background Color
@@ -191,6 +200,48 @@ struct PictureEntryView: View {
                 }
                 // Carousel
             }.frame(height: height, alignment: .top)
+            .photosPicker(isPresented: $isPickerPresented, selection: $selectedItems)
+            .onChange(of: selectedItems) {
+                Task {
+                    selectedImages.removeAll()
+                    for item in selectedItems {
+                        if let data = try? await item.loadTransferable(type: Data.self),
+                           let uiImage = UIImage(data: data) {
+                            selectedImages.append(uiImage)
+                        }
+                    }
+                    uiImages = selectedImages
+                    imageURLs = []
+                    var count = 0
+                    print(1)
+                    for image in selectedImages {
+                        let imagePath = await fbVM.storeImage(image: image) { url in
+                            if let url = url {
+                                imageURLs.append(url)
+                                count += 1
+                            }
+                            if count == selectedImages.count {
+                                entry = JournalEntry(entry: entry, width: entry.width, height: entry.height, color: entry.color, images: imageURLs, type: .image)
+                                userVM.updateJournalEntry(journal: journal, pageNum: pageNum, entryIndex: entryIndex, newEntry: entry)
+                                Task {
+                                    await fbVM.updateJournalPage(entries: journal.pages[pageNum].entries, journalID: journal.id, pageNumber: pageNum)
+                                }
+                                timer?.invalidate()
+                                timer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { _ in
+                                    guard isActive else {
+                                        selected = 0
+                                        return
+                                    }
+                                    selected = (selected + 1) % entry.images.count
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .onTapGesture {
+                isPickerPresented.toggle()
+            }
             .onAppear {
                 
                 isActive = true
@@ -204,8 +255,8 @@ struct PictureEntryView: View {
                         }
                     }
                 }
-                if (uiImages.count != 0) {
-                    timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+                if (entry.images.count != 0) {
+                    timer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { _ in
                         guard isActive else {
                             selected = 0
                             return
@@ -248,7 +299,7 @@ struct PictureEntryView: View {
 #Preview {
     struct Preview: View {
         var body: some View {
-            PictureEntryView(entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: [0.5, 0.5, 0.5], images: [], type: .image), width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, isDisplay: false, fbVM: FirebaseViewModel())
+            PictureEntryView(entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: [0.5, 0.5, 0.5], images: [], type: .image), width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, isDisplay: false, fbVM: FirebaseViewModel(), journal: Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [    JournalPage.dailyReflectionTemplate(pageNumber: 1), JournalPage.springBreakTemplate(pageNumber: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0), userVM: UserViewModel(user: User(id: "ID", name: "name", journalShelves: [], scrapbookShelves: [])), pageNum: 0, entryIndex: 0)
         }
     }
 

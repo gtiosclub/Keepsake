@@ -65,24 +65,14 @@ struct AddEntryButtonView: View {
                             .resizable()
                             .frame(width: 45, height: 45)
                         .foregroundColor(.black)}
-                    PhotosPicker(selection: $selectedItems, label: {
+                    Button {
+                        
+                        userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }, images: [], type: .image))
+                    } label: {
                         Image(systemName: "photo.fill")
                             .resizable()
                             .frame(width: 45, height: 45)
-                            .foregroundColor(.blue)
-                    }).onChange(of: selectedItems) {
-                        Task {
-                            selectedImages.removeAll()
-                            for item in selectedItems {
-                                if let data = try? await item.loadTransferable(type: Data.self),
-                                   let uiImage = UIImage(data: data) {
-                                    selectedImages.append(uiImage)
-                                }
-                            }
-                        }
-                        withTransaction(Transaction(animation: .none)) {
-                            isExpanded.toggle()
-                        }
+                            .foregroundColor(.yellow)
                     }
                     Button {
                         
