@@ -22,6 +22,7 @@ struct WidgetView: View {
     @State private var isWiggling = false // Control wiggle animation
     @ObservedObject var journal: Journal
     @ObservedObject var fbVM: FirebaseViewModel
+    @Binding var frontDegrees: CGFloat
     var body: some View {
         let gridItems = [GridItem(.fixed(width), spacing: 10, alignment: .leading),
                          GridItem(.fixed(width), spacing: UIScreen.main.bounds.width * 0.02, alignment: .leading),]
@@ -29,7 +30,7 @@ struct WidgetView: View {
         LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
             ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
                 ZStack(alignment: .topLeading) {
-                    createView(for: widget, width: width, height: height, isDisplay: isDisplay, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: index)
+                    createView(for: widget, width: width, height: height, isDisplay: isDisplay, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: index, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling)
                         .onTapGesture {
                             if showDeleteButton != -1 {
                                 showDeleteButton = -1
@@ -49,7 +50,9 @@ struct WidgetView: View {
                     // Always keep the button in the view, but control visibility with opacity
                     Button {
                         let entryID = page.entries[index].id
+                        print(page.entries[index].images)
                         userVM.removeJournalEntry(page: page, index: index)
+                        print(page.entries[index].images)
                         Task {
                             await fbVM.removeJournalEntry(entryID: entryID)
                             await fbVM.updateJournalPage(entries: page.entries, journalID: journal.id, pageNumber: pageNum)
@@ -119,17 +122,17 @@ struct TextEntryView: View {
 }
 
 @ViewBuilder
-func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool, inTextEntry: Binding<Bool>, selectedEntry: Binding<Int>, fbVM: FirebaseViewModel, journal: Journal, userVM: UserViewModel, pageNum: Int, entryIndex: Int) -> some View {
+func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool, inTextEntry: Binding<Bool>, selectedEntry: Binding<Int>, fbVM: FirebaseViewModel, journal: Journal, userVM: UserViewModel, pageNum: Int, entryIndex: Int, frontDegrees: Binding<CGFloat>, showDeleteButton: Binding<Int>, isWiggling: Binding<Bool>) -> some View {
     switch widget.type {
     case .written:
         TextEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
     default:
-        PictureEntryView(entry: widget, width: width, height: height, isDisplay: isDisplay, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: entryIndex).opacity(widget.isFake ? 0 : 1)
+        PictureEntryView(entry: widget, width: width, height: height, isDisplay: isDisplay, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: entryIndex, frontDegrees: frontDegrees, showDeleteButton: showDeleteButton, isWiggling: isWiggling).opacity(widget.isFake ? 0 : 1)
     }
 }
 
 struct PictureEntryView: View {
-    @State var entry: JournalEntry
+    var entry: JournalEntry
     var width: CGFloat
     var height: CGFloat
     @State private var timer: Timer?
@@ -146,6 +149,9 @@ struct PictureEntryView: View {
     @State var pageNum: Int
     @State var entryIndex: Int
     @State var isPickerPresented: Bool = false
+    @Binding var frontDegrees: CGFloat
+    @Binding var showDeleteButton: Int
+    @Binding var isWiggling: Bool
     var body: some View {
             ZStack {
                 // Background Color
@@ -221,8 +227,7 @@ struct PictureEntryView: View {
                                 count += 1
                             }
                             if count == selectedImages.count {
-                                entry = JournalEntry(entry: entry, width: entry.width, height: entry.height, color: entry.color, images: imageURLs, type: .image)
-                                userVM.updateJournalEntry(journal: journal, pageNum: pageNum, entryIndex: entryIndex, newEntry: entry)
+                                userVM.updateJournalEntry(journal: journal, pageNum: pageNum, entryIndex: entryIndex, newEntry: JournalEntry(entry: entry, width: entry.width, height: entry.height, color: entry.color, images: imageURLs, type: .image))
                                 Task {
                                     await fbVM.updateJournalPage(entries: journal.pages[pageNum].entries, journalID: journal.id, pageNumber: pageNum)
                                 }
@@ -232,7 +237,9 @@ struct PictureEntryView: View {
                                         selected = 0
                                         return
                                     }
-                                    selected = (selected + 1) % entry.images.count
+                                    if (entry.images.count != 0) {
+                                        selected = (selected + 1) % entry.images.count
+                                    }
                                 }
                             }
                         }
@@ -240,37 +247,68 @@ struct PictureEntryView: View {
                 }
             }
             .onTapGesture {
-                isPickerPresented.toggle()
+                if showDeleteButton != -1 {
+                    showDeleteButton = -1
+                    isWiggling = false
+                } else {
+                    isPickerPresented.toggle()
+                }
             }
-            .onAppear {
-                
-                isActive = true
-                selected = 0
-                // Create a new timer instance for each carousel
-                Task {
-                    for image in entry.images {
-                        let uiImage = await fbVM.getImageFromURL(urlString: image)
-                        if let uiImage = uiImage {
-                            uiImages.append(uiImage)
+            .onAppear() {
+                if frontDegrees < -90 {
+                    isActive = true
+                    selected = 0
+                    // Create a new timer instance for each carousel
+                    Task {
+                        for image in entry.images {
+                            let uiImage = await fbVM.getImageFromURL(urlString: image)
+                            if let uiImage = uiImage {
+                                uiImages.append(uiImage)
+                            }
+                        }
+                    }
+                    if (entry.images.count != 0) {
+                        timer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { _ in
+                            guard isActive else {
+                                selected = 0
+                                return
+                            }
+                            
+                            selected = (selected + 1) % entry.images.count
                         }
                     }
                 }
-                if (entry.images.count != 0) {
-                    timer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { _ in
-                        guard isActive else {
-                            selected = 0
-                            return
-                        }
-                        
-                        selected = (selected + 1) % entry.images.count
-                    }
-                }
-                
             }
-            .onDisappear {
-                isActive = false
-                timer?.invalidate() // Stop the timer when the view disappears
-                timer = nil
+            .onChange(of: frontDegrees) {
+                if frontDegrees < -90 {
+                    isActive = true
+                    selected = 0
+                    // Create a new timer instance for each carousel
+                    Task {
+                        for image in entry.images {
+                            let uiImage = await fbVM.getImageFromURL(urlString: image)
+                            if let uiImage = uiImage {
+                                uiImages.append(uiImage)
+                            }
+                        }
+                    }
+                    if (entry.images.count != 0) {
+                        timer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { _ in
+                            guard isActive else {
+                                selected = 0
+                                return
+                            }
+                            
+                            selected = (selected + 1) % entry.images.count
+                        }
+                    }
+                } else {
+                    isActive = false
+                    timer?.invalidate()
+                    timer = nil
+                }
+        
+                
             }
         }
 }
@@ -298,8 +336,11 @@ struct PictureEntryView: View {
 
 #Preview {
     struct Preview: View {
+        @State var frontDegrees: CGFloat = 0
+        @State var showDeleteButton: Int = -1
+        @State var isWiggling: Bool = false
         var body: some View {
-            PictureEntryView(entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: [0.5, 0.5, 0.5], images: [], type: .image), width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, isDisplay: false, fbVM: FirebaseViewModel(), journal: Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [    JournalPage.dailyReflectionTemplate(pageNumber: 1), JournalPage.springBreakTemplate(pageNumber: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0), userVM: UserViewModel(user: User(id: "ID", name: "name", journalShelves: [], scrapbookShelves: [])), pageNum: 0, entryIndex: 0)
+            PictureEntryView(entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: false, color: [0.5, 0.5, 0.5], images: [], type: .image), width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, isDisplay: false, fbVM: FirebaseViewModel(), journal: Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [    JournalPage.dailyReflectionTemplate(pageNumber: 1), JournalPage.springBreakTemplate(pageNumber: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0), userVM: UserViewModel(user: User(id: "ID", name: "name", journalShelves: [], scrapbookShelves: [])), pageNum: 0, entryIndex: 0, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling)
         }
     }
 

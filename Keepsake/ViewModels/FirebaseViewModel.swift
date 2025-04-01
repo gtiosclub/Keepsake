@@ -588,7 +588,7 @@ class FirebaseViewModel: ObservableObject {
             await fetchEntries(ids: result.ids)
             
         } catch {
-            print(error.localizedDescription)
+            print("vector search error: \(error.localizedDescription)")
         }
     }
     
