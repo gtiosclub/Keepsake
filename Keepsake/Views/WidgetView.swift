@@ -123,6 +123,7 @@ struct TextEntryView: View {
     }
 }
 
+//
 @ViewBuilder
 func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool, inEntry: Binding<EntryType>, selectedEntry: Binding<Int>, fbVM: FirebaseViewModel) -> some View {
     switch widget.type {
