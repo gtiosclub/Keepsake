@@ -22,6 +22,7 @@ extension JournalEntry {
 }
 
 enum EntryType: String, Encodable {
+    case openJournal = "openJournal"
     case written = "written"
     case chat = "chat"
     case image = "image"

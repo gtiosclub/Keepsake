@@ -17,7 +17,7 @@ struct WidgetView: View {
     var pageNum: Int
     @ObservedObject var page: JournalPage
     var isDisplay: Bool
-    @Binding var inTextEntry: Bool
+    @Binding var inEntry: EntryType
     @Binding var selectedEntry: Int
     @ObservedObject var userVM: UserViewModel
     @Binding var showDeleteButton: Int
@@ -31,14 +31,20 @@ struct WidgetView: View {
         LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
             ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
                 ZStack(alignment: .topLeading) {
-                    createView(for: widget, width: width, height: height, isDisplay: isDisplay, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, fbVM: fbVM)
+                    createView(for: widget, width: width, height: height, isDisplay: isDisplay, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM)
                         .onTapGesture {
                             if showDeleteButton != -1 {
                                 showDeleteButton = -1
                                 isWiggling = false
-                            } else if widget.type != .image {
+                            } else if widget.type == .written {
                                 selectedEntry = index
-                                inTextEntry.toggle()
+                                inEntry = .written
+                            } else if widget.type == .voice {
+                                selectedEntry = index
+                                inEntry = .voice
+                            } else if widget.type == .chat {
+                                selectedEntry = index
+                                inEntry = .chat
                             }
                         }
                         .onLongPressGesture {
@@ -120,15 +126,14 @@ struct TextEntryView: View {
     }
 }
 
+//
 @ViewBuilder
-func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool, inTextEntry: Binding<Bool>, selectedEntry: Binding<Int>, fbVM: FirebaseViewModel) -> some View {
+func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool, inEntry: Binding<EntryType>, selectedEntry: Binding<Int>, fbVM: FirebaseViewModel) -> some View {
     switch widget.type {
-    case .written:
-        TextEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
-    case .voice:
-        VoiceMemoEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
-    default:
+    case .image:
         PictureEntryView(entry: widget, width: width, height: height, isDisplay: isDisplay, fbVM: fbVM).opacity(widget.isFake ? 0 : 1)
+    default:
+        TextEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
     }
 }
 
@@ -270,11 +275,11 @@ struct VoiceMemoEntryView: View {
     struct Preview: View {
         @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1)
         @State var selectedImageIndex: Int = 0
-        @State var inTextEntry = false
+        @State var inEntry: EntryType = .openJournal
         @State var selectedEntry: Int = 0
         @State var deleteEntry: Int = -1
         var body: some View {
-            WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: 10, pageNum: 2, page: page, isDisplay: true, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
+            WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: 10, pageNum: 2, page: page, isDisplay: true, inEntry: $inEntry, selectedEntry: $selectedEntry, userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
                 Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
                 Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
