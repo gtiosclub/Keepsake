@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 
 enum EntryType: String, Encodable {
+    case openJournal = "openJournal"
     case written = "written"
     case chat = "chat"
     case image = "image"

@@ -11,7 +11,7 @@ import PhotosUI
 struct AddEntryButtonView: View {
     @State var isExpanded: Bool = false
     @ObservedObject var journal: Journal
-    @Binding var inTextEntry: Bool
+    @Binding var inEntry: EntryType
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var fbVM: FirebaseViewModel
     @Binding var displayPage: Int
@@ -44,22 +44,11 @@ struct AddEntryButtonView: View {
                         
                         if journal.pages[journal.currentPage].entries.count <= 8 {
                             selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
-                            var newIndex = 0
-                            switch journal.pages[journal.currentPage].realEntryCount {
-                            case 1: newIndex = 0
-                            case 2: newIndex = 4
-                            case 3: newIndex = 1
-                            case 4: newIndex = 3
-                            case 5: newIndex = 6
-                            case 6: newIndex = 7
-                            case 7: newIndex = 5
-                            default: newIndex = 2
-                            }
                         } else {
                             //handle too many entries
                         }
                         withTransaction(Transaction(animation: .none)) {
-                            inTextEntry.toggle()
+                            inEntry = .written
                         }
                     }) { Image(systemName: "t.square.fill")
                             .resizable()
@@ -85,9 +74,32 @@ struct AddEntryButtonView: View {
                         }
                     }
                     Button {
-                        
+                        if journal.pages[journal.currentPage].entries.count <= 8 {
+                            selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                        } else {
+                            //handle too many entries
+                        }
+                        withTransaction(Transaction(animation: .none)) {
+                            inEntry = .voice
+                        }
                     } label: {
-                        Image(systemName: "face.smiling.inverse")
+                        Image(systemName: "microphone.fill")
+                            .resizable()
+                            .frame(width: 45, height: 45)
+                            .foregroundColor(.yellow)
+                    }
+                    
+                    Button {
+                        if journal.pages[journal.currentPage].entries.count <= 8 {
+                            selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                        } else {
+                            //handle too many entries
+                        }
+                        withTransaction(Transaction(animation: .none)) {
+                            inEntry = .chat
+                        }
+                    } label: {
+                        Image(systemName: "person.fill")
                             .resizable()
                             .frame(width: 45, height: 45)
                             .foregroundColor(.yellow)
@@ -209,7 +221,7 @@ struct SelectedPhotoView: View {
 
 #Preview {
     struct Preview: View {
-        @State var inTextEntry = false
+        @State var inEntry: EntryType = .openJournal
         @State var displayPage = 2
         @State var selectedEntry = 0
         @ObservedObject var userVM: UserViewModel = UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
@@ -223,7 +235,7 @@ struct SelectedPhotoView: View {
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .flower3), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ])], scrapbookShelves: []))
         var body: some View {
-            AddEntryButtonView(journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), inTextEntry: $inTextEntry, userVM: userVM, fbVM: FirebaseViewModel(), displayPage: $displayPage, selectedEntry: $selectedEntry)
+            AddEntryButtonView(journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), inEntry: $inEntry, userVM: userVM, fbVM: FirebaseViewModel(), displayPage: $displayPage, selectedEntry: $selectedEntry)
         }
     }
 

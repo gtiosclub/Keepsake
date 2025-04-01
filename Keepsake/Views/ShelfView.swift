@@ -25,7 +25,7 @@ struct ShelfView: View {
     @State var ellipseEnd: CGFloat = 1
     @State var scaleEffect: CGFloat = 0.6
     @State var isHidden: Bool = false
-    @State var inTextEntry: Bool = false
+    @State var inEntry: EntryType = .openJournal
     @State var selectedEntry: Int = 0
     @State var displayPage: Int = 2
     @State private var showJournalForm = false
@@ -216,40 +216,74 @@ struct ShelfView: View {
                 )
             }
         } else {
-            if !inTextEntry {
+            switch(inEntry) {
+            case .openJournal:
                 OpenJournal(userVM: userVM, fbVM: fbVM,
-                          journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
-                          shelfIndex: shelfIndex,
-                          bookIndex: selectedJournal,
-                          degrees: $degrees,
-                          isHidden: $isHidden,
-                          show: $show,
-                          frontDegrees: $frontDegrees,
-                          circleStart: $circleStart,
-                          circleEnd: $circleEnd,
-                          displayPageIndex: $displayPage,
-                          coverZ: $coverZ,
-                          scaleFactor: $scaleEffect,
-                          inTextEntry: $inTextEntry,
-                          selectedEntry: $selectedEntry
-                          )
+                            journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
+                            shelfIndex: shelfIndex,
+                            bookIndex: selectedJournal,
+                            degrees: $degrees,
+                            isHidden: $isHidden,
+                            show: $show,
+                            frontDegrees: $frontDegrees,
+                            circleStart: $circleStart,
+                            circleEnd: $circleEnd,
+                            displayPageIndex: $displayPage,
+                            coverZ: $coverZ,
+                            scaleFactor: $scaleEffect,
+                            inEntry: $inEntry,
+                            selectedEntry: $selectedEntry
+                )
                 .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
-                    .scaleEffect(scaleEffect)
-                    .transition(.slide)
-                    .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
-                    .navigationBarBackButtonHidden(true)
-            } else {
+                .scaleEffect(scaleEffect)
+                .transition(.slide)
+                .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                .navigationBarBackButtonHidden(true)
+                
+            case .written:
                 JournalTextInputView(userVM: userVM,
                                      aiVM: aiVM, fbVM: fbVM,
-                                   shelfIndex: shelfIndex,
-                                   journalIndex: selectedJournal,
-                                   entryIndex: selectedEntry,
-                                   pageIndex: displayPage,
-                                   inTextEntry: $inTextEntry,
-                                   entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
-                    .navigationBarBackButtonHidden(true)
+                                     shelfIndex: shelfIndex,
+                                     journalIndex: selectedJournal,
+                                     entryIndex: selectedEntry,
+                                     pageIndex: displayPage,
+                                     inEntry: $inEntry,
+                                     entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                .navigationBarBackButtonHidden(true)
+                
+            case .voice:
+                JournalVoiceMemoInputView(userVM: userVM, aiVM: aiVM, shelfIndex: shelfIndex, journalIndex: selectedJournal, entryIndex: selectedEntry, pageIndex: displayPage, inEntry: $inEntry, audioRecording: AudioRecording(), entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                .navigationBarBackButtonHidden(true)
+            case .chat:
+                ConversationView(viewModel: aiVM, FBviewModel: fbVM, convoEntry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                .navigationBarBackButtonHidden(true)
+                
+            default:
+                OpenJournal(userVM: userVM, fbVM: fbVM,
+                            journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
+                            shelfIndex: shelfIndex,
+                            bookIndex: selectedJournal,
+                            degrees: $degrees,
+                            isHidden: $isHidden,
+                            show: $show,
+                            frontDegrees: $frontDegrees,
+                            circleStart: $circleStart,
+                            circleEnd: $circleEnd,
+                            displayPageIndex: $displayPage,
+                            coverZ: $coverZ,
+                            scaleFactor: $scaleEffect,
+                            inEntry: $inEntry,
+                            selectedEntry: $selectedEntry
+                )
+                .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
+                .scaleEffect(scaleEffect)
+                .transition(.slide)
+                .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                .navigationBarBackButtonHidden(true)
             }
+                
         }
+            
     }
     
     func createJournal(from template: Template, shelfIndex: Int, shelfID: UUID) async {

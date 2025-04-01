@@ -28,7 +28,7 @@ struct OpenJournal: View {
     @State var frontIsHidden: Bool = true
     @Binding var coverZ: Double
     @Binding var scaleFactor: CGFloat
-    @Binding var inTextEntry: Bool
+    @Binding var inEntry: EntryType
     @State var entryIndex = -1
     @State var scaleFactor2 = 0
     @Binding var selectedEntry: Int
@@ -80,7 +80,7 @@ struct OpenJournal: View {
             
             ZStack {
                 JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees, userVM: userVM, scaleFactor: $scaleFactor, fbVM: fbVM)
-                JournalDisplayView(displayIsHidden: $displayIsHidden, userVM: userVM, journal: journal, shelfIndex: shelfIndex, bookIndex: bookIndex, displayPageIndex: $displayPageIndex, zIndex: $zIndex, displayDegrees: $displayDegrees, circleStart: $circleStart, circleEnd: $circleEnd, frontIsHidden: $frontIsHidden, frontDegrees: $frontDegrees, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, fbVM: fbVM)
+                JournalDisplayView(displayIsHidden: $displayIsHidden, userVM: userVM, journal: journal, shelfIndex: shelfIndex, bookIndex: bookIndex, displayPageIndex: $displayPageIndex, zIndex: $zIndex, displayDegrees: $displayDegrees, circleStart: $circleStart, circleEnd: $circleEnd, frontIsHidden: $frontIsHidden, frontDegrees: $frontDegrees, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM)
                 
                 JournalFrontPagesView(book: journal, degrees: $degrees, frontIsHidden: $frontIsHidden, displayPageIndex: $displayPageIndex, frontDegrees: $frontDegrees, isHidden: $isHidden, coverZ: $coverZ, userVM: userVM, fbVM: fbVM)
                 VStack {
@@ -110,7 +110,7 @@ struct OpenJournal: View {
             HStack {
                 JournalReturnButton(circleStart: $circleStart, circleEnd: $circleEnd, frontDegrees: $frontDegrees, degrees: $degrees, isHidden: $isHidden, coverZ: $coverZ, scaleFactor: $scaleFactor, show: $show)
                 Spacer()
-                AddEntryButtonView(journal: journal, inTextEntry: $inTextEntry, userVM: userVM, fbVM: fbVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry)
+                AddEntryButtonView(journal: journal, inEntry: $inEntry, userVM: userVM, fbVM: fbVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry)
             }.padding(.horizontal, 30)
                 .opacity(degrees == -180 ? 1 : 0)
         }
@@ -122,7 +122,7 @@ struct JournalBackPagesView: View {
     @ObservedObject var book: Journal
     @Binding var displayPageIndex: Int
     @Binding var degrees: CGFloat
-    @State var inTextEntry: Bool = false
+    @State var inEntry: EntryType = .openJournal
     @State var selectedEntry: Int = 0
     @ObservedObject var userVM: UserViewModel
     @State var showDeleteButton: Int = -1
@@ -151,7 +151,7 @@ struct JournalBackPagesView: View {
                 .zIndex(-2)
             VStack {
                 if displayPageIndex + 1 < book.pages.count && displayPageIndex + 1 > -1{
-                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex + 1, page: book.pages[displayPageIndex + 1], isDisplay: false, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: book, fbVM: fbVM)
+                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex + 1, page: book.pages[displayPageIndex + 1], isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: book, fbVM: fbVM)
                         .frame(width: UIScreen.main.bounds.width * 0.87)
                         .padding(.top, 10)
                 }
@@ -175,7 +175,7 @@ struct JournalFrontPagesView: View {
     @Binding var frontDegrees: CGFloat
     @Binding var isHidden: Bool
     @Binding var coverZ: Double
-    @State var inTextEntry: Bool = false
+    @State var inEntry: EntryType = .openJournal
     @State var selectedEntry: Int = 0
     @ObservedObject var userVM: UserViewModel
     @State var showDeleteButton: Int = -1
@@ -197,7 +197,7 @@ struct JournalFrontPagesView: View {
                 .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
             VStack {
                 if displayPageIndex - 1 < book.pages.count && displayPageIndex - 1 > -1 {
-                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex - 1, page: book.pages[displayPageIndex - 1], isDisplay: false, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: book, fbVM: fbVM)
+                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex - 1, page: book.pages[displayPageIndex - 1], isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: book, fbVM: fbVM)
                         .frame(width: UIScreen.main.bounds.width * 0.87)
                         .padding(.top, 10)
                         .opacity(frontIsHidden ? 0 : 1)
@@ -265,7 +265,7 @@ struct JournalDisplayView: View {
     @Binding var circleEnd: CGFloat
     @Binding var frontIsHidden: Bool
     @Binding var frontDegrees: CGFloat
-    @Binding var inTextEntry: Bool
+    @Binding var inEntry: EntryType
     @State var scaleFactor: CGFloat = 1
     @Binding var selectedEntry: Int
     @State var showDeleteButton: Int = -1
@@ -279,7 +279,7 @@ struct JournalDisplayView: View {
                 .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
             VStack {
                 if displayPageIndex < journal.pages.count && displayPageIndex > -1 {
-                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex, page: journal.pages[displayPageIndex], isDisplay: true, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: journal, fbVM: fbVM)
+                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex, page: journal.pages[displayPageIndex], isDisplay: true, inEntry: $inEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: journal, fbVM: fbVM)
                         .frame(width: UIScreen.main.bounds.width * 0.87)
                         .padding(.top, 10)
                         .opacity(displayIsHidden ? 0 : 1)
@@ -407,7 +407,7 @@ struct JournalReturnButton: View {
         @State var scaleFactor: CGFloat = 0.6
         @State var isHidden: Bool = true
         @State var mainCircleStart: CGFloat = 0.5
-        @State var inTextEntry = false
+        @State var inEntry: EntryType = .openJournal
         @State var selectedEntry: Int = 0
         @State var displayPageIndex: Int = 0
         @State var showNavBack: Bool = false
@@ -418,7 +418,7 @@ struct JournalReturnButton: View {
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: []))
         var body: some View {
-            OpenJournal(userVM: userVM, fbVM: FirebaseViewModel(), journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), shelfIndex: 0, bookIndex: 0, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPageIndex, coverZ: $cover, scaleFactor: $scaleFactor, inTextEntry: $inTextEntry, selectedEntry: $selectedEntry)
+            OpenJournal(userVM: userVM, fbVM: FirebaseViewModel(), journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), shelfIndex: 0, bookIndex: 0, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPageIndex, coverZ: $cover, scaleFactor: $scaleFactor, inEntry: $inEntry, selectedEntry: $selectedEntry)
         }
     }
 
