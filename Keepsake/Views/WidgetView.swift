@@ -50,9 +50,11 @@ struct WidgetView: View {
                     // Always keep the button in the view, but control visibility with opacity
                     Button {
                         let entryID = page.entries[index].id
-                        print(page.entries[index].images)
+                        print()
+                        print(page.entries)
                         userVM.removeJournalEntry(page: page, index: index)
-                        print(page.entries[index].images)
+                        print()
+                        print(page.entries)
                         Task {
                             await fbVM.removeJournalEntry(entryID: entryID)
                             await fbVM.updateJournalPage(entries: page.entries, journalID: journal.id, pageNumber: pageNum)
@@ -138,7 +140,7 @@ struct PictureEntryView: View {
     @State private var timer: Timer?
     @State var selected: Int = 0
     var isDisplay: Bool
-    @State var isActive: Bool = true
+    @State var isActive: Bool = false
     @State var uiImages: [UIImage] = []
     @ObservedObject var fbVM: FirebaseViewModel
     @State var selectedItems = [PhotosPickerItem]()
@@ -186,7 +188,7 @@ struct PictureEntryView: View {
                                         }
                                     }
                                     
-                                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2])))
+                                    .background(RoundedRectangle(cornerRadius: 10).fill(.gray.opacity(0.33)))
                                     // Adjust dot position
                                     Spacer()
                                 }.frame(width: entry.frameWidth, height: entry.frameHeight)
@@ -224,21 +226,24 @@ struct PictureEntryView: View {
                         let imagePath = await fbVM.storeImage(image: image) { url in
                             if let url = url {
                                 imageURLs.append(url)
+                                userVM.addImageToUser(url: url, image: image)
                                 count += 1
                             }
                             if count == selectedImages.count {
+                                print("made it")
                                 userVM.updateJournalEntry(journal: journal, pageNum: pageNum, entryIndex: entryIndex, newEntry: JournalEntry(entry: entry, width: entry.width, height: entry.height, color: entry.color, images: imageURLs, type: .image))
                                 Task {
                                     await fbVM.updateJournalPage(entries: journal.pages[pageNum].entries, journalID: journal.id, pageNumber: pageNum)
                                 }
                                 timer?.invalidate()
+                                selected = 0
                                 timer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { _ in
                                     guard isActive else {
                                         selected = 0
                                         return
                                     }
-                                    if (entry.images.count != 0) {
-                                        selected = (selected + 1) % entry.images.count
+                                    if (uiImages.count != 0) {
+                                        selected = (selected + 1) % uiImages.count
                                     }
                                 }
                             }
@@ -246,7 +251,17 @@ struct PictureEntryView: View {
                     }
                 }
             }
+            .onChange(of: entry) {
+                print("Entry changes")
+                uiImages = []
+                for image in entry.images {
+                    if let uiImage = userVM.getImage(url: image) {
+                        uiImages.append(uiImage)
+                    }
+                }
+            }
             .onTapGesture {
+                print(entry.images)
                 if showDeleteButton != -1 {
                     showDeleteButton = -1
                     isWiggling = false
@@ -256,15 +271,12 @@ struct PictureEntryView: View {
             }
             .onAppear() {
                 if frontDegrees < -90 {
+                    
                     isActive = true
                     selected = 0
-                    // Create a new timer instance for each carousel
-                    Task {
-                        for image in entry.images {
-                            let uiImage = await fbVM.getImageFromURL(urlString: image)
-                            if let uiImage = uiImage {
-                                uiImages.append(uiImage)
-                            }
+                    for image in entry.images {
+                        if let uiImage = userVM.getImage(url: image) {
+                            uiImages.append(uiImage)
                         }
                     }
                     if (entry.images.count != 0) {
@@ -273,23 +285,21 @@ struct PictureEntryView: View {
                                 selected = 0
                                 return
                             }
-                            
-                            selected = (selected + 1) % entry.images.count
+                            if uiImages.count != 0 {
+                                selected = (selected + 1) % uiImages.count
+                            }
                         }
                     }
                 }
             }
             .onChange(of: frontDegrees) {
-                if frontDegrees < -90 {
+                print("front degrees")
+                if frontDegrees < 0 && !isActive {
                     isActive = true
                     selected = 0
-                    // Create a new timer instance for each carousel
-                    Task {
-                        for image in entry.images {
-                            let uiImage = await fbVM.getImageFromURL(urlString: image)
-                            if let uiImage = uiImage {
-                                uiImages.append(uiImage)
-                            }
+                    for image in entry.images {
+                        if let uiImage = userVM.getImage(url: image) {
+                            uiImages.append(uiImage)
                         }
                     }
                     if (entry.images.count != 0) {
@@ -298,11 +308,12 @@ struct PictureEntryView: View {
                                 selected = 0
                                 return
                             }
-                            
-                            selected = (selected + 1) % entry.images.count
+                            if uiImages.count != 0 {
+                                selected = (selected + 1) % uiImages.count
+                            }
                         }
                     }
-                } else {
+                } else if frontDegrees == 0 {
                     isActive = false
                     timer?.invalidate()
                     timer = nil

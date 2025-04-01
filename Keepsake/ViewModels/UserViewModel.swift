@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 class UserViewModel: ObservableObject {
     @Published var user: User
@@ -89,6 +90,14 @@ class UserViewModel: ObservableObject {
     
     func getShelfIndex() -> Int {
         return user.shelfIndex
+    }
+    
+    func getImage(url: String) -> UIImage? {
+        return user.images[url]
+    }
+    
+    func addImageToUser(url: String, image: UIImage) {
+        user.images[url] = image
     }
     
     func setShelfIndex(index: Int, shelfID: UUID, isJournal: Bool) -> Void {
