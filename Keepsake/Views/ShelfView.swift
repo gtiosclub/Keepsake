@@ -68,6 +68,7 @@ struct ShelfView: View {
     @State var showDeleteButton: Bool = false
     @State var deleteJournalID: String = ""
     @State var hideToolBar: Bool = false
+    @State var dailyPrompt: String? = nil
     var body: some View {
         if !show {
             VStack(alignment: .leading, spacing: 10) {
@@ -271,7 +272,7 @@ struct ShelfView: View {
                             coverZ: $coverZ,
                             scaleFactor: $scaleEffect,
                             inEntry: $inEntry,
-                            selectedEntry: $selectedEntry, hideToolBar: $hideToolBar
+                            selectedEntry: $selectedEntry, hideToolBar: $hideToolBar, dailyPrompt: $dailyPrompt
                 )
                 .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
                 .toolbar(hideToolBar ? .hidden : .visible, for: .tabBar)
@@ -306,7 +307,7 @@ struct ShelfView: View {
                                      entryIndex: selectedEntry,
                                      pageIndex: displayPage,
                                      inEntry: $inEntry,
-                                     entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                                     entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry), dailyPrompt: $dailyPrompt)
                 .navigationBarBackButtonHidden(true)
                 
             case .voice:
@@ -331,7 +332,7 @@ struct ShelfView: View {
                             coverZ: $coverZ,
                             scaleFactor: $scaleEffect,
                             inEntry: $inEntry,
-                            selectedEntry: $selectedEntry, hideToolBar: $hideToolBar
+                            selectedEntry: $selectedEntry, hideToolBar: $hideToolBar, dailyPrompt: $dailyPrompt
                 )
                 .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
                 .scaleEffect(scaleEffect)

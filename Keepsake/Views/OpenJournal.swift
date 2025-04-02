@@ -35,6 +35,7 @@ struct OpenJournal: View {
     @Binding var selectedEntry: Int
     @State private var showSearch = false
     @Binding var hideToolBar: Bool
+    @Binding var dailyPrompt: String?
     var body: some View {
         // This ZStack will define the base frame
         ZStack {
@@ -106,7 +107,7 @@ struct OpenJournal: View {
                 HStack {
                     JournalReturnButton(circleStart: $circleStart, circleEnd: $circleEnd, frontDegrees: $frontDegrees, degrees: $degrees, isHidden: $isHidden, coverZ: $coverZ, scaleFactor: $scaleFactor, show: $show, hideToolBar: $hideToolBar)
                     Spacer()
-                    AddEntryButtonView(journal: journal, inEntry: $inEntry, userVM: userVM, fbVM: fbVM, aiVM: aiVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry)
+                    AddEntryButtonView(journal: journal, inEntry: $inEntry, userVM: userVM, fbVM: fbVM, aiVM: aiVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry, dailyPrompt: $dailyPrompt)
                 }
                 .padding(.horizontal, 30)
                 .opacity(degrees == -180 ? 1 : 0)
@@ -432,7 +433,7 @@ struct JournalReturnButton: View {
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: []))
         var body: some View {
-            OpenJournal(userVM: userVM, fbVM: FirebaseViewModel(), aiVM: AIViewModel(), journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), shelfIndex: 0, bookIndex: 0, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPageIndex, coverZ: $cover, scaleFactor: $scaleFactor, inEntry: $inEntry, selectedEntry: $selectedEntry, hideToolBar: $hideToolBar)
+            OpenJournal(userVM: userVM, fbVM: FirebaseViewModel(), aiVM: AIViewModel(), journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), shelfIndex: 0, bookIndex: 0, degrees: $degrees, isHidden: $isHidden, show: $show, frontDegrees: $frontDegrees, circleStart: $circleStart, circleEnd: $circleEnd, displayPageIndex: $displayPageIndex, coverZ: $cover, scaleFactor: $scaleFactor, inEntry: $inEntry, selectedEntry: $selectedEntry, hideToolBar: $hideToolBar, dailyPrompt: .constant("Test"))
         }
     }
 
