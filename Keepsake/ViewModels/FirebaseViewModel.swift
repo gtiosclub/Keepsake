@@ -304,7 +304,8 @@ class FirebaseViewModel: ObservableObject {
                     
                     journalPages.append(JournalPage(number: Int(num) ?? 0, entries: journalEntries, realEntryCount: entryCount))
                 }
-                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: journalPages, currentPage: currentPage)
+                let sortedPages = journalPages.sorted { $0.number < $1.number }
+                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: sortedPages, currentPage: currentPage)
                 
             } else {
                 print("No document found")
@@ -315,6 +316,7 @@ class FirebaseViewModel: ObservableObject {
             return nil
         }
     }
+    
     //#########################################################################################
     
     /****######################################################################################
@@ -459,6 +461,9 @@ class FirebaseViewModel: ObservableObject {
             }
             try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
                 "pages.\(pageNumber + 1)": []
+            ])
+            try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
+                "currentPage": pageNumber
             ])
         } catch {
             print("error reseting page entries")
