@@ -814,10 +814,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Keepsake/Info.plist;
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "This app uses bluetooth to discover nearby devices";
-				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "This app uses bluetooth to discover nearby devices";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires camera access";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "This app uses the local network to discover nearby devices";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone access required in order to record audio.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -851,10 +848,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Keepsake/Info.plist;
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "This app uses bluetooth to discover nearby devices";
-				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "This app uses bluetooth to discover nearby devices";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires camera access";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "This app uses the local network to discover nearby devices";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone access required in order to record audio.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -882,7 +876,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = TL893ZWF55;
+				DEVELOPMENT_TEAM = D2429Z9GY7;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
@@ -902,7 +896,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = TL893ZWF55;
+				DEVELOPMENT_TEAM = D2429Z9GY7;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
@@ -920,11 +914,11 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = TL893ZWF55;
+				DEVELOPMENT_TEAM = D2429Z9GY7;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.KeepsakeUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.ios.KeepsakeUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -938,11 +932,11 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = TL893ZWF55;
+				DEVELOPMENT_TEAM = D2429Z9GY7;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.KeepsakeUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.ios.KeepsakeUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
