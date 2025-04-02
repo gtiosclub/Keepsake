@@ -146,7 +146,22 @@ class FirebaseViewModel: ObservableObject {
                     print("Error getting last used ID")
                     lastUsedID = UUID()
                 }
-                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed)
+                var imageDict: [String: UIImage] = [:]
+                for shelf in journalShelves {
+                    for journal in shelf.journals {
+                        for page in journal.pages {
+                            for entry in page.entries {
+                                for url in entry.images {
+                                    if let image = await getImageFromURL(urlString: url) {
+                                        imageDict[url] = image
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                print(imageDict)
+                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed, images: imageDict)
                 
                 // Assign the user object to currentUser
                 await MainActor.run {
@@ -556,7 +571,6 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    
     //#########################################################################################
     
     
@@ -588,7 +602,7 @@ class FirebaseViewModel: ObservableObject {
             await fetchEntries(ids: result.ids)
             
         } catch {
-            print(error.localizedDescription)
+            print("vector search error: \(error.localizedDescription)")
         }
     }
     
