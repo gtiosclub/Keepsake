@@ -6,6 +6,41 @@
 //
 import SwiftUI
 
+private struct ViewOffsetKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+struct ViewFrameKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
+    }
+}
+
+extension View {
+    func printFrame(_ label: String = "") -> some View {
+        self.background(
+            GeometryReader { geometry in
+                Color.clear
+                    .preference(
+                        key: ViewFrameKey.self,
+                        value: geometry.frame(in: .global)
+                    )
+                    .onAppear {
+                        let frame = geometry.frame(in: .global)
+                        print("\(label.isEmpty ? "View" : label) frame: \(frame)")
+                    }
+            }
+        )
+        .onPreferenceChange(ViewFrameKey.self) { frame in
+            print("\(label.isEmpty ? "View" : label) frame changed: \(frame)")
+        }
+    }
+}
+
 struct ShelfView: View {
     @Namespace private var shelfNamespace
     @ObservedObject var userVM: UserViewModel
@@ -32,6 +67,7 @@ struct ShelfView: View {
     @Binding var selectedOption: ViewOption
     @State var showDeleteButton: Bool = false
     @State var deleteJournalID: String = ""
+    @State var hideToolBar: Bool = false
     var body: some View {
         if !show {
             VStack(alignment: .leading, spacing: 10) {
@@ -110,29 +146,30 @@ struct ShelfView: View {
                                                 Task {
                                                     await aiVM.fetchSmartPrompts(for: journal, count: 5)
                                                 }
-                                                
-                                                withAnimation(.linear(duration: 0.7)) {
-                                                    show.toggle()
-                                                } completion: {
-                                                    withAnimation(.linear(duration: 0.7).delay(0.0)) {
-                                                        scaleEffect = 1
-                                                    }
-                                                    circleStart = 1
-                                                    circleEnd = 1
-                                                    withAnimation(.linear(duration: 0.7).delay(0.0)) {
-                                                        circleStart -= 0.25
-                                                        degrees -= 90
-                                                        frontDegrees -= 90
+                                                hideToolBar.toggle()
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                                    withAnimation(.linear(duration: 0.5)) {
+                                                        show.toggle()
                                                     } completion: {
-                                                        coverZ = -1
-                                                        isHidden = true
-                                                        withAnimation(.linear(duration: 0.7).delay(0)) {
+                                                        withAnimation(.linear(duration: 0.7).delay(0.0)) {
+                                                            scaleEffect = 1
+                                                        }
+                                                        circleStart = 1
+                                                        circleEnd = 1
+                                                        withAnimation(.linear(duration: 0.7).delay(0.0)) {
                                                             circleStart -= 0.25
                                                             degrees -= 90
                                                             frontDegrees -= 90
+                                                        } completion: {
+                                                            coverZ = -1
+                                                            isHidden = true
+                                                            withAnimation(.linear(duration: 0.7).delay(0)) {
+                                                                circleStart -= 0.25
+                                                                degrees -= 90
+                                                                frontDegrees -= 90
+                                                            }
                                                         }
                                                     }
-                                                    
                                                 }
                                             }
                                             //print(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index))
@@ -190,8 +227,10 @@ struct ShelfView: View {
                     }
                     .padding(.horizontal, 20)
                 }
-                .frame(height: 500)
+                .frame(height: 500, alignment: .bottom)
+                .padding(.top, 30)
             }
+            .toolbar(hideToolBar ? .hidden : .visible, for: .tabBar)
             .onTapGesture(perform: {
                 if showDeleteButton {
                     showDeleteButton.toggle()
@@ -232,13 +271,32 @@ struct ShelfView: View {
                             coverZ: $coverZ,
                             scaleFactor: $scaleEffect,
                             inEntry: $inEntry,
-                            selectedEntry: $selectedEntry
+                            selectedEntry: $selectedEntry, hideToolBar: $hideToolBar
                 )
                 .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
+                .toolbar(hideToolBar ? .hidden : .visible, for: .tabBar)
                 .scaleEffect(scaleEffect)
                 .transition(.slide)
                 .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                 .navigationBarBackButtonHidden(true)
+//                .position(
+//                    x: UIScreen.main.bounds.minX + UIScreen.main.bounds.maxX * 0.5, // Adjust for center
+//                        y: UIScreen.main.bounds.minY + UIScreen.main.bounds.maxY * 0.5 // Adjust for center
+//                    ) // Lock to exact coordinates
+////                .background(
+////                    GeometryReader { geo in
+////                        Color.clear
+////                            .onAppear {
+////                                enforcedPosition = CGPoint(
+////                                    x: 31.5,
+////                                    y: 303.85
+////                                )
+////                            }
+////                    }
+////                )
+//                .ignoresSafeArea(.container, edges: [.bottom])
+//                .navigationBarBackButtonHidden(true)
+                
                 
             case .written:
                 JournalTextInputView(userVM: userVM,
@@ -273,7 +331,7 @@ struct ShelfView: View {
                             coverZ: $coverZ,
                             scaleFactor: $scaleEffect,
                             inEntry: $inEntry,
-                            selectedEntry: $selectedEntry
+                            selectedEntry: $selectedEntry, hideToolBar: $hideToolBar
                 )
                 .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
                 .scaleEffect(scaleEffect)
