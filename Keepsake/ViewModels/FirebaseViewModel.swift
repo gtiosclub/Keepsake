@@ -797,4 +797,97 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    // Add a single ScrapbookEntry to a specified page in a Scrapbook.
+    func addScrapbookEntry(scrapbookEntry: ScrapbookEntry, scrapbookID: UUID, pageNumber: Int) async -> Bool {
+        let entryRef = db.collection("SCRAPBOOK_ENTRIES").document(scrapbookEntry.id.uuidString)
+        do {
+            let entryData = scrapbookEntry.toDictionary(scrapbookID: scrapbookID)
+            try await entryRef.setData(entryData)
+            
+            // Update the SCRAPBOOKS document to add the entry's ID to the corresponding page array.
+            try await db.collection("SCRAPBOOKS").document(scrapbookID.uuidString).updateData([
+                "pages.\(pageNumber)": FieldValue.arrayUnion([scrapbookEntry.id.uuidString])
+            ])
+            return true
+        } catch {
+            print("Error adding scrapbook entry \(scrapbookEntry.id): \(error.localizedDescription)")
+            return false
+        }
+    }
+
+    // Update all ScrapbookEntries on a specific page of a Scrapbook.
+    // This function resets the page and then adds or updates entries. Any previous entries not in the new list are removed.
+    func updateScrapbookPage(entries: [ScrapbookEntry], scrapbookID: UUID, pageNumber: Int) async {
+        var previousEntryIds: [String] = []
+        do {
+            let document = try await db.collection("SCRAPBOOKS").document(scrapbookID.uuidString).getDocument()
+            if let data = document.data(),
+               let pages = data["pages"] as? [String: [String]] {
+                previousEntryIds = pages["\(pageNumber)"] ?? []
+            } else {
+                print("Couldn't get page entries for Scrapbook page \(pageNumber)")
+            }
+            // Reset the page entries.
+            try await db.collection("SCRAPBOOKS").document(scrapbookID.uuidString).updateData([
+                "pages.\(pageNumber)": []
+            ])
+        } catch {
+            print("Error resetting page entries for Scrapbook: \(error.localizedDescription)")
+            return
+        }
+        
+        for entry in entries {
+            let entryRef = db.collection("SCRAPBOOK_ENTRIES").document(entry.id.uuidString)
+            do {
+                let entryData = entry.toDictionary(scrapbookID: scrapbookID)
+                try await entryRef.setData(entryData)
+                try await db.collection("SCRAPBOOKS").document(scrapbookID.uuidString).updateData([
+                    "pages.\(pageNumber)": FieldValue.arrayUnion([entry.id.uuidString])
+                ])
+                if let removalIndex = previousEntryIds.firstIndex(of: entry.id.uuidString) {
+                    previousEntryIds.remove(at: removalIndex)
+                }
+            } catch {
+                // If updating fails, attempt to add the entry.
+                await addScrapbookEntry(scrapbookEntry: entry, scrapbookID: scrapbookID, pageNumber: pageNumber)
+            }
+        }
+        
+        // Remove any previous entries that were not updated.
+        for entryId in previousEntryIds {
+            if let uuid = UUID(uuidString: entryId) {
+                await removeScrapbookEntry(entryID: uuid)
+            } else {
+                print("Invalid UUID string for scrapbook entry: \(entryId)")
+            }
+        }
+    }
+
+    // Remove a ScrapbookEntry from Firestore.
+    func removeScrapbookEntry(entryID: UUID) async {
+        do {
+            try await db.collection("SCRAPBOOK_ENTRIES").document(entryID.uuidString).delete()
+        } catch {
+            print("Error removing scrapbook entry \(entryID): \(error.localizedDescription)")
+        }
+    }
+
+    // Fetch a ScrapbookEntry from Firestore using its document ID.
+    func getScrapbookEntryFromID(id: String) async -> ScrapbookEntry? {
+        let entryRef = db.collection("SCRAPBOOK_ENTRIES").document(id)
+        do {
+            let document = try await entryRef.getDocument()
+            if let data = document.data(),
+               let entry = ScrapbookEntry.fromDictionary(data) {
+                return entry
+            } else {
+                print("No data found for scrapbook entry \(id)")
+                return nil
+            }
+        } catch {
+            print("Error fetching scrapbook entry \(id): \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
 }

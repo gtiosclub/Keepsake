@@ -7,24 +7,28 @@
 
 import Foundation
 
-class Scrapbook: ObservableObject, Identifiable {
+
+
+class Scrapbook: Book, ObservableObject, Identifiable {
     var name: String
     var id: UUID
     var createdDate: String
     var category: String
     var isSaved: Bool
     var isShared: Bool
+    var template: Template
     @Published var pages: [ScrapbookPage]
     var currentPage: Int
     
     //Full Constructor
-    init(name: String, id: UUID, createdDate: String, category: String, isSaved: Bool, isShared: Bool, pages: [ScrapbookPage], currentPage: Int) {
+    init(name: String, id: UUID, createdDate: String, category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [ScrapbookPage], currentPage: Int) {
         self.name = name
         self.id = id
         self.createdDate = createdDate
         self.category = category
         self.isSaved = isSaved
         self.isShared = isShared
+        self.template = template
         self.pages = pages
         self.currentPage = currentPage
     }
@@ -40,6 +44,7 @@ extension Scrapbook: CustomStringConvertible {
             "category": category,
             "isSaved": isSaved,
             "isShared": isShared,
+            "template": template.toDictionary(),
             "pages": pages.map { $0.toDictionary() },  // Changed to output an array of dictionaries.
             "currentPage": currentPage
         ]
@@ -62,10 +67,10 @@ extension Scrapbook: CustomStringConvertible {
 
         let pages = pagesArray.compactMap { ScrapbookPage.fromDictionary($0) }
         
-        return Scrapbook(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, pages: pages, currentPage: currentPage)
+        return Scrapbook(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: pages, currentPage: currentPage)
     }
     
     var description: String {
-        return "Scrapbook(name: \(name), id: \(id), createdDate: \(createdDate), category: \(category), isSaved: \(isSaved), isShared: \(isShared), pages: \(pages), currentPage: \(currentPage))"
+        return "Scrapbook(name: \(name), id: \(id), createdDate: \(createdDate), category: \(category), isSaved: \(isSaved), isShared: \(isShared), template: \(template), pages: \(pages), currentPage: \(currentPage))"
     }
 }

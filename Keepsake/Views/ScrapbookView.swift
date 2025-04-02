@@ -5,9 +5,6 @@ import MultipeerConnectivity
 
 
 struct ScrapbookView: View {
-    @StateObject private var arvm = ARViewModel()
-    
-    // variables for editing entity positions
     @State var currentScale: CGFloat = 1.0
     @State var finalScale: CGFloat = 1.0
     @State var currentRotation: Angle = .zero
@@ -18,11 +15,6 @@ struct ScrapbookView: View {
     
     @State var anchor: AnchorEntity? = nil
     @State var selectedEntity: Entity? = nil
-    
-    // determining if any edits have been made to save
-    @State var needsSaving: Bool = false
-    
-    // counter value is used to identify entities
     @State var counter: Int = 0
     @State var entityPos: [UnitPoint] = []
     
@@ -99,7 +91,7 @@ struct ScrapbookView: View {
                         } else {
                             print("No image loaded")
                         }
-                        needsSaving = true
+                        
                     }
                 }
             }
@@ -135,7 +127,6 @@ struct ScrapbookView: View {
                 .onEnded { value in
                     entityPos[Int(selectedEntity?.name ?? "0") ?? 0].x += value.translation.width
                     entityPos[Int(selectedEntity?.name ?? "0") ?? 0].y += value.translation.height
-                    needsSaving = true
                 }
             )
             .gesture(
@@ -150,7 +141,6 @@ struct ScrapbookView: View {
                     }
                     .onEnded { value in
                         finalScale = currentScale
-                        needsSaving = true
                         
                         if let selectedEntity = selectedEntity {
                             sendEntityUpdate(selectedEntity, image: nil)
@@ -177,7 +167,6 @@ struct ScrapbookView: View {
                             updateTextBox()
                             isEditing = false
                             textInput = "[Enter text]"
-                            needsSaving = true
                         }
                         .padding()
                         .background(Color.blue)
@@ -224,28 +213,11 @@ struct ScrapbookView: View {
                             Text("Edit \(selectedEntity?.name ?? "")")
                         }.disabled(selectedEntity == nil)
                     }
-                    Spacer()
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10.0)
-                            .frame(width: 80, height: 40)
-                        Button {
-                            print("pressed")
-                        } label : {
-                            Text("Save").foregroundStyle(.black)
-                        }.disabled(needsSaving == false)
-                    }
-
-                    
                 }
                 .padding()
-                .frame(width: 325, height: 100)
-                .background(Color.white.opacity(0.5)) // Semi-transparent background
+                .frame(width: 250, height: 100)
+                .background(Color.white.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 20))
-                .padding(.bottom, 20) // Lifted up slightly
-            }
-        }.task {
-            let result = await FirebaseViewModel.vm.testRead()
-            print("Firebase test result:", result)
                 .padding(.bottom, 20)
             }
         }
@@ -360,5 +332,4 @@ struct ScrapbookView: View {
             }
         }
     }
-    
 }

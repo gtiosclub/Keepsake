@@ -147,33 +147,33 @@ struct LibraryScrapbookView: View {
             Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [
-            ScrapbookShelf(id: UUID(), name: "Travel Memories", scrapbooks: [
-                Scrapbook(
-                    name: "Paris Trip",
-                    createdDate: "1/15/25",
-                    entries: [
-                        ScrapbookEntry(id: "1", imageURL: "", caption: "Eiffel Tower at sunset", date: "1/16/25"),
-                        ScrapbookEntry(id: "2", imageURL: "", caption: "Best croissant ever!", date: "1/17/25"),
-                        ScrapbookEntry(id: "3", imageURL: "", caption: "Louvre visit", date: "1/18/25")
-                    ],
-                    category: "Travel",
-                    isSaved: true,
-                    isShared: false,
-                    template: Template(name: "Elegant", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather)
-                ),
-                Scrapbook(
-                    name: "Summer Road Trip",
-                    createdDate: "7/5/24",
-                    entries: [
-                        ScrapbookEntry(id: "4", imageURL: "", caption: "Grand Canyon view", date: "7/6/24"),
-                        ScrapbookEntry(id: "5", imageURL: "", caption: "Campfire with friends", date: "7/7/24")
-                    ],
-                    category: "Adventure",
-                    isSaved: false,
-                    isShared: true,
-                    template: Template(coverColor: .green, pageColor: .white, titleColor: .black)
-                )
-            ])
+//            ScrapbookShelf(id: UUID(), name: "Travel Memories", scrapbooks: [
+//                Scrapbook(
+//                    name: "Paris Trip",
+//                    createdDate: "1/15/25",
+//                    entries: [
+//                        ScrapbookEntry(id: "1", imageURL: "", caption: "Eiffel Tower at sunset", date: "1/16/25"),
+//                        ScrapbookEntry(id: "2", imageURL: "", caption: "Best croissant ever!", date: "1/17/25"),
+//                        ScrapbookEntry(id: "3", imageURL: "", caption: "Louvre visit", date: "1/18/25")
+//                    ],
+//                    category: "Travel",
+//                    isSaved: true,
+//                    isShared: false,
+//                    template: Template(name: "Elegant", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather)
+//                ),
+//                Scrapbook(
+//                    name: "Summer Road Trip",
+//                    createdDate: "7/5/24",
+//                    entries: [
+//                        ScrapbookEntry(id: "4", imageURL: "", caption: "Grand Canyon view", date: "7/6/24"),
+//                        ScrapbookEntry(id: "5", imageURL: "", caption: "Campfire with friends", date: "7/7/24")
+//                    ],
+//                    category: "Adventure",
+//                    isSaved: false,
+//                    isShared: true,
+//                    template: Template(coverColor: .green, pageColor: .white, titleColor: .black)
+//                )
+//            ])
         ]))
         var body: some View {
             LibraryView(userVM: userVM, aiVM: AIViewModel(), fbVM: FirebaseViewModel(), selectedOption: $selectedOption)

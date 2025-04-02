@@ -31,7 +31,7 @@ struct ContentView: View {
                         CommunityView()
                     }
                     Tab("Scrapbooks", systemImage: "ellipsis.viewfinder") {
-                        ScrapbookView()
+                        CreateScrapbookView(vm: fbVM)
                     }
                     Tab("Profile", systemImage:"person.crop.circle") {
                         ProfileView()
