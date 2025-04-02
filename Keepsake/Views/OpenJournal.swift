@@ -79,9 +79,8 @@ struct OpenJournal: View {
 
             
             ZStack {
-                JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees, userVM: userVM, scaleFactor: $scaleFactor, fbVM: fbVM)
+                JournalBackPagesView(book: journal, displayPageIndex: $displayPageIndex, degrees: $degrees, userVM: userVM, scaleFactor: $scaleFactor, fbVM: fbVM, frontDegrees: $frontDegrees)
                 JournalDisplayView(displayIsHidden: $displayIsHidden, userVM: userVM, journal: journal, shelfIndex: shelfIndex, bookIndex: bookIndex, displayPageIndex: $displayPageIndex, zIndex: $zIndex, displayDegrees: $displayDegrees, circleStart: $circleStart, circleEnd: $circleEnd, frontIsHidden: $frontIsHidden, frontDegrees: $frontDegrees, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM)
-                
                 JournalFrontPagesView(book: journal, degrees: $degrees, frontIsHidden: $frontIsHidden, displayPageIndex: $displayPageIndex, frontDegrees: $frontDegrees, isHidden: $isHidden, coverZ: $coverZ, userVM: userVM, fbVM: fbVM)
                 VStack {
                     ForEach(0..<9, id: \.self) { i in
@@ -128,6 +127,7 @@ struct JournalBackPagesView: View {
     @State var showDeleteButton: Int = -1
     @Binding var scaleFactor: CGFloat
     @ObservedObject var fbVM: FirebaseViewModel
+    @Binding var frontDegrees: CGFloat
     var body: some View {
         RoundedRectangle(cornerRadius: 10)
             .fill(book.template.coverColor)
@@ -151,7 +151,8 @@ struct JournalBackPagesView: View {
                 .zIndex(-2)
             VStack {
                 if displayPageIndex + 1 < book.pages.count && displayPageIndex + 1 > -1{
-                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex + 1, page: book.pages[displayPageIndex + 1], isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: book, fbVM: fbVM)
+                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex + 1, page: book.pages[displayPageIndex + 1], isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: book, fbVM: fbVM, frontDegrees: $frontDegrees)
+
                         .frame(width: UIScreen.main.bounds.width * 0.87)
                         .padding(.top, 10)
                 }
@@ -197,7 +198,7 @@ struct JournalFrontPagesView: View {
                 .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
             VStack {
                 if displayPageIndex - 1 < book.pages.count && displayPageIndex - 1 > -1 {
-                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex - 1, page: book.pages[displayPageIndex - 1], isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: book, fbVM: fbVM)
+                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex - 1, page: book.pages[displayPageIndex - 1], isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: book, fbVM: fbVM, frontDegrees: $frontDegrees)
                         .frame(width: UIScreen.main.bounds.width * 0.87)
                         .padding(.top, 10)
                         .opacity(frontIsHidden ? 0 : 1)
@@ -279,7 +280,7 @@ struct JournalDisplayView: View {
                 .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
             VStack {
                 if displayPageIndex < journal.pages.count && displayPageIndex > -1 {
-                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex, page: journal.pages[displayPageIndex], isDisplay: true, inEntry: $inEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: journal, fbVM: fbVM)
+                    WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex, page: journal.pages[displayPageIndex], isDisplay: true, inEntry: $inEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: journal, fbVM: fbVM, frontDegrees: $frontDegrees)
                         .frame(width: UIScreen.main.bounds.width * 0.87)
                         .padding(.top, 10)
                         .opacity(displayIsHidden ? 0 : 1)
