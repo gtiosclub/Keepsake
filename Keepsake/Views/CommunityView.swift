@@ -8,12 +8,12 @@ import SwiftUI
 
 var journals: [any Book] = [
     Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .red, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 2),
-    Scrapbook(name: "Scrapbook 1", createdDate: "5/7/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .cyan, pageColor: .white, titleColor: .black)),
+//    Scrapbook(name: "Scrapbook 1", createdDate: "5/7/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .cyan, pageColor: .white, titleColor: .black)),
     Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .blue, pageColor: .yellow, titleColor: .black), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
-    Scrapbook(name: "Scarpbook 2", createdDate: "5/4/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .orange, pageColor: .white, titleColor: .black)),
+//    Scrapbook(name: "Scarpbook 2", createdDate: "5/4/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .orange, pageColor: .white, titleColor: .black)),
     Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .gray, pageColor: .brown, titleColor: .yellow), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
     Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .green, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
-    Scrapbook(name: "Scarpbook 3", createdDate: "5/9/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .black, pageColor: .white, titleColor: .white))
+//    Scrapbook(name: "Scarpbook 3", createdDate: "5/9/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .black, pageColor: .white, titleColor: .white))
 ]
 
 var sortOptions: [String] = ["↑↓", "Your Friends", "Travel", "Near You"]

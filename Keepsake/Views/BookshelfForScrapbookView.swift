@@ -57,22 +57,22 @@ struct BookshelfForScrapbookView: View {
     }
 }
 
-#Preview {
-    BookshelfForScrapbookView(shelf: ScrapbookShelf(id: UUID(), name: "Bookshelf", scrapbooks: [
-        Scrapbook(name: "Scrapbook 1", createdDate: "2/2/25", entries: [
-            ScrapbookEntry(id: "1", imageURL: "image1.jpg", caption: "Trip to the mountains", date: "03/04/25"),
-            ScrapbookEntry(id: "2", imageURL: "image2.jpg", caption: "Beach sunset", date: "03/04/25")
-        ], category: "travel", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather)),
-        
-        Scrapbook(name: "Scrapbook 2", createdDate: "2/3/25", entries: [
-            ScrapbookEntry(id: "3", imageURL: "image3.jpg", caption: "Birthday party", date: "03/05/25")
-        ], category: "events", isSaved: true, isShared: true, template: Template(name: "Template 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather)),
-        
-        Scrapbook(name: "Scrapbook 3", createdDate: "2/4/25", entries: [], category: "misc", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather)),
-        
-        Scrapbook(name: "Scrapbook 4", createdDate: "2/5/25", entries: [
-            ScrapbookEntry(id: "4", imageURL: "image4.jpg", caption: "Graduation day", date: "03/06/25"),
-            ScrapbookEntry(id: "5", imageURL: "image5.jpg", caption: "Family reunion", date: "03/07/25")
-        ], category: "family", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather))
-    ]))
-}
+//#Preview {
+//    BookshelfForScrapbookView(shelf: ScrapbookShelf(id: UUID(), name: "Bookshelf", scrapbooks: [
+//        Scrapbook(name: "Scrapbook 1", createdDate: "2/2/25", entries: [
+//            ScrapbookEntry(id: "1", imageURL: "image1.jpg", caption: "Trip to the mountains", date: "03/04/25"),
+//            ScrapbookEntry(id: "2", imageURL: "image2.jpg", caption: "Beach sunset", date: "03/04/25")
+//        ], category: "travel", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather)),
+//        
+//        Scrapbook(name: "Scrapbook 2", createdDate: "2/3/25", entries: [
+//            ScrapbookEntry(id: "3", imageURL: "image3.jpg", caption: "Birthday party", date: "03/05/25")
+//        ], category: "events", isSaved: true, isShared: true, template: Template(name: "Template 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather)),
+//        
+//        Scrapbook(name: "Scrapbook 3", createdDate: "2/4/25", entries: [], category: "misc", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather)),
+//        
+//        Scrapbook(name: "Scrapbook 4", createdDate: "2/5/25", entries: [
+//            ScrapbookEntry(id: "4", imageURL: "image4.jpg", caption: "Graduation day", date: "03/06/25"),
+//            ScrapbookEntry(id: "5", imageURL: "image5.jpg", caption: "Family reunion", date: "03/07/25")
+//        ], category: "family", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather))
+//    ]))
+//}
