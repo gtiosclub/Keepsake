@@ -25,7 +25,7 @@ struct ShelfView: View {
     @State var ellipseEnd: CGFloat = 1
     @State var scaleEffect: CGFloat = 0.6
     @State var isHidden: Bool = false
-    @State var inTextEntry: Bool = false
+    @State var inEntry: EntryType = .openJournal
     @State var selectedEntry: Int = 0
     @State var displayPage: Int = 2
     @State private var showJournalForm = false
@@ -147,7 +147,7 @@ struct ShelfView: View {
                                         Button {
                                             userVM.removeJournalFromShelf(shelfIndex: shelfIndex, journalID: journal.id)
                                             Task {
-                                                await fbVM.deleteJournal(journal: journal, journalShelfID: shelf.id)
+                                                await fbVM.deleteJournal(journalID: journal.id.uuidString, journalShelfID: userVM.getJournalShelves()[shelfIndex].id)
                                             }
                                             showDeleteButton.toggle()                                                 
                                         } label: {
@@ -216,40 +216,74 @@ struct ShelfView: View {
                 )
             }
         } else {
-            if !inTextEntry {
+            switch(inEntry) {
+            case .openJournal:
                 OpenJournal(userVM: userVM, fbVM: fbVM,
-                          journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
-                          shelfIndex: shelfIndex,
-                          bookIndex: selectedJournal,
-                          degrees: $degrees,
-                          isHidden: $isHidden,
-                          show: $show,
-                          frontDegrees: $frontDegrees,
-                          circleStart: $circleStart,
-                          circleEnd: $circleEnd,
-                          displayPageIndex: $displayPage,
-                          coverZ: $coverZ,
-                          scaleFactor: $scaleEffect,
-                          inTextEntry: $inTextEntry,
-                          selectedEntry: $selectedEntry
-                          )
+                            journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
+                            shelfIndex: shelfIndex,
+                            bookIndex: selectedJournal,
+                            degrees: $degrees,
+                            isHidden: $isHidden,
+                            show: $show,
+                            frontDegrees: $frontDegrees,
+                            circleStart: $circleStart,
+                            circleEnd: $circleEnd,
+                            displayPageIndex: $displayPage,
+                            coverZ: $coverZ,
+                            scaleFactor: $scaleEffect,
+                            inEntry: $inEntry,
+                            selectedEntry: $selectedEntry
+                )
                 .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
-                    .scaleEffect(scaleEffect)
-                    .transition(.slide)
-                    .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
-                    .navigationBarBackButtonHidden(true)
-            } else {
+                .scaleEffect(scaleEffect)
+                .transition(.slide)
+                .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                .navigationBarBackButtonHidden(true)
+                
+            case .written:
                 JournalTextInputView(userVM: userVM,
                                      aiVM: aiVM, fbVM: fbVM,
-                                   shelfIndex: shelfIndex,
-                                   journalIndex: selectedJournal,
-                                   entryIndex: selectedEntry,
-                                   pageIndex: displayPage,
-                                   inTextEntry: $inTextEntry,
-                                   entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
-                    .navigationBarBackButtonHidden(true)
+                                     shelfIndex: shelfIndex,
+                                     journalIndex: selectedJournal,
+                                     entryIndex: selectedEntry,
+                                     pageIndex: displayPage,
+                                     inEntry: $inEntry,
+                                     entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                .navigationBarBackButtonHidden(true)
+                
+            case .voice:
+                JournalVoiceMemoInputView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, shelfIndex: shelfIndex, journalIndex: selectedJournal, entryIndex: selectedEntry, pageIndex: displayPage, inEntry: $inEntry, audioRecording: AudioRecording(), entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                .navigationBarBackButtonHidden(true)
+            case .chat:
+                ConversationView(viewModel: aiVM, FBviewModel: fbVM, convoEntry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                .navigationBarBackButtonHidden(true)
+                
+            default:
+                OpenJournal(userVM: userVM, fbVM: fbVM,
+                            journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
+                            shelfIndex: shelfIndex,
+                            bookIndex: selectedJournal,
+                            degrees: $degrees,
+                            isHidden: $isHidden,
+                            show: $show,
+                            frontDegrees: $frontDegrees,
+                            circleStart: $circleStart,
+                            circleEnd: $circleEnd,
+                            displayPageIndex: $displayPage,
+                            coverZ: $coverZ,
+                            scaleFactor: $scaleEffect,
+                            inEntry: $inEntry,
+                            selectedEntry: $selectedEntry
+                )
+                .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
+                .scaleEffect(scaleEffect)
+                .transition(.slide)
+                .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                .navigationBarBackButtonHidden(true)
             }
+                
         }
+            
     }
     
     func createJournal(from template: Template, shelfIndex: Int, shelfID: UUID) async {
@@ -285,7 +319,7 @@ struct ShelfView: View {
         var body: some View {
             ShelfView(userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
                 Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
-                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
+                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [    JournalPage.dailyReflectionTemplate(pageNumber: 1), JournalPage.springBreakTemplate(pageNumber: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
             ]), JournalShelf(name: "Shelf 2", journals: [

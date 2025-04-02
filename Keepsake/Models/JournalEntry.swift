@@ -8,7 +8,21 @@
 import Foundation
 import SwiftUI
 
+extension JournalEntry {
+    var entrySize: EntrySize {
+        switch (width, height) {
+        case (1, 1):
+            return .small
+        case (2, 1), (1, 2):
+            return .medium
+        default:
+            return .large
+        }
+    }
+}
+
 enum EntryType: String, Encodable {
+    case openJournal = "openJournal"
     case written = "written"
     case chat = "chat"
     case image = "image"
@@ -27,6 +41,7 @@ struct JournalEntry: Encodable, Hashable {
     var isFake: Bool
     var color: [Double]
     var images: [String]
+    var audio: Data? // What data type is audio?
     var frameWidth: CGFloat {
         return UIScreen.main.bounds.width * 0.38 * CGFloat(width) + UIScreen.main.bounds.width * 0.02 * CGFloat(width - 1)
     }
@@ -138,7 +153,25 @@ struct JournalEntry: Encodable, Hashable {
         self.images = images
         self.type = type
     }
+    
+    // Voice Journal Entry
+    init(entry: JournalEntry, audio: Data) {
+        self.id = UUID()
+        self.date = entry.date
+        self.text = entry.text
+        self.title = entry.title
+        self.conversationLog = []
+        self.summary = entry.summary
+        self.width = entry.width
+        self.height = entry.height
+        self.isFake = entry.isFake
+        self.color = entry.color
+        self.images = entry.images
+        self.audio = audio
+        self.type = .voice
+    }
 }
+
 
 extension JournalEntry: CustomStringConvertible {
     func toDictionary(journalID: UUID) -> [String: Any] {

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 class UserViewModel: ObservableObject {
     @Published var user: User
@@ -49,6 +50,10 @@ class UserViewModel: ObservableObject {
         user.addJournalShelf(shelf: shelf)
     }
     
+    func removeJournaShelf(index: Int) {
+        user.journalShelves.remove(at: index)
+    }
+    
     func addScrapbookShelfToUser(_ shelf: ScrapbookShelf) {
         user.addScrapbookShelf(shelf: shelf)
     }
@@ -79,8 +84,20 @@ class UserViewModel: ObservableObject {
         user.getJournalShelves()[shelfIndex].journals[bookIndex].pages[pageNum].entries[entryIndex] = newEntry
     }
     
+    func updateJournalEntry(journal: Journal, pageNum: Int, entryIndex: Int, newEntry: JournalEntry) {
+        journal.pages[pageNum].entries[entryIndex] = newEntry
+    }
+    
     func getShelfIndex() -> Int {
         return user.shelfIndex
+    }
+    
+    func getImage(url: String) -> UIImage? {
+        return user.images[url]
+    }
+    
+    func addImageToUser(url: String, image: UIImage) {
+        user.images[url] = image
     }
     
     func setShelfIndex(index: Int, shelfID: UUID, isJournal: Bool) -> Void {

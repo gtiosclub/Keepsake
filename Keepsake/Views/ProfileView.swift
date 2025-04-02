@@ -8,49 +8,73 @@ struct ProfileView: View {
     @State private var showImagePicker = false
     @State private var showImageOptions = false
     @State private var showCamera = false
-
-  
+    
+    
     
     var body: some View {
-
+        
         VStack {
-            if let user = viewModel.currentUser {
-
-                List {
-                    Section {
-                        HStack {
-                            if let profileImage = profileImage {
-                                Image(uiImage: profileImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 72, height: 72)
-                                    .clipShape(Circle())
-                                    .onTapGesture {
-                                        showImageOptions.toggle()
-                                    }
-                            } else {
-                                Image(systemName: "person.crop.circle.fill")
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 72, height: 72)
-                                    .foregroundColor(.gray)
-                                    .onTapGesture {
-                                        showImageOptions.toggle()
-                                    }
-                            }
+            //if let user = viewModel.currentUser {
+            let user = User(id: "123", name: viewModel.currentUser?.name ?? "Nitya", username: viewModel.currentUser?.username ?? "hi@gmail.com", journalShelves: [], scrapbookShelves: [], friends: viewModel.currentUser?.friends ?? [])
+            List {
+                Section {
+                    HStack {
+                        if let profileImage = profileImage {
+                            Image(uiImage: profileImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 72, height: 72)
+                                .clipShape(Circle())
+                                .onTapGesture {
+                                    showImageOptions.toggle()
+                                }
+                        } else {
+                            Image(systemName: "person.crop.circle.fill")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 72, height: 72)
+                                .foregroundColor(.gray)
+                                .onTapGesture {
+                                    showImageOptions.toggle()
+                                }
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(user.name)
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .padding(.top)
                             
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(user.name)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .padding(.top)
-
-                                Text(user.username)
-
-                .navigationTitle("Profile")
+                            Text(user.username)
+                            
+                                .font(.footnote)
+                                .accentColor(.pink)
+                        }
+                    }
+                }
+                
+                
+                Section("Friends") {
+                    NavigationLink(destination: FriendsView()) {
+                        SettingsRowView(imageName: "person.2.fill",
+                                        title: "View Friends",
+                                        tintColor: .blue)
+                    }
+                }
+                
+                Section("Account") {
+                    Button {
+                        viewModel.signOut()
+                    } label: {
+                        
+                        SettingsRowView(imageName: "arrow.backward.circle.fill",
+                                        
+                                        title: "Sign Out",
+                                        tintColor: .red)
+                    }
+                }
             }
         }
-
     }
 }
 
