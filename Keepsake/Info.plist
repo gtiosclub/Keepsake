@@ -6,5 +6,15 @@
 	<array>
 		<dict/>
 	</array>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_ar-keepsake._tcp</string>
+		<string>_ar-keepsake._udp</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+		<string>bluetooth-peripheral</string>
+	</array>
 </dict>
 </plist>
