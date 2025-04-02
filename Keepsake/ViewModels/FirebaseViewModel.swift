@@ -79,6 +79,8 @@ class FirebaseViewModel: ObservableObject {
             await fetchUser()
     }
     
+
+    
     func createUser(withEmail email: String, password: String, fullname: String) async throws {
         do {
             let result = try await auth.createUser(withEmail: email, password: password)
