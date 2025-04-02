@@ -76,7 +76,25 @@ struct AddEntryButtonView: View {
                     ]
                     LazyVGrid(columns: columns, spacing: 20) {
                         Button {
-                            
+                            if journal.pages[journal.currentPage].entries.count <= 8 {
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                                var newIndex = 0
+                                switch journal.pages[journal.currentPage].realEntryCount {
+                                case 1: newIndex = 0
+                                case 2: newIndex = 4
+                                case 3: newIndex = 1
+                                case 4: newIndex = 3
+                                case 5: newIndex = 6
+                                case 6: newIndex = 7
+                                case 7: newIndex = 5
+                                default: newIndex = 2
+                                }
+                            } else {
+                                //handle too many entries
+                            }
+                            withTransaction(Transaction(animation: .none)) {
+                                inEntry = .written
+                            }
                         } label: {
                             ZStack(alignment: .topLeading) {
                                 RoundedRectangle(cornerRadius: 20)
@@ -93,7 +111,25 @@ struct AddEntryButtonView: View {
                             }
                         }
                         Button {
-                            
+                            if journal.pages[journal.currentPage].entries.count <= 8 {
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                                var newIndex = 0
+                                switch journal.pages[journal.currentPage].realEntryCount {
+                                case 1: newIndex = 0
+                                case 2: newIndex = 4
+                                case 3: newIndex = 1
+                                case 4: newIndex = 3
+                                case 5: newIndex = 6
+                                case 6: newIndex = 7
+                                case 7: newIndex = 5
+                                default: newIndex = 2
+                                }
+                            } else {
+                                //handle too many entries
+                            }
+                            withTransaction(Transaction(animation: .none)) {
+                                inEntry = .written
+                            }
                         } label: {
                             ZStack(alignment: .topLeading) {
                                 RoundedRectangle(cornerRadius: 20)
@@ -109,6 +145,25 @@ struct AddEntryButtonView: View {
                             }
                         }
                         Button {
+                            if journal.pages[journal.currentPage].entries.count <= 8 {
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                                var newIndex = 0
+                                switch journal.pages[journal.currentPage].realEntryCount {
+                                case 1: newIndex = 0
+                                case 2: newIndex = 4
+                                case 3: newIndex = 1
+                                case 4: newIndex = 3
+                                case 5: newIndex = 6
+                                case 6: newIndex = 7
+                                case 7: newIndex = 5
+                                default: newIndex = 2
+                                }
+                            } else {
+                                //handle too many entries
+                            }
+                            withTransaction(Transaction(animation: .none)) {
+                                inEntry = .voice
+                            }
                             
                         } label: {
                             ZStack(alignment: .topLeading) {
@@ -125,6 +180,25 @@ struct AddEntryButtonView: View {
                             }
                         }
                         Button {
+                            if journal.pages[journal.currentPage].entries.count <= 8 {
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                                var newIndex = 0
+                                switch journal.pages[journal.currentPage].realEntryCount {
+                                case 1: newIndex = 0
+                                case 2: newIndex = 4
+                                case 3: newIndex = 1
+                                case 4: newIndex = 3
+                                case 5: newIndex = 6
+                                case 6: newIndex = 7
+                                case 7: newIndex = 5
+                                default: newIndex = 2
+                                }
+                            } else {
+                                //handle too many entries
+                            }
+                            withTransaction(Transaction(animation: .none)) {
+                                inEntry = .chat
+                            }
                             
                         } label: {
                             ZStack(alignment: .topLeading) {
