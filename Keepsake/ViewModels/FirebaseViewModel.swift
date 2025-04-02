@@ -647,4 +647,97 @@ class FirebaseViewModel: ObservableObject {
             }
     }
     
+    // SCRAPBOOKS
+    func saveScrapbook(scrapbook: Scrapbook) async -> Bool {
+        // Reference to the scrapbook document in Firestore.
+        let scrapbookRef = db.collection("SCRAPBOOKS").document(scrapbook.id.uuidString)
+        
+        // Prepare the pages dictionary.
+        var pagesDict: [String: [String]] = [:]
+        
+        // Iterate over each page.
+        for page in scrapbook.pages {
+            pagesDict[String(page.number)] = []
+            // For each entry in the page, save it in the SCRAPBOOK_ENTRIES collection.
+            for entry in page.entries {
+                let entryRef = db.collection("SCRAPBOOK_ENTRIES").document(entry.id.uuidString)
+                let entryData = entry.toDictionary(scrapbookID: scrapbook.id)
+                do {
+                    try await entryRef.setData(entryData)
+                    // Add this entry's id to the page dictionary.
+                    pagesDict[String(page.number)]?.append(entry.id.uuidString)
+                } catch {
+                    print("Error saving scrapbook entry \(entry.id): \(error.localizedDescription)")
+                }
+            }
+        }
+        
+        // Create the scrapbook data using its toDictionary method and update the pages field.
+        var scrapbookData = scrapbook.toDictionary()
+        scrapbookData["pages"] = pagesDict
+        
+        // Save the scrapbook document.
+        do {
+            try await scrapbookRef.setData(scrapbookData)
+            return true
+        } catch {
+            print("Error saving scrapbook: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    func loadScrapbook(scrapbookID: UUID) async -> Scrapbook? {
+        let scrapbookRef = db.collection("SCRAPBOOKS").document(scrapbookID.uuidString)
+        
+        do {
+            let document = try await scrapbookRef.getDocument()
+            guard var data = document.data() else {
+                print("No data found for scrapbook")
+                return nil
+            }
+            
+            // Extract the pages dictionary: keys are page numbers (as strings) and values are arrays of entry IDs.
+            guard let pagesDict = data["pages"] as? [String: [String]] else {
+                print("Pages field missing in scrapbook document")
+                return nil
+            }
+            
+            var pages: [ScrapbookPage] = []
+            
+            // For each page, fetch its entries.
+            for (pageStr, entryIDs) in pagesDict {
+                if let pageNum = Int(pageStr) {
+                    var entries: [ScrapbookEntry] = []
+                    for entryID in entryIDs {
+                        let entryDoc = try await db.collection("SCRAPBOOK_ENTRIES").document(entryID).getDocument()
+                        if let entryData = entryDoc.data(),
+                           let entry = ScrapbookEntry.fromDictionary(entryData) {
+                            entries.append(entry)
+                        }
+                    }
+                    // Use the count of entries as the entryCount.
+                    let page = ScrapbookPage(number: pageNum, entries: entries, entryCount: entries.count)
+                    pages.append(page)
+                }
+            }
+            
+            // Sort pages by their number.
+            pages.sort { $0.number < $1.number }
+            
+            // Convert pages to an array of dictionaries so that Scrapbook.fromDictionary can parse it.
+            var pagesArray: [[String: Any]] = []
+            for page in pages {
+                pagesArray.append(page.toDictionary())
+            }
+            data["pages"] = pagesArray
+            
+            // Create and return the Scrapbook object.
+            let scrapbook = Scrapbook.fromDictionary(data)
+            return scrapbook
+        } catch {
+            print("Error loading scrapbook: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
 }
