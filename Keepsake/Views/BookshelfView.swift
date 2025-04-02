@@ -83,7 +83,7 @@ struct BookshelfView: View {
                 Image(systemName: "pencil")
                     .foregroundColor(.black)
             }
-        }.frame(height: scale * UIScreen.main.bounds.height * 0.56, alignment: .bottom)
+        }.frame(height: scale * UIScreen.main.bounds.height * 0.56, alignment: .top)
             .padding(.leading, isEven ? 0 : 4)
             .padding(.trailing, isEven ? 4 : 0)
     }

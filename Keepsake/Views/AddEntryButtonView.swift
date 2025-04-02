@@ -5,6 +5,13 @@
 //  Created by Alec Hance on 2/26/25.
 //
 
+//
+//  AddEntryButtonView.swift
+//  Keepsake
+//
+//  Created by Alec Hance on 2/26/25.
+//
+
 import SwiftUI
 import PhotosUI
 
@@ -350,4 +357,5 @@ struct SelectedPhotoView: View {
 
     return Preview()
 }
+
 
