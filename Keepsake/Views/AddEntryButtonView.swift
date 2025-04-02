@@ -18,7 +18,7 @@ import PhotosUI
 struct AddEntryButtonView: View {
     @State var isExpanded: Bool = false
     @ObservedObject var journal: Journal
-    @Binding var inTextEntry: Bool
+    @Binding var inEntry: EntryType
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var fbVM: FirebaseViewModel
     @Binding var displayPage: Int
@@ -337,7 +337,7 @@ struct SelectedPhotoView: View {
 
 #Preview {
     struct Preview: View {
-        @State var inTextEntry = false
+        @State var inEntry: EntryType = .openJournal
         @State var displayPage = 2
         @State var selectedEntry = 0
         @ObservedObject var userVM: UserViewModel = UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
@@ -351,7 +351,7 @@ struct SelectedPhotoView: View {
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .flower3), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ])], scrapbookShelves: []))
         var body: some View {
-            AddEntryButtonView(journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), inTextEntry: $inTextEntry, userVM: userVM, fbVM: FirebaseViewModel(), displayPage: $displayPage, selectedEntry: $selectedEntry)
+            AddEntryButtonView(journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), inEntry: $inEntry, userVM: userVM, fbVM: FirebaseViewModel(), displayPage: $displayPage, selectedEntry: $selectedEntry)
         }
     }
 
