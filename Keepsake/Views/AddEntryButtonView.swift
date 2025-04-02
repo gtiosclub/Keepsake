@@ -5,19 +5,27 @@
 //  Created by Alec Hance on 2/26/25.
 //
 
+//
+//  AddEntryButtonView.swift
+//  Keepsake
+//
+//  Created by Alec Hance on 2/26/25.
+//
+
 import SwiftUI
 import PhotosUI
 
 struct AddEntryButtonView: View {
     @State var isExpanded: Bool = false
     @ObservedObject var journal: Journal
-    @Binding var inEntry: EntryType
+    @Binding var inTextEntry: Bool
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var fbVM: FirebaseViewModel
     @Binding var displayPage: Int
     @Binding var selectedEntry: Int
     @State var selectedItems = [PhotosPickerItem]()
     @State var selectedImages = [UIImage]()
+    @State private var widgetsOrStickers: Int = 0
     var body: some View {
         VStack {
             if !isExpanded {
@@ -37,76 +45,194 @@ struct AddEntryButtonView: View {
                     SelectedPhotoView(journal: journal, displayPage: displayPage, selectedEntry: selectedEntry, userVM: userVM, selectedImages: $selectedImages, selectedItems: $selectedItems, fbVM: fbVM)
                 }
             }
-            if isExpanded {
-                
-                HStack {
-                    Button(action: {
-                        
-                        if journal.pages[journal.currentPage].entries.count <= 8 {
-                            selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
-                        } else {
-                            //handle too many entries
+        }
+        .sheet(isPresented: $isExpanded) {
+            VStack {
+                ZStack {
+                    Text("Components")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    HStack {
+                        Spacer()
+                        Button {
+                            isExpanded = false
+                        } label: {
+                            Image(systemName: "xmark.circle")
+                                .font(.title)
                         }
-                        withTransaction(Transaction(animation: .none)) {
-                            inEntry = .written
-                        }
-                    }) { Image(systemName: "t.square.fill")
-                            .resizable()
-                            .frame(width: 45, height: 45)
-                        .foregroundColor(.black)}
-                    Button {
-                        
-                        userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }, images: [], type: .image))
-                    } label: {
-                        Image(systemName: "photo.fill")
-                            .resizable()
-                            .frame(width: 45, height: 45)
-                            .foregroundColor(.yellow)
                     }
-                    Button {
-                        if journal.pages[journal.currentPage].entries.count <= 8 {
-                            selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
-                        } else {
-                            //handle too many entries
+                }
+                .padding()
+                Picker("", selection: $widgetsOrStickers) {
+                    Text("Widgets").tag(0)
+                    Text("Stickers").tag(1)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding()
+                if widgetsOrStickers == 0 {
+                    let columns = [
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ]
+                    LazyVGrid(columns: columns, spacing: 20) {
+                        Button {
+                            
+                        } label: {
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: 20)
+                                    .frame(width: UIScreen.main.bounds.width / 2 - 30,
+                                           height: UIScreen.main.bounds.width / 2 - 40)
+                                    .foregroundStyle(Color(hex: "#8cc0ff"))
+                                
+                                Text("Blank\nwidget")
+                                    .multilineTextAlignment(.leading)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.white)
+                                    .padding(25)
+                            }
                         }
-                        withTransaction(Transaction(animation: .none)) {
-                            inEntry = .voice
+                        Button {
+                            
+                        } label: {
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: 20)
+                                    .frame(width: UIScreen.main.bounds.width / 2 - 30, height: UIScreen.main.bounds.width / 2 - 40)
+                                    .foregroundStyle(Gradient(colors: [Color(hex: "#5087c8"), Color(hex: "#2c486a")]))
+                                
+                                Text("Prompt of\nthe Day 💭")
+                                    .multilineTextAlignment(.leading)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.white)
+                                    .padding(25)
+                            }
                         }
-                    } label: {
-                        Image(systemName: "microphone.fill")
-                            .resizable()
-                            .frame(width: 45, height: 45)
-                            .foregroundColor(.yellow)
+                        Button {
+                            
+                        } label: {
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: 20)
+                                    .frame(width: UIScreen.main.bounds.width / 2 - 30, height: UIScreen.main.bounds.width / 2 - 40)
+                                    .foregroundStyle(Color(hex: "#3468a5"))
+                                
+                                Text("Voice\nmemo 🎙️")
+                                    .multilineTextAlignment(.leading)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.white)
+                                    .padding(25)
+                            }
+                        }
+                        Button {
+                            
+                        } label: {
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: 20)
+                                    .frame(width: UIScreen.main.bounds.width / 2 - 30, height: UIScreen.main.bounds.width / 2 - 40)
+                                    .foregroundStyle(Color(hex: "#a9cef9"))
+                                
+                                Text("Echo 🌐")
+                                    .multilineTextAlignment(.leading)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.white)
+                                    .padding(25)
+                            }
+                        }
+                        Button {
+                            
+                        } label: {
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: 20)
+                                    .frame(width: UIScreen.main.bounds.width / 2 - 30, height: UIScreen.main.bounds.width / 2 - 40)
+                                    .foregroundStyle(.white)
+                                    .shadow(radius: 4)
+                                
+                                Text("📷\nUpload\nphotos")
+                                    .multilineTextAlignment(.leading)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.gray)
+                                    .padding(25)
+                            }
+                        }
                     }
-                    
-                    Button {
-                        if journal.pages[journal.currentPage].entries.count <= 8 {
-                            selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
-                        } else {
-                            //handle too many entries
-                        }
-                        withTransaction(Transaction(animation: .none)) {
-                            inEntry = .chat
-                        }
-                    } label: {
-                        Image(systemName: "person.fill")
-                            .resizable()
-                            .frame(width: 45, height: 45)
-                            .foregroundColor(.yellow)
-                    }
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            isExpanded.toggle()
-                        }
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .resizable()
-                            .frame(width: 45, height: 45)
-                        .foregroundColor(.red)}
-                }.transition(.move(edge: .trailing).combined(with: .opacity))
-                    .padding(.trailing, 10)
+                    .padding()
+                } else {
+                    Text("Sticker Stuff")
+                }
+                Spacer()
             }
         }
+//            if isExpanded {
+//                
+//                HStack {
+//                    Button(action: {
+//                        
+//                        if journal.pages[journal.currentPage].entries.count <= 8 {
+//                            selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+//                            var newIndex = 0
+//                            switch journal.pages[journal.currentPage].realEntryCount {
+//                            case 1: newIndex = 0
+//                            case 2: newIndex = 4
+//                            case 3: newIndex = 1
+//                            case 4: newIndex = 3
+//                            case 5: newIndex = 6
+//                            case 6: newIndex = 7
+//                            case 7: newIndex = 5
+//                            default: newIndex = 2
+//                            }
+//                        } else {
+//                            //handle too many entries
+//                        }
+//                        withTransaction(Transaction(animation: .none)) {
+//                            inTextEntry.toggle()
+//                        }
+//                    }) { Image(systemName: "t.square.fill")
+//                            .resizable()
+//                            .frame(width: 45, height: 45)
+//                        .foregroundColor(.black)}
+//                    PhotosPicker(selection: $selectedItems, label: {
+//                        Image(systemName: "photo.fill")
+//                            .resizable()
+//                            .frame(width: 45, height: 45)
+//                            .foregroundColor(.blue)
+//                    }).onChange(of: selectedItems) {
+//                        Task {
+//                            selectedImages.removeAll()
+//                            for item in selectedItems {
+//                                if let data = try? await item.loadTransferable(type: Data.self),
+//                                   let uiImage = UIImage(data: data) {
+//                                    selectedImages.append(uiImage)
+//                                }
+//                            }
+//                        }
+//                        withTransaction(Transaction(animation: .none)) {
+//                            isExpanded.toggle()
+//                        }
+//                    }
+//                    Button {
+//                        
+//                    } label: {
+//                        Image(systemName: "face.smiling.inverse")
+//                            .resizable()
+//                            .frame(width: 45, height: 45)
+//                            .foregroundColor(.yellow)
+//                    }
+//                    Button(action: {
+//                        withAnimation(.easeInOut(duration: 0.3)) {
+//                            isExpanded.toggle()
+//                        }
+//                    }) {
+//                        Image(systemName: "xmark.circle.fill")
+//                            .resizable()
+//                            .frame(width: 45, height: 45)
+//                        .foregroundColor(.red)}
+//                }.transition(.move(edge: .trailing).combined(with: .opacity))
+//                    .padding(.trailing, 10)
+//            }
+//        }
     }
 }
 
@@ -211,7 +337,7 @@ struct SelectedPhotoView: View {
 
 #Preview {
     struct Preview: View {
-        @State var inEntry: EntryType = .openJournal
+        @State var inTextEntry = false
         @State var displayPage = 2
         @State var selectedEntry = 0
         @ObservedObject var userVM: UserViewModel = UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
@@ -225,10 +351,11 @@ struct SelectedPhotoView: View {
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .flower3), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ])], scrapbookShelves: []))
         var body: some View {
-            AddEntryButtonView(journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), inEntry: $inEntry, userVM: userVM, fbVM: FirebaseViewModel(), displayPage: $displayPage, selectedEntry: $selectedEntry)
+            AddEntryButtonView(journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), inTextEntry: $inTextEntry, userVM: userVM, fbVM: FirebaseViewModel(), displayPage: $displayPage, selectedEntry: $selectedEntry)
         }
     }
 
     return Preview()
 }
+
 
