@@ -21,6 +21,7 @@ struct AddEntryButtonView: View {
     @Binding var inEntry: EntryType
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var fbVM: FirebaseViewModel
+    @ObservedObject var aiVM: AIViewModel
     @Binding var displayPage: Int
     @Binding var selectedEntry: Int
     @State var selectedItems = [PhotosPickerItem]()
@@ -425,7 +426,7 @@ struct SelectedPhotoView: View {
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .flower3), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ])], scrapbookShelves: []))
         var body: some View {
-            AddEntryButtonView(journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), inEntry: $inEntry, userVM: userVM, fbVM: FirebaseViewModel(), displayPage: $displayPage, selectedEntry: $selectedEntry)
+            AddEntryButtonView(journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), inEntry: $inEntry, userVM: userVM, fbVM: FirebaseViewModel(), aiVM: AIViewModel(), displayPage: $displayPage, selectedEntry: $selectedEntry)
         }
     }
 

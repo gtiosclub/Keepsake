@@ -194,7 +194,7 @@ class AIViewModel: ObservableObject {
        return UIImage(data: data)
     }
   
-    func getPromptOfTheDay() async -> String? {
+    func getPromptOfTheDay() async -> String {
         let errorResponse: String = "Error fetching prompt of the day."
         let prompt = "A user of a journal app wants to write a new journal entry. Suggest a one-line 'prompt of the day' for the user to journal about. Respond with only the one-line prompt, no additional text or quotation marks."
         do {

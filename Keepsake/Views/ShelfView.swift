@@ -257,7 +257,7 @@ struct ShelfView: View {
         } else {
             switch(inEntry) {
             case .openJournal:
-                OpenJournal(userVM: userVM, fbVM: fbVM,
+                OpenJournal(userVM: userVM, fbVM: fbVM, aiVM: aiVM,
                             journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
                             shelfIndex: shelfIndex,
                             bookIndex: selectedJournal,
@@ -317,7 +317,7 @@ struct ShelfView: View {
                 .navigationBarBackButtonHidden(true)
                 
             default:
-                OpenJournal(userVM: userVM, fbVM: fbVM,
+                OpenJournal(userVM: userVM, fbVM: fbVM, aiVM: aiVM,
                             journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
                             shelfIndex: shelfIndex,
                             bookIndex: selectedJournal,
