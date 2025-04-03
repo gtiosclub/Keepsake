@@ -15,6 +15,7 @@ class UserLookupViewModel: ObservableObject {
                 // Update local users array after successful friend addition
                 if let index = self.users.firstIndex(where: { $0.id == friendUserID }) {
                     self.users[index].friends.append(currentUserID)
+                    self.objectWillChange.send()
                 }
             }
         }
@@ -30,6 +31,7 @@ class UserLookupViewModel: ObservableObject {
                 // Update local users array after successful friend removal
                 if let index = self.users.firstIndex(where: { $0.id == friendUserID }) {
                     self.users[index].friends.removeAll { $0 == currentUserID }
+                    self.objectWillChange.send()
                 }
             }
         }
