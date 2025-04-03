@@ -105,21 +105,21 @@ struct TextEntryView: View {
                                     Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]).opacity(0.9),
                                     Color(red: entry.color[0] * 0.8, green: entry.color[1] * 0.8, blue: entry.color[2] * 0.8)
                                 ], startPoint: .topLeading, endPoint: .bottomTrailing))
-                .frame(width: entry.frameWidth, height: entry.frameHeight)
+                .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.height - 1))
                 .opacity(entry.isFake ? 0 : 1)
                 .frame(height: height, alignment: .top)
             VStack {
                 Text(entry.title)
-                    .frame(width: entry.frameWidth - 10)
+                    .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.width - 1) - 10)
                     .scaledToFill()
                     .lineLimit(2)
                 Text(entry.date)
-                    .frame(width: entry.frameWidth - 10)
+                    .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.width - 1) - 10)
                     .scaledToFill()
                     .lineLimit(1)
                 if entry.width == 2 && entry.height == 2 {
                     Text(entry.summary)
-                        .frame(width: entry.frameWidth - 10)
+                        .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.width - 1) - 10)
                         .scaledToFill()
                         .lineLimit(1)
                 }
@@ -174,7 +174,7 @@ struct PictureEntryView: View {
                                 Image(uiImage: uiImages[index])
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(width: entry.frameWidth, height: entry.frameHeight)
+                                    .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.height - 1))
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
                                     .tag(index)
                                 
@@ -197,18 +197,18 @@ struct PictureEntryView: View {
                                     .background(RoundedRectangle(cornerRadius: 10).fill(.gray.opacity(0.33)))
                                     // Adjust dot position
                                     Spacer()
-                                }.frame(width: entry.frameWidth, height: entry.frameHeight)
+                                }.frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.height - 1))
                             }
                         }
                     }
-                    .frame(width: entry.frameWidth, height: entry.frameHeight)
+                    .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.height - 1))
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never)) // Hides default dots
                     .ignoresSafeArea()
                 } else {
                     HStack {
                         Text("Upload")
                         Image(systemName: "camera")
-                    }.frame(width: entry.frameWidth, height: entry.frameHeight)
+                    }.frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * 0.02 * CGFloat(entry.height - 1))
                         .background(RoundedRectangle(cornerRadius: 10).fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2])))
                         
                 }

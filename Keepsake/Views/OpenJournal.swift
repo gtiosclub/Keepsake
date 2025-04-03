@@ -36,6 +36,7 @@ struct OpenJournal: View {
     @State private var showSearch = false
     @Binding var hideToolBar: Bool
     @Binding var dailyPrompt: String?
+    @State var showPagesSheet: Bool = false
     var body: some View {
         // This ZStack will define the base frame
         ZStack {
@@ -81,7 +82,9 @@ struct OpenJournal: View {
                             .padding(.top, 8)
                             .foregroundColor(.black)
                     }
-                    Button {} label: {
+                    Button {
+                        showPagesSheet.toggle()
+                    } label: {
                         Image(systemName: "book.pages")
                             .resizable()
                             .scaledToFit()
@@ -123,6 +126,9 @@ struct OpenJournal: View {
         .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
         .fixedSize()
         .toolbar(.hidden, for: .tabBar)
+        .sheet(isPresented: $showPagesSheet) {
+            JournalPagesView(userVM: userVM, fbVM: fbVM, journal: journal, isPresented: $showPagesSheet)
+        }
     }
 }
 
