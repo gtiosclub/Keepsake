@@ -40,9 +40,14 @@ struct AudioFilesView: View {
     }
     
     func fetchAllAudioFiles() {
+        #if os(iOS)
         Task {
             await Connectivity.shared.fetchAudioFiles()
         }
+        #endif
+        #if os(watchOS)
+        Connectivity.shared.requestAudioFiles()
+        #endif
         
     }
 }

@@ -65,7 +65,20 @@ final class Connectivity: NSObject, WCSessionDelegate {
             UserDefaults.standard.set(data, forKey: "reminders")
         }
     }
-
+    public func requestAudioFiles() {
+        print("files requested")
+        if WCSession.default.isReachable {
+            WCSession.default.sendMessage(["requesting audio files": true], replyHandler: { response in
+                //phone gives response then:
+                if let audioFilesUrl = response["audioFilesUrl"] as? [String] {
+                    DispatchQueue.main.async {
+                        self.audioFiles = audioFilesUrl
+                    }
+                }
+            })
+        }
+    }
+  
     public func send(reminder: Reminder) {
         print("sending")
         guard WCSession.default.activationState == .activated else { return }
@@ -194,6 +207,14 @@ final class Connectivity: NSObject, WCSessionDelegate {
     }
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
         print("recieved")
+        #if os(iOS)
+        if let messageFromWatch = message["requesting audio files"] as? Bool {
+            Task {
+                print("hi")
+                await fetchAudioFiles()
+            }
+        }
+        #endif
         if let audioFilesUrl = message["audio files"] as? [String] {
                 DispatchQueue.main.async {
                     self.audioFiles = audioFilesUrl
