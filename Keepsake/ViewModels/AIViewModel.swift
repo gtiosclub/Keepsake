@@ -482,11 +482,15 @@ class AIViewModel: ObservableObject {
     @Published var conversationHistory: [String] = []
     @Published var userInput: String = ""
     func startConversation(entry: JournalEntry) async {
-        var entryLog = entry.conversationLog
+        await MainActor.run {
+                self.conversationHistory = []
+            }
+        
+        
         let startPrompt = """
         You will be holding a back and forth conversation with a user in their conversation entry.
         
-        Start off the conversation by asking "What do you want to talk about today?" or maybe a question related to their title to kick things off. Try not to make it too long
+        Start off the conversation by asking "What do you want to talk about today?" Try not to make it too long
         
         """
         
@@ -494,7 +498,8 @@ class AIViewModel: ObservableObject {
         do {
             let firstResponse = try await openAIAPIKey.sendMessage(text: startPrompt, model: gptModel!)
             conversationHistory.append("GPT: \(firstResponse)")
-            entryLog.append("GPT: \(firstResponse)")
+            
+            await FirebaseVM.addConversationLog(text: conversationHistory, journalEntry: entry.id)
             
         } catch {
             print("Error: \(error.localizedDescription)")
@@ -503,13 +508,11 @@ class AIViewModel: ObservableObject {
     }
     
     func sendMessage(entry: JournalEntry) async {
-        var entryLog = entry.conversationLog
         guard (!userInput.isEmpty) else {
             return
         }
         let userMsg = "User: \(userInput)"
         conversationHistory.append(userMsg)
-        entryLog.append(userMsg)
         let conversation = conversationHistory.joined(separator: "\n")
         let chatPrompt = """
             
@@ -527,7 +530,8 @@ class AIViewModel: ObservableObject {
         do {
             let gptResponse = try await openAIAPIKey.sendMessage(text: chatPrompt, model: gptModel!)
             conversationHistory.append("GPT: \(gptResponse)")
-            entryLog.append("GPT: \(gptResponse)")
+            
+            await FirebaseVM.addConversationLog(text: conversationHistory, journalEntry: entry.id)
         } catch {
             print("Error: \(error.localizedDescription)")
         }

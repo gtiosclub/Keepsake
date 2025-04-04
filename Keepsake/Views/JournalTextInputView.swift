@@ -143,46 +143,10 @@ struct JournalTextInputView: View {
                                 
                             }
                     }
-                    Spacer()
-                    Button(action: {
-                        Task {
-                            let exists = await fbVM.conversationEntryCheck(journalEntryID: entry.id)
-                            
-                            if !exists {
-                                let success = await fbVM.createConversationEntry(entry: entry, journalID: entry.id.uuidString)
-                                if !success {
-                                    print("Error creating conversation entry")
-                                    return
-                                }
-                            }
-                            await fbVM.updateEntryWithConversationLog(id: entry.id)
-
-                            // Navigate regardless of whether a new entry was created
-                            shouldNavigate = true
-                        }
-                    }) {
-                        Text("Chat with Companion")
-                            .font(.system(size: 18))
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.blue, Color.purple]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(15)
-                            .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
-                    }
                 }
                 .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
                 .padding(.bottom, 10)
 
-                // Hidden NavigationLink that triggers on shouldNavigate change
-                NavigationLink(destination: ConversationView(viewModel: aiVM, FBviewModel: fbVM, convoEntry: entry), isActive: $shouldNavigate) {
-                    EmptyView()
-                }
             }.onAppear() {
                 title = entry.title
                 inputText = entry.text
