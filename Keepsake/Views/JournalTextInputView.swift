@@ -26,6 +26,7 @@ struct JournalTextInputView: View {
     @State var selectedPrompt: String? = ""
     @State private var shouldNavigate = false
     @Binding var dailyPrompt: String?
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -66,122 +67,43 @@ struct JournalTextInputView: View {
                     }.padding(UIScreen.main.bounds.width * 0.025)
                 }
                 TextField(textfieldPrompt, text: $title, axis: .vertical)
-                    .font(.custom("SF Pro Display", size: UIFont.preferredFont(forTextStyle: .title1).pointSize))
+                    .fontWeight(.bold)
+                    .font(.title)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
+                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 2)
                 Text(date).font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-                if selectedPrompt != nil {
-                    if let selectedPrompt = selectedPrompt, !selectedPrompt.isEmpty {
-                        let trimmedPrompt = selectedPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
-                        
-                        HStack(spacing: 8) {
-                            Image(systemName: "lightbulb")
-                                .foregroundColor(.yellow)           .font(.title3)
-                                
-                            Text(trimmedPrompt)
-                                .font(.subheadline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.blue.opacity(0.2))
-                        )
-                        .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                if let selectedPrompt = selectedPrompt, !selectedPrompt.isEmpty {
+                    let trimmedPrompt = selectedPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+
+                    HStack(spacing: 8) {
+                        // Vertical bar
+                        Rectangle()
+                            .frame(width: 4, height: 40) // Adjust width for the vertical bar thickness
+                            .foregroundColor(.blue) // Bar color
+
+                        // Prompt text
+                        Text(trimmedPrompt)
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .background(Color.clear) // No need for a background box, just the bar
+                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
                 }
                 DebounceTextField(inputText: $inputText, aiVM: aiVM)
                 Spacer()
                 HStack() {
-                    Menu {
-                        Button {
-                            
-                        } label: {
-                            HStack {
-                                Text("Choose Photo")
-                                Spacer()
-                                Image(systemName: "photo")
-                            }
-                        }
-                        Button {
-                            
-                        } label: {
-                            HStack {
-                                Text("Take Photo")
-                                Spacer()
-                                Image(systemName: "camera")
-                            }
-                        }
-                        Button {
-                            
-                        } label: {
-                            HStack {
-                                Text("Voice Memo")
-                                Spacer()
-                                Image(systemName: "waveform")
-                            }
-                        }
-                        Button {
-                            showPromptSheet = true
-                        } label: {
-                            HStack {
-                                Text("Need Suggestions?")
-                                Spacer()
-                                Image(systemName: "lightbulb")
-                            }
-                        }
-                        
+                    Button {
+                        showPromptSheet = true
                     } label: {
-                        Image(systemName: "plus.circle")
-                            .resizable()
-                            .scaledToFit()
-                            .foregroundStyle(.black)
-                            .frame(width: UIScreen.main.bounds.width * 0.1)
-                            .contextMenu {
-                                
-                            }
+                        Label("need suggestions?", systemImage: "lightbulb.max")
+                            .foregroundColor(Color(red: 127/255, green: 210/255, blue: 231/255))
                     }
+                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                    .padding(.bottom, 20)
                     Spacer()
-                    Button(action: {
-                        Task {
-                            let exists = await fbVM.conversationEntryCheck(journalEntryID: entry.id)
-                            
-                            if !exists {
-                                let success = await fbVM.createConversationEntry(entry: entry, journalID: entry.id.uuidString)
-                                if !success {
-                                    print("Error creating conversation entry")
-                                    return
-                                }
-                            }
-                            await fbVM.updateEntryWithConversationLog(id: entry.id)
-
-                            // Navigate regardless of whether a new entry was created
-                            shouldNavigate = true
-                        }
-                    }) {
-                        Text("Chat with Companion")
-                            .font(.system(size: 18))
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.blue, Color.purple]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(15)
-                            .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
-                    }
-                }
-                .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-                .padding(.bottom, 10)
-
-                // Hidden NavigationLink that triggers on shouldNavigate change
-                NavigationLink(destination: ConversationView(viewModel: aiVM, FBviewModel: fbVM, convoEntry: entry), isActive: $shouldNavigate) {
-                    EmptyView()
                 }
             }.onAppear() {
                 title = entry.title
@@ -225,6 +147,18 @@ struct DebounceTextField: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 4)
                 .background(Color.clear)
+                .overlay(
+                    Group {
+                        if inputText.isEmpty {
+                            Text("Start typing...")
+                                .foregroundColor(Color.gray.opacity(0.5))
+                                .italic()
+                                .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 2)
+                                .padding(.top, 8) // Adjust to align with text input
+                                .allowsHitTesting(false) // Ensures text input is still interactive
+                        }
+                    }, alignment: .topLeading
+                    )
                 .onChange(of: inputText) { _, newValue in
                     publisher.send(newValue)
                 }
@@ -308,4 +242,5 @@ struct DebounceTextField: View {
 
     return Preview()
 }
+
 
