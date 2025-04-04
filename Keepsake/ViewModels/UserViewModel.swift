@@ -18,25 +18,25 @@ class UserViewModel: ObservableObject {
                     JournalPage(number: 1),
                     JournalPage(number: 2,
                                 entries: [
-                                    JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")],
+                                    WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")],
                                 realEntryCount: 1),
                     JournalPage(number: 3,
                                 entries: [
-                                    JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"),
-                                    JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"),
-                                    JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")],
+                                    WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"),
+                                    WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"),
+                                    WrittenEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")],
                                 realEntryCount: 3),
                     JournalPage(number: 4,
                                 entries: [
-                                    JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"),
-                                    JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")],
+                                    WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"),
+                                    WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")],
                                 realEntryCount: 2),
                     JournalPage(number: 5)]),
                 Template(name: "Minimalist", coverColor: .gray, pageColor: .white, titleColor: .black, texture: .blackLeather, journalPages: [JournalPage(
                     number: 1,
-                    entries: [JournalEntry(date: "2025-03-26",title: "Entry 1",text: "Sample text for entry 1",summary: "Summary of entry 1"),
-                              JournalEntry(date: "2025-03-26",title: "Entry 2",text: "Sample text for entry 2",summary: "Summary of entry 2"),
-                              JournalEntry(date: "2025-03-26",title: "Entry 8",text: "Sample text for entry 8",summary: "Summary of entry 8")],
+                    entries: [WrittenEntry(date: "2025-03-26",title: "Entry 1",text: "Sample text for entry 1",summary: "Summary of entry 1"),
+                              WrittenEntry(date: "2025-03-26",title: "Entry 2",text: "Sample text for entry 2",summary: "Summary of entry 2"),
+                              WrittenEntry(date: "2025-03-26",title: "Entry 8",text: "Sample text for entry 8",summary: "Summary of entry 8")],
                     realEntryCount: 0
                 )]),
                 Template(name: "Creative", coverColor: .blue, pageColor: .yellow, titleColor: .white, texture: .flower1),
@@ -120,34 +120,34 @@ class UserViewModel: ObservableObject {
         var entrySelection = 0
         switch page.realEntryCount {
         case 0:
-            page.entries[0] = JournalEntry(entry: entry, width: 2, height: 2, color: entry.color, images: entry.images, type: entry.type)
+            page.entries[0] = JournalEntry(entry: entry, width: 2, height: 2)
             entrySelection = 0
         case 1:
-            page.entries[4] = JournalEntry(entry: entry, width: 2, height: 2, color: entry.color, images: entry.images, type: entry.type)
+            page.entries[4] = JournalEntry(entry: entry, width: 2, height: 2)
             entrySelection = 4
         case 2:
-            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2, color: page.entries[0].color, images: page.entries[0].images, type: page.entries[0].type)
-            page.entries[1] = JournalEntry(entry: entry, width: 1, height: 2, color: entry.color, images: entry.images, type: entry.type)
+            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2)
+            page.entries[1] = JournalEntry(entry: entry, width: 1, height: 2,)
             entrySelection = 1
         case 3:
-            page.entries[1] = JournalEntry(entry: page.entries[1], width: 1, height: 1, color: page.entries[1].color, images: page.entries[1].images, type: page.entries[1].type)
-            page.entries[3] = JournalEntry(entry: entry, width: 1, height: 1, color: entry.color, images: entry.images, type: entry.type)
+            page.entries[1] = JournalEntry(entry: page.entries[1], width: 1, height: 1)
+            page.entries[3] = JournalEntry(entry: entry, width: 1, height: 1)
             entrySelection = 3
         case 4:
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
-            page.entries[6] = JournalEntry(entry: entry, width: 2, height: 1, color: entry.color, images: entry.images, type: entry.type)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1)
+            page.entries[6] = JournalEntry(entry: entry, width: 2, height: 1)
             entrySelection = 6
         case 5:
-            page.entries[6] = JournalEntry(entry: page.entries[6], width: 1, height: 1, color: page.entries[6].color, images: page.entries[6].images, type: page.entries[6].type)
-            page.entries[7] = JournalEntry(entry: entry, width: 1, height: 1, color: entry.color, images: entry.images, type: entry.type)
+            page.entries[6] = JournalEntry(entry: page.entries[6], width: 1, height: 1)
+            page.entries[7] = JournalEntry(entry: entry, width: 1, height: 1)
             entrySelection = 7
         case 6:
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 1, height: 1, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
-            page.entries[5] = JournalEntry(entry: entry, width: 1, height: 1, color: entry.color, images: entry.images, type: entry.type)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 1, height: 1)
+            page.entries[5] = JournalEntry(entry: entry, width: 1, height: 1)
             entrySelection = 5
         default:
-            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 1, color: page.entries[0].color, images: page.entries[0].images, type: page.entries[0].type)
-            page.entries[2] = JournalEntry(entry: entry, width: 1, height: 1, color: entry.color, images: entry.images, type: entry.type)
+            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 1)
+            page.entries[2] = JournalEntry(entry: entry, width: 1, height: 1)
             entrySelection = 2
         }
         page.realEntryCount += 1
@@ -160,7 +160,7 @@ class UserViewModel: ObservableObject {
     }
     
     func removeJournalFromShelf(shelfIndex: Int, journalID: UUID) {
-        var journals = user.getJournalShelves()[shelfIndex].journals
+        let journals = user.getJournalShelves()[shelfIndex].journals
         for index in journals.indices {
             if journalID == journals[index].id {
                 user.getJournalShelves()[shelfIndex].journals.remove(at: index)
@@ -179,7 +179,7 @@ class UserViewModel: ObservableObject {
                 let originalEntries = page.entries.filter { !$0.isFake }
                 // Only reset and process if there are non-empty entries
                 if !originalEntries.isEmpty {
-                    let fakeEntry = JournalEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: true, color: [0.5, 0.5, 0.5])
+                    let fakeEntry = JournalEntry(date: "", title: "", entryContents: "", type: .written)
                     page.entries = Array(repeating: fakeEntry, count: 8)
                     page.realEntryCount = 0
                     
@@ -224,13 +224,13 @@ class UserViewModel: ObservableObject {
     private func removeEntryFrom3(page: JournalPage, index: Int) {
         switch(index) {
         case 0:
-            page.entries[0] = JournalEntry(entry: page.entries[1], width: 2, height: 2, color: page.entries[1].color, images: page.entries[1].images, type: page.entries[1].type)
+            page.entries[0] = JournalEntry(entry: page.entries[1], width: 2, height: 2)
             page.entries[1] = JournalEntry()
         case 1:
             page.entries[1] = JournalEntry()
-            page.entries[0] = JournalEntry(entry: page.entries[0], width: 2, height: 2, color: page.entries[0].color, images: page.entries[0].images, type: page.entries[0].type)
+            page.entries[0] = JournalEntry(entry: page.entries[0], width: 2, height: 2)
         default:
-            page.entries[4] = JournalEntry(entry: page.entries[1], width: 2, height: 2, color: page.entries[1].color, images: page.entries[1].images, type: page.entries[1].type)
+            page.entries[4] = JournalEntry(entry: page.entries[1], width: 2, height: 2)
             page.entries[1] = JournalEntry()
         }
     }
@@ -238,41 +238,41 @@ class UserViewModel: ObservableObject {
     private func removeEntryFrom4(page: JournalPage, index: Int) {
         switch(index) {
         case 0:
-            page.entries[0] = JournalEntry(entry: page.entries[3], width: 1, height: 2, color: page.entries[3].color, images: page.entries[3].images, type: page.entries[3].type)
-            page.entries[1] = JournalEntry(entry: page.entries[1], width: 1, height: 2, color: page.entries[1].color, images: page.entries[1].images, type: page.entries[1].type)
+            page.entries[0] = JournalEntry(entry: page.entries[3], width: 1, height: 2)
+            page.entries[1] = JournalEntry(entry: page.entries[1], width: 1, height: 2)
             page.entries[3] = JournalEntry()
         case 1:
-            page.entries[1] = JournalEntry(entry: page.entries[3], width: 1, height: 2, color: page.entries[3].color, images: page.entries[3].images, type: page.entries[3].type)
+            page.entries[1] = JournalEntry(entry: page.entries[3], width: 1, height: 2)
             page.entries[3] = JournalEntry()
         case 3:
-            page.entries[1] = JournalEntry(entry: page.entries[1], width: 1, height: 2, color: page.entries[1].color, images: page.entries[1].images, type: page.entries[1].type)
+            page.entries[1] = JournalEntry(entry: page.entries[1], width: 1, height: 2)
             page.entries[3] = JournalEntry()
         default:
-            page.entries[4] = JournalEntry(entry: page.entries[3], width: 2, height: 2, color: page.entries[3].color, images: page.entries[3].images, type: page.entries[3].type)
+            page.entries[4] = JournalEntry(entry: page.entries[3], width: 2, height: 2)
             page.entries[3] = JournalEntry()
-            page.entries[1] = JournalEntry(entry: page.entries[1], width: 1, height: 2, color: page.entries[1].color, images: page.entries[1].images, type: page.entries[1].type)
+            page.entries[1] = JournalEntry(entry: page.entries[1], width: 1, height: 2)
         }
     }
     
     private func removeEntryFrom5(page: JournalPage, index: Int) {
         switch(index) {
         case 0:
-            page.entries[0] = JournalEntry(entry: page.entries[6], width: 1, height: 2, color: page.entries[6].color, images: page.entries[6].images, type: page.entries[6].type)
+            page.entries[0] = JournalEntry(entry: page.entries[6], width: 1, height: 2)
             page.entries[6] = JournalEntry()
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 2, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 2)
         case 1:
-            page.entries[1] = JournalEntry(entry: page.entries[6], width: 1, height: 1, color: page.entries[6].color, images: page.entries[6].images, type: page.entries[6].type)
+            page.entries[1] = JournalEntry(entry: page.entries[6], width: 1, height: 1)
             page.entries[6] = JournalEntry()
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 2, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 2)
         case 3:
-            page.entries[3] = JournalEntry(entry: page.entries[6], width: 1, height: 1, color: page.entries[6].color, images: page.entries[6].images, type: page.entries[6].type)
+            page.entries[3] = JournalEntry(entry: page.entries[6], width: 1, height: 1)
             page.entries[6] = JournalEntry()
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 2, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 2)
         case 4:
-            page.entries[4] = JournalEntry(entry: page.entries[6], width: 2, height: 2, color: page.entries[6].color, images: page.entries[6].images, type: page.entries[6].type)
+            page.entries[4] = JournalEntry(entry: page.entries[6], width: 2, height: 2)
             page.entries[6] = JournalEntry()
         default:
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 2, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 2)
             page.entries[6] = JournalEntry()
         }
     }
@@ -280,21 +280,21 @@ class UserViewModel: ObservableObject {
     private func removeEntryFrom6(page: JournalPage, index: Int) {
         switch(index) {
         case 0:
-            page.entries[0] = JournalEntry(entry: page.entries[7], width: 1, height: 2, color: page.entries[7].color, images: page.entries[7].images, type: page.entries[7].type)
-            page.entries[6] = JournalEntry(entry: page.entries[6], width: 2, height: 1, color: page.entries[6].color, images: page.entries[6].images, type: page.entries[6].type)
+            page.entries[0] = JournalEntry(entry: page.entries[7], width: 1, height: 2)
+            page.entries[6] = JournalEntry(entry: page.entries[6], width: 2, height: 1)
         case 1:
-            page.entries[1] = JournalEntry(entry: page.entries[7], width: 1, height: 1, color: page.entries[7].color, images: page.entries[7].images, type: page.entries[7].type)
-            page.entries[6] = JournalEntry(entry: page.entries[6], width: 2, height: 1, color: page.entries[6].color, images: page.entries[6].images, type: page.entries[6].type)
+            page.entries[1] = JournalEntry(entry: page.entries[7], width: 1, height: 1)
+            page.entries[6] = JournalEntry(entry: page.entries[6], width: 2, height: 1)
         case 3:
-            page.entries[3] = JournalEntry(entry: page.entries[7], width: 1, height: 1, color: page.entries[7].color, images: page.entries[7].images, type: page.entries[7].type)
-            page.entries[6] = JournalEntry(entry: page.entries[6], width: 2, height: 1, color: page.entries[6].color, images: page.entries[6].images, type: page.entries[6].type)
+            page.entries[3] = JournalEntry(entry: page.entries[7], width: 1, height: 1)
+            page.entries[6] = JournalEntry(entry: page.entries[6], width: 2, height: 1)
         case 4:
-            page.entries[4] = JournalEntry(entry: page.entries[7], width: 2, height: 1, color: page.entries[7].color, images: page.entries[7].images, type: page.entries[7].type)
-            page.entries[6] = JournalEntry(entry: page.entries[6], width: 2, height: 1, color: page.entries[6].color, images: page.entries[6].images, type: page.entries[6].type)
+            page.entries[4] = JournalEntry(entry: page.entries[7], width: 2, height: 1)
+            page.entries[6] = JournalEntry(entry: page.entries[6], width: 2, height: 1)
         case 6:
-            page.entries[6] = JournalEntry(entry: page.entries[7], width: 2, height: 1, color: page.entries[7].color, images: page.entries[7].images, type: page.entries[7].type)
+            page.entries[6] = JournalEntry(entry: page.entries[7], width: 2, height: 1)
         default:
-            page.entries[6] = JournalEntry(entry: page.entries[6], width: 2, height: 1, color: page.entries[6].color, images: page.entries[6].images, type: page.entries[6].type)
+            page.entries[6] = JournalEntry(entry: page.entries[6], width: 2, height: 1)
         }
         page.entries[7] = JournalEntry()
     }
@@ -302,24 +302,24 @@ class UserViewModel: ObservableObject {
     private func removeEntryFrom7(page: JournalPage, index: Int) {
         switch(index) {
         case 0:
-            page.entries[0] = JournalEntry(entry: page.entries[5], width: 1, height: 2, color: page.entries[5].color, images: page.entries[5].images, type: page.entries[5].type)
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
+            page.entries[0] = JournalEntry(entry: page.entries[5], width: 1, height: 2)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1)
         case 1:
-            page.entries[1] = JournalEntry(entry: page.entries[5], width: 1, height: 1, color: page.entries[5].color, images: page.entries[5].images, type: page.entries[5].type)
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
+            page.entries[1] = JournalEntry(entry: page.entries[5], width: 1, height: 1)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1)
         case 3:
-            page.entries[3] = JournalEntry(entry: page.entries[5], width: 1, height: 1, color: page.entries[5].color, images: page.entries[5].images, type: page.entries[5].type)
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
+            page.entries[3] = JournalEntry(entry: page.entries[5], width: 1, height: 1)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1)
         case 4:
-            page.entries[4] = JournalEntry(entry: page.entries[5], width: 2, height: 1, color: page.entries[5].color, images: page.entries[5].images, type: page.entries[5].type)
+            page.entries[4] = JournalEntry(entry: page.entries[5], width: 2, height: 1)
         case 5:
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1)
         case 6:
-            page.entries[6] = JournalEntry(entry: page.entries[5], width: 1, height: 1, color: page.entries[5].color, images: page.entries[5].images, type: page.entries[5].type)
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
+            page.entries[6] = JournalEntry(entry: page.entries[5], width: 1, height: 1)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1)
         default:
-            page.entries[7] = JournalEntry(entry: page.entries[5], width: 1, height: 1, color: page.entries[5].color, images: page.entries[5].images, type: page.entries[5].type)
-            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1, color: page.entries[4].color, images: page.entries[4].images, type: page.entries[4].type)
+            page.entries[7] = JournalEntry(entry: page.entries[5], width: 1, height: 1)
+            page.entries[4] = JournalEntry(entry: page.entries[4], width: 2, height: 1)
         }
         page.entries[5] = JournalEntry()
     }
@@ -327,27 +327,27 @@ class UserViewModel: ObservableObject {
     private func removeEntryFrom8(page: JournalPage, index: Int) {
         switch(index) {
         case 0:
-            page.entries[0] = JournalEntry(entry: page.entries[2], width: 1, height: 2, color: page.entries[2].color, images: page.entries[2].images, type: page.entries[2].type)
+            page.entries[0] = JournalEntry(entry: page.entries[2], width: 1, height: 2)
         case 1:
-            page.entries[1] = JournalEntry(entry: page.entries[2], width: 1, height: 1, color: page.entries[2].color, images: page.entries[2].images, type: page.entries[2].type)
-            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2, color: page.entries[0].color, images: page.entries[0].images, type: page.entries[0].type)
+            page.entries[1] = JournalEntry(entry: page.entries[2], width: 1, height: 1)
+            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2)
         case 2:
-            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2, color: page.entries[0].color, images: page.entries[0].images, type: page.entries[0].type)
+            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2)
         case 3:
-            page.entries[3] = JournalEntry(entry: page.entries[2], width: 1, height: 1, color: page.entries[2].color, images: page.entries[2].images, type: page.entries[2].type)
-            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2, color: page.entries[0].color, images: page.entries[0].images, type: page.entries[0].type)
+            page.entries[3] = JournalEntry(entry: page.entries[2], width: 1, height: 1)
+            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2)
         case 4:
-            page.entries[4] = JournalEntry(entry: page.entries[2], width: 1, height: 1, color: page.entries[2].color, images: page.entries[2].images, type: page.entries[2].type)
-            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2, color: page.entries[0].color, images: page.entries[0].images, type: page.entries[0].type)
+            page.entries[4] = JournalEntry(entry: page.entries[2], width: 1, height: 1)
+            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2)
         case 5:
-            page.entries[5] = JournalEntry(entry: page.entries[2], width: 1, height: 1, color: page.entries[2].color, images: page.entries[2].images, type: page.entries[2].type)
-            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2, color: page.entries[0].color, images: page.entries[0].images, type: page.entries[0].type)
+            page.entries[5] = JournalEntry(entry: page.entries[2], width: 1, height: 1)
+            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2)
         case 6:
-            page.entries[6] = JournalEntry(entry: page.entries[2], width: 1, height: 1, color: page.entries[2].color, images: page.entries[2].images, type: page.entries[2].type)
-            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2, color: page.entries[0].color, images: page.entries[0].images, type: page.entries[0].type)
+            page.entries[6] = JournalEntry(entry: page.entries[2], width: 1, height: 1)
+            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2)
         default:
-            page.entries[7] = JournalEntry(entry: page.entries[2], width: 1, height: 1, color: page.entries[2].color, images: page.entries[2].images, type: page.entries[2].type)
-            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2, color: page.entries[0].color, images: page.entries[0].images, type: page.entries[0].type)
+            page.entries[7] = JournalEntry(entry: page.entries[2], width: 1, height: 1)
+            page.entries[0] = JournalEntry(entry: page.entries[0], width: 1, height: 2)
         }
         page.entries[2] = JournalEntry()
     }

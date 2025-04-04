@@ -153,9 +153,11 @@ class FirebaseViewModel: ObservableObject {
                     for journal in shelf.journals {
                         for page in journal.pages {
                             for entry in page.entries {
-                                for url in entry.images {
-                                    if let image = await getImageFromURL(urlString: url) {
-                                        imageDict[url] = image
+                                if let entry = entry as? PictureEntry {
+                                    for url in entry.images {
+                                        if let image = await getImageFromURL(urlString: url) {
+                                            imageDict[url] = image
+                                        }
                                     }
                                 }
                             }
@@ -624,25 +626,25 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func createConversationEntry(entry: JournalEntry, journalID: String) async -> Bool {
-            let journalEntry = db.collection("JOURNAL_ENTRIES")
-            var conversationEntryData: [String: Any]  = [
-                "date": "",
-                "entryContents": "",
-                "conversationLog": [],
-                "id": entry.id.uuidString,
-                "journal_id": journalID,
-                "summary": "",
-                "title": ""
-            ]
-            do {
-                try await journalEntry.document(entry.id.uuidString).setData(conversationEntryData)
-                return true
-                
-            } catch {
-                print("Error making document: \(error.localizedDescription)")
-                return false
-            }
+        let journalEntry = db.collection("JOURNAL_ENTRIES")
+        var conversationEntryData: [String: Any]  = [
+            "date": "",
+            "entryContents": "",
+            "conversationLog": [],
+            "id": entry.id.uuidString,
+            "journal_id": journalID,
+            "summary": "",
+            "title": ""
+        ]
+        do {
+            try await journalEntry.document(entry.id.uuidString).setData(conversationEntryData)
+            return true
+            
+        } catch {
+            print("Error making document: \(error.localizedDescription)")
+            return false
         }
+    }
     func updateEntryWithConversationLog(id: UUID) async {
         let journalDoc = db.collection("JOURNAL_ENTRIES").document(id.uuidString)
         
@@ -661,9 +663,9 @@ class FirebaseViewModel: ObservableObject {
         let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntry.uuidString)
         
         do {
-            try await docRef.setData([
+            try await docRef.updateData([
                 "conversationLog": text,
-            ], merge: true)
+            ])
             return true
         } catch {
             print("Error updating document: \(error.localizedDescription)")

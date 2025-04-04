@@ -25,7 +25,7 @@ struct JournalTextWidgetView: View {
                     Rectangle()
                         .opacity(0)
                         .overlay{
-                            Text("\(entry.summary)")
+                            Text("\(entry.entryContents)")
                                 .italic()
                                 .lineLimit(nil)
                                 .multilineTextAlignment(.leading)
@@ -42,7 +42,7 @@ struct JournalTextWidgetView: View {
 
 #Preview {
     struct Preview: View {
-        @State var entry = JournalEntry(date: "01/01/2000", title: "Title", text: "written text", summary: "recipe for great protein shake")
+        @State var entry = WrittenEntry(date: "01/01/2000", title: "Title", text: "written text", summary: "recipe for great protein shake")
         var body: some View {
             JournalTextWidgetView(entry: entry)
         }
