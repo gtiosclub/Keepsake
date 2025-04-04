@@ -98,28 +98,14 @@ struct JournalVoiceMemoInputView: View {
                     .lineLimit(nil)
             }
             HStack() {
-                Menu {
-                    Button {
-                        showPromptSheet = true
-                    } label: {
-                        HStack {
-                            Text("Need Suggestions?")
-                            Spacer()
-                            Image(systemName: "lightbulb")
-                        }
-                    }
+                Button {
+                    showPromptSheet = true
                 } label: {
-                    Image(systemName: "lightbulb.circle")
-                        .resizable()
-                        .scaledToFit()
-                        .foregroundStyle(.black)
-                        .frame(width: UIScreen.main.bounds.width * 0.1)
-                        .contextMenu {
-                            
-                        }
+                    Label("need suggestions?", systemImage: "lightbulb.max")
+                        .foregroundColor(Color(red: 127/255, green: 210/255, blue: 231/255))
                 }
                 .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-                .padding(.bottom, 10)
+                .padding(.bottom, 20)
                 Spacer()
             }
         }.onAppear() {
