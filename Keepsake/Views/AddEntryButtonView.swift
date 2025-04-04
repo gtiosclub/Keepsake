@@ -21,11 +21,13 @@ struct AddEntryButtonView: View {
     @Binding var inEntry: EntryType
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var fbVM: FirebaseViewModel
+    @ObservedObject var aiVM: AIViewModel
     @Binding var displayPage: Int
     @Binding var selectedEntry: Int
     @State var selectedItems = [PhotosPickerItem]()
     @State var selectedImages = [UIImage]()
     @State private var widgetsOrStickers: Int = 0
+    @Binding var dailyPrompt: String?
     var body: some View {
         VStack {
             if !isExpanded {
@@ -111,6 +113,12 @@ struct AddEntryButtonView: View {
                             }
                         }
                         Button {
+                            Task {
+                                let dp = await aiVM.getPromptOfTheDay()
+                                await MainActor.run {
+                                    dailyPrompt = dp
+                                }
+                            }
                             if journal.pages[journal.currentPage].entries.count <= 8 {
                                 selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
                                 var newIndex = 0
@@ -181,7 +189,16 @@ struct AddEntryButtonView: View {
                         }
                         Button {
                             if journal.pages[journal.currentPage].entries.count <= 8 {
-                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                                let newEntry = JournalEntry(
+                                        date: "",
+                                        title: "Echo 🌐",
+                                        conversationLog: [] 
+                                    )
+                                
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: newEntry)
+                                
+                                aiVM.conversationHistory = []
+                                
                                 var newIndex = 0
                                 switch journal.pages[journal.currentPage].realEntryCount {
                                 case 1: newIndex = 0
@@ -198,8 +215,7 @@ struct AddEntryButtonView: View {
                             }
                             withTransaction(Transaction(animation: .none)) {
                                 inEntry = .chat
-                            }
-                            
+                            }                            
                         } label: {
                             ZStack(alignment: .topLeading) {
                                 RoundedRectangle(cornerRadius: 20)
@@ -425,7 +441,7 @@ struct SelectedPhotoView: View {
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .flower3), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ])], scrapbookShelves: []))
         var body: some View {
-            AddEntryButtonView(journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), inEntry: $inEntry, userVM: userVM, fbVM: FirebaseViewModel(), displayPage: $displayPage, selectedEntry: $selectedEntry)
+            AddEntryButtonView(journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), inEntry: $inEntry, userVM: userVM, fbVM: FirebaseViewModel(), aiVM: AIViewModel(), displayPage: $displayPage, selectedEntry: $selectedEntry, dailyPrompt: .constant(nil))
         }
     }
 

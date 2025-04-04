@@ -68,6 +68,7 @@ struct ShelfView: View {
     @State var showDeleteButton: Bool = false
     @State var deleteJournalID: String = ""
     @State var hideToolBar: Bool = false
+    @State var dailyPrompt: String? = nil
     var body: some View {
         if !show {
             VStack(alignment: .leading, spacing: 10) {
@@ -257,7 +258,7 @@ struct ShelfView: View {
         } else {
             switch(inEntry) {
             case .openJournal:
-                OpenJournal(userVM: userVM, fbVM: fbVM,
+                OpenJournal(userVM: userVM, fbVM: fbVM, aiVM: aiVM,
                             journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
                             shelfIndex: shelfIndex,
                             bookIndex: selectedJournal,
@@ -271,7 +272,7 @@ struct ShelfView: View {
                             coverZ: $coverZ,
                             scaleFactor: $scaleEffect,
                             inEntry: $inEntry,
-                            selectedEntry: $selectedEntry, hideToolBar: $hideToolBar
+                            selectedEntry: $selectedEntry, hideToolBar: $hideToolBar, dailyPrompt: $dailyPrompt
                 )
                 .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
                 .toolbar(hideToolBar ? .hidden : .visible, for: .tabBar)
@@ -306,18 +307,18 @@ struct ShelfView: View {
                                      entryIndex: selectedEntry,
                                      pageIndex: displayPage,
                                      inEntry: $inEntry,
-                                     entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                                     entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry), dailyPrompt: $dailyPrompt)
                 .navigationBarBackButtonHidden(true)
                 
             case .voice:
                 JournalVoiceMemoInputView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, shelfIndex: shelfIndex, journalIndex: selectedJournal, entryIndex: selectedEntry, pageIndex: displayPage, inEntry: $inEntry, audioRecording: AudioRecording(), entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
                 .navigationBarBackButtonHidden(true)
             case .chat:
-                ConversationView(viewModel: aiVM, FBviewModel: fbVM, convoEntry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                ConversationView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, convoEntry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry), inEntry: $inEntry, shelfIndex: shelfIndex, journalIndex: selectedJournal, entryIndex: selectedEntry, pageIndex: displayPage)
                 .navigationBarBackButtonHidden(true)
                 
             default:
-                OpenJournal(userVM: userVM, fbVM: fbVM,
+                OpenJournal(userVM: userVM, fbVM: fbVM, aiVM: aiVM,
                             journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
                             shelfIndex: shelfIndex,
                             bookIndex: selectedJournal,
@@ -331,7 +332,7 @@ struct ShelfView: View {
                             coverZ: $coverZ,
                             scaleFactor: $scaleEffect,
                             inEntry: $inEntry,
-                            selectedEntry: $selectedEntry, hideToolBar: $hideToolBar
+                            selectedEntry: $selectedEntry, hideToolBar: $hideToolBar, dailyPrompt: $dailyPrompt
                 )
                 .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
                 .scaleEffect(scaleEffect)
