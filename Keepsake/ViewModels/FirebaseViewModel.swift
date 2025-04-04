@@ -120,6 +120,46 @@ class FirebaseViewModel: ObservableObject {
         
     }
     
+    func fetchOtherUser(newUserID: String) async -> User? {
+        
+        do {
+            guard let snapshot = try? await Firestore.firestore().collection("USERS").document(newUserID).getDocument() else { return nil}
+            if snapshot.exists {
+                // Manually extract data from the snapshot
+                if let uid = snapshot.get("uid") as? String,
+                   let name = snapshot.get("name") as? String,
+                   let username = snapshot.get("username") as? String,
+                   let journalShelfIds = snapshot.get("journalShelves") as? [String],
+                   let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
+                   let templates = snapshot.get("templates") as? [String],
+                   let friends = snapshot.get("friends") as? [String],
+                   let lastUsed = snapshot.get("lastUsedShelfId") as? String,
+                   let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
+                {
+                    var journalShelves: [JournalShelf] = []
+                    for astr in journalShelfIds {
+                        let shelf = await getJournalShelfFromID(id: astr)!
+                        journalShelves.append(shelf)
+                    }
+                    let lastUsedID: UUID
+                    if let temp = UUID(uuidString: lastUsed) {
+                        lastUsedID = temp
+                    } else {
+                        print("Error getting last used ID")
+                        lastUsedID = UUID()
+                    }
+                    let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed)
+                    
+                    return user
+                    
+                }
+            }
+        }
+        
+        return nil
+        
+    }
+    
     func fetchUser() async {
         guard let uid = auth.currentUser?.uid else {return}
         

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct UserSearchView: View {
+    @State private var selectedUserID: String?
     @Environment(\.presentationMode) var presentationMode
     @FocusState private var isTextFieldFocused: Bool
     @State private var searchText = ""
@@ -55,45 +56,37 @@ struct UserSearchView: View {
                     .padding(.trailing)
                     .padding(.leading, -10)
                 }
-
                 List(viewModel.users) { user in
                     HStack {
-                        
                         Button(action: {
-                            print(newUser?.id ?? "")
+                            selectedUserID = user.id
                         }) {
                             VStack(alignment: .leading) {
-                                
                                 Text(user.name)
                                     .font(.headline)
                                 Text(user.username)
                                     .foregroundColor(.gray)
-                                
-                                
                             }
-                            .padding(.horizontal)
+                            .padding(.vertical, 8)
                         }
                         .buttonStyle(PlainButtonStyle())
-                        .padding(.horizontal)
+
                         Spacer()
+                        
                         Button(action: {
                             guard let currentUserID = newUser?.id else { return }
 
                             if user.friends.contains(currentUserID) {
-                                // Remove friend locally first
+                                // Remove friend locally
                                 if let index = viewModel.users.firstIndex(where: { $0.id == user.id }) {
                                     viewModel.users[index].friends.removeAll { $0 == currentUserID }
                                 }
-                                
-                                // Remove friend from Firestore
                                 viewModel.removeFriend(currentUserID: currentUserID, friendUserID: user.id)
                             } else {
-                                // Add friend locally first
+                                // Add friend locally
                                 if let index = viewModel.users.firstIndex(where: { $0.id == user.id }) {
                                     viewModel.users[index].friends.append(currentUserID)
                                 }
-                                
-                                // Add friend to Firestore
                                 viewModel.addFriend(currentUserID: currentUserID, friendUserID: user.id)
                             }
                         }) {
@@ -101,12 +94,20 @@ struct UserSearchView: View {
                                 .foregroundColor(.pink)
                         }
                     }
-                    
-                    
-                    
-                    
+                    .background(
+                        NavigationLink(
+                            destination: SearchedUserProfileView(currentUserID: newUser?.id ?? "", selectedUserID: user.id),
+                            tag: user.id,
+                            selection: $selectedUserID
+                        ) {
+                            EmptyView()
+                        }
+                        .hidden()
+                    )
                 }
                 .listStyle(PlainListStyle())
+
+
             }
             
             
