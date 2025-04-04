@@ -96,7 +96,7 @@ struct JournalPagesView: View {
                                             createView(for: widget, width: 80, height: 40, isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: page.number, entryIndex: index, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling)
                                         }
                                     }
-                                }.padding(.top, 10)
+                                }.padding(.top, 30)
                             }
                             .frame(width: 180, height: 250) // Ensure VStack takes the full space of the rectangle
                         }
