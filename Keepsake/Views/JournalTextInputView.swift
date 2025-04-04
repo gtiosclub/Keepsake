@@ -25,6 +25,8 @@ struct JournalTextInputView: View {
     @State var showPromptSheet: Bool = false
     @State var selectedPrompt: String? = ""
     @State private var shouldNavigate = false
+    @Binding var dailyPrompt: String?
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -111,6 +113,19 @@ struct JournalTextInputView: View {
             .sheet(isPresented: $showPromptSheet) {
                 SuggestedPromptsView(aiVM: aiVM, selectedPrompt: $selectedPrompt, isPresented: $showPromptSheet)
             }
+        }
+        .onAppear {
+            if let dailyPrompt = dailyPrompt {
+                selectedPrompt = dailyPrompt
+            }
+        }
+        .onChange(of: dailyPrompt) {
+            if let dailyPrompt = dailyPrompt {
+                selectedPrompt = dailyPrompt
+            }
+        }
+        .onDisappear {
+            dailyPrompt = nil
         }
     }
 }
@@ -221,7 +236,7 @@ struct DebounceTextField: View {
                 Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
-            ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), fbVM: FirebaseViewModel(), shelfIndex: 0, journalIndex: 0, entryIndex: 0, pageIndex: 2, inEntry: $inEntry, textfieldPrompt: "Enter Prompt", entry: JournalEntry(date: "01/02/2024", title: "Oh my world", text: "I have started to text", summary: "summary"), selectedPrompt: "Summarize the highlights of your day and any moments of learning")
+            ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), fbVM: FirebaseViewModel(), shelfIndex: 0, journalIndex: 0, entryIndex: 0, pageIndex: 2, inEntry: $inEntry, textfieldPrompt: "Enter Prompt", entry: JournalEntry(date: "01/02/2024", title: "Oh my world", text: "I have started to text", summary: "summary"), selectedPrompt: "Summarize the highlights of your day and any moments of learning", dailyPrompt: .constant(nil))
         }
     }
 
