@@ -189,7 +189,16 @@ struct AddEntryButtonView: View {
                         }
                         Button {
                             if journal.pages[journal.currentPage].entries.count <= 8 {
-                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: JournalEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                                let newEntry = JournalEntry(
+                                        date: "",
+                                        title: "Echo 🌐",
+                                        conversationLog: [] 
+                                    )
+                                
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: newEntry)
+                                
+                                aiVM.conversationHistory = []
+                                
                                 var newIndex = 0
                                 switch journal.pages[journal.currentPage].realEntryCount {
                                 case 1: newIndex = 0
@@ -206,8 +215,7 @@ struct AddEntryButtonView: View {
                             }
                             withTransaction(Transaction(animation: .none)) {
                                 inEntry = .chat
-                            }
-                            
+                            }                            
                         } label: {
                             ZStack(alignment: .topLeading) {
                                 RoundedRectangle(cornerRadius: 20)

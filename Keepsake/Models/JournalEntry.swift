@@ -64,13 +64,13 @@ struct JournalEntry: Encodable, Hashable {
         self.images = []
         self.type = .written
     }
-    init(date: String, title: String, conversationLog: [String], summary: String, type: EntryType) {
+    init(date: String, title: String, conversationLog: [String]) {
             self.id = UUID()
             self.date = date
             self.text = ""
             self.title = title
             self.conversationLog = conversationLog
-            self.summary = summary
+            self.summary = ""
             self.width = 1
             self.height = 1
             self.isFake = false
