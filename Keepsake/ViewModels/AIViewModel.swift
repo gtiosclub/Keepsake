@@ -175,7 +175,7 @@ class AIViewModel: ObservableObject {
         defer{ isLoading = false }
         
         do {
-            let examplePrompt = entry.title + "\n" + entry.text
+            let examplePrompt = entry.title + "\n" + entry.entryContents
             let response = try await openAIAPIKey.generateDallE3Image(prompt: examplePrompt)
             if let urlString = response.url {
                 self.uiImage = fetchUIImage(from: urlString)
@@ -310,11 +310,11 @@ class AIViewModel: ObservableObject {
     }
     
     func summarize(entry: JournalEntry) async -> String? {
-        let inputText = entry.text
+        let inputText = entry.entryContents
             if inputText.isEmpty {
                 return nil
             }
-        let prompt = "Summarize the entry in one to two lines. Don't mention the writer or the user and make it sound personable. Here is text: \(entry.text)"
+        let prompt = "Summarize the entry in one to two lines. Don't mention the writer or the user and make it sound personable. Here is text: \(entry.entryContents)"
         
         do {
             let response = try await openAIAPIKey.sendMessage(
@@ -329,7 +329,7 @@ class AIViewModel: ObservableObject {
     }
     
     func stickers(entry: JournalEntry) async -> String? {
-        let inputText = entry.text
+        let inputText = entry.entryContents
         if inputText.isEmpty {
             return nil
         }
