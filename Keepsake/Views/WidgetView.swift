@@ -38,15 +38,9 @@ struct WidgetView: View {
                             if showDeleteButton != -1 {
                                 showDeleteButton = -1
                                 isWiggling = false
-                            } else if widget.type == .written {
+                            } else {
                                 selectedEntry = index
-                                inEntry = .written
-                            } else if widget.type == .voice {
-                                selectedEntry = index
-                                inEntry = .voice
-                            } else if widget.type == .chat {
-                                selectedEntry = index
-                                inEntry = .chat
+                                inEntry = widget.type
                             }
                         }
                         .onLongPressGesture {
@@ -117,12 +111,6 @@ struct TextEntryView: View {
                     .frame(width: entry.frameWidth - 10)
                     .scaledToFill()
                     .lineLimit(1)
-                if entry.width == 2 && entry.height == 2 {
-                    Text(entry.summary)
-                        .frame(width: entry.frameWidth - 10)
-                        .scaledToFill()
-                        .lineLimit(1)
-                }
             }
         }
     }
@@ -132,15 +120,15 @@ struct TextEntryView: View {
 @ViewBuilder
 func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, isDisplay: Bool, inEntry: Binding<EntryType>, selectedEntry: Binding<Int>, fbVM: FirebaseViewModel, journal: Journal, userVM: UserViewModel, pageNum: Int, entryIndex: Int, frontDegrees: Binding<CGFloat>, showDeleteButton: Binding<Int>, isWiggling: Binding<Bool>) -> some View {
     switch widget.type {
-    case .image:
-        PictureEntryView(entry: widget, width: width, height: height, isDisplay: isDisplay, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: entryIndex, frontDegrees: frontDegrees, showDeleteButton: showDeleteButton, isWiggling: isWiggling).opacity(widget.isFake ? 0 : 1)
+    case .picture:
+        PictureEntryView(entry: widget as! PictureEntry, width: width, height: height, isDisplay: isDisplay, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: entryIndex, frontDegrees: frontDegrees, showDeleteButton: showDeleteButton, isWiggling: isWiggling).opacity(widget.isFake ? 0 : 1)
     default:
         TextEntryView(entry: widget, width: width, height: height).opacity(widget.isFake ? 0 : 1)
     }
 }
 
 struct PictureEntryView: View {
-    var entry: JournalEntry
+    var entry: PictureEntry
     var width: CGFloat
     var height: CGFloat
     @State private var timer: Timer?
@@ -161,174 +149,178 @@ struct PictureEntryView: View {
     @Binding var showDeleteButton: Int
     @Binding var isWiggling: Bool
     var body: some View {
-            ZStack {
-                // Background Color
-                Color.secondary
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .ignoresSafeArea()
+        ZStack {
+            // Background Color
+            Color.secondary
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .ignoresSafeArea()
 
-                if uiImages.count != 0 {
-                    TabView(selection: $selected) {
-                        ForEach(0..<uiImages.count, id: \.self) { index in
-                            ZStack {
-                                Image(uiImage: uiImages[index])
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: entry.frameWidth, height: entry.frameHeight)
-                                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                                    .tag(index)
-                                
-                                // Navigation Dots (Stacked on top of images)
-                                VStack {
-                                    Spacer()
-                                    Spacer()
-                                    Spacer()
-                                    HStack {
-                                        ForEach(uiImages.indices, id: \.self) { dotIndex in
-                                            Capsule()
-                                                .fill(Color.white.opacity(selected == dotIndex ? 1 : 0.33))
-                                                .frame(width: UIScreen.main.bounds.width * 0.07, height: UIScreen.main.bounds.height * 0.005)
-                                                .onTapGesture {
-                                                    selected = dotIndex
-                                                }
-                                        }
-                                    }
-                                    
-                                    .background(RoundedRectangle(cornerRadius: 10).fill(.gray.opacity(0.33)))
-                                    // Adjust dot position
-                                    Spacer()
-                                }.frame(width: entry.frameWidth, height: entry.frameHeight)
-                            }
-                        }
+            if uiImages.count != 0 {
+                imageCarousel
+            } else {
+                HStack {
+                    Text("Upload")
+                    Image(systemName: "camera")
+                }.frame(width: entry.frameWidth, height: entry.frameHeight)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2])))
+                    
+            }
+            // Carousel
+        }.frame(height: height, alignment: .top)
+        .photosPicker(isPresented: $isPickerPresented, selection: $selectedItems)
+        .onChange(of: selectedItems) {
+            Task {
+                selectedImages.removeAll()
+                for item in selectedItems {
+                    if let data = try? await item.loadTransferable(type: Data.self),
+                       let uiImage = UIImage(data: data) {
+                        selectedImages.append(uiImage)
                     }
-                    .frame(width: entry.frameWidth, height: entry.frameHeight)
-                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never)) // Hides default dots
-                    .ignoresSafeArea()
-                } else {
-                    HStack {
-                        Text("Upload")
-                        Image(systemName: "camera")
-                    }.frame(width: entry.frameWidth, height: entry.frameHeight)
-                        .background(RoundedRectangle(cornerRadius: 10).fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2])))
-                        
                 }
-                // Carousel
-            }.frame(height: height, alignment: .top)
-            .photosPicker(isPresented: $isPickerPresented, selection: $selectedItems)
-            .onChange(of: selectedItems) {
-                Task {
-                    selectedImages.removeAll()
-                    for item in selectedItems {
-                        if let data = try? await item.loadTransferable(type: Data.self),
-                           let uiImage = UIImage(data: data) {
-                            selectedImages.append(uiImage)
+                uiImages = selectedImages
+                imageURLs = []
+                var count = 0
+                print(1)
+                for image in selectedImages {
+                    let imagePath = await fbVM.storeImage(image: image) { url in
+                        if let url = url {
+                            imageURLs.append(url)
+                            userVM.addImageToUser(url: url, image: image)
+                            count += 1
                         }
-                    }
-                    uiImages = selectedImages
-                    imageURLs = []
-                    var count = 0
-                    print(1)
-                    for image in selectedImages {
-                        let imagePath = await fbVM.storeImage(image: image) { url in
-                            if let url = url {
-                                imageURLs.append(url)
-                                userVM.addImageToUser(url: url, image: image)
-                                count += 1
+                        if count == selectedImages.count {
+                            print("made it")
+                            userVM.updateJournalEntry(journal: journal, pageNum: pageNum, entryIndex: entryIndex, newEntry: PictureEntry(date: entry.date, title: entry.title, images: imageURLs, width: entry.width, height: entry.height, isFake: entry.isFake, color: entry.color))
+                            Task {
+                                await fbVM.updateJournalPage(entries: journal.pages[pageNum].entries, journalID: journal.id, pageNumber: pageNum)
                             }
-                            if count == selectedImages.count {
-                                print("made it")
-                                userVM.updateJournalEntry(journal: journal, pageNum: pageNum, entryIndex: entryIndex, newEntry: JournalEntry(entry: entry, width: entry.width, height: entry.height, color: entry.color, images: imageURLs, type: .image))
-                                Task {
-                                    await fbVM.updateJournalPage(entries: journal.pages[pageNum].entries, journalID: journal.id, pageNumber: pageNum)
+                            timer?.invalidate()
+                            selected = 0
+                            timer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { _ in
+                                guard isActive else {
+                                    selected = 0
+                                    return
                                 }
-                                timer?.invalidate()
-                                selected = 0
-                                timer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { _ in
-                                    guard isActive else {
-                                        selected = 0
-                                        return
-                                    }
-                                    if (uiImages.count != 0) {
-                                        selected = (selected + 1) % uiImages.count
-                                    }
+                                if (uiImages.count != 0) {
+                                    selected = (selected + 1) % uiImages.count
                                 }
                             }
+                        }
 
-                        }
                     }
                 }
             }
-            .onChange(of: entry) {
-                print("Entry changes")
-                uiImages = []
+        }
+        .onChange(of: entry) {
+            print("Entry changes")
+            uiImages = []
+            for image in entry.images {
+                if let uiImage = userVM.getImage(url: image) {
+                    uiImages.append(uiImage)
+                }
+            }
+        }
+        .onTapGesture {
+            print(entry.images)
+            if showDeleteButton != -1 {
+                showDeleteButton = -1
+                isWiggling = false
+            } else {
+                isPickerPresented.toggle()
+            }
+        }
+        .onAppear() {
+            if frontDegrees < -90 {
+                
+                isActive = true
+                selected = 0
                 for image in entry.images {
                     if let uiImage = userVM.getImage(url: image) {
                         uiImages.append(uiImage)
                     }
                 }
-            }
-            .onTapGesture {
-                print(entry.images)
-                if showDeleteButton != -1 {
-                    showDeleteButton = -1
-                    isWiggling = false
-                } else {
-                    isPickerPresented.toggle()
-                }
-            }
-            .onAppear() {
-                if frontDegrees < -90 {
-                    
-                    isActive = true
-                    selected = 0
-                    for image in entry.images {
-                        if let uiImage = userVM.getImage(url: image) {
-                            uiImages.append(uiImage)
+                if (entry.images.count != 0) {
+                    timer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { _ in
+                        guard isActive else {
+                            selected = 0
+                            return
                         }
-                    }
-                    if (entry.images.count != 0) {
-                        timer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { _ in
-                            guard isActive else {
-                                selected = 0
-                                return
-                            }
-                            if uiImages.count != 0 {
-                                selected = (selected + 1) % uiImages.count
-                            }
+                        if uiImages.count != 0 {
+                            selected = (selected + 1) % uiImages.count
                         }
                     }
                 }
-            }
-            .onChange(of: frontDegrees) {
-                print("front degrees")
-                if frontDegrees < 0 && !isActive {
-                    isActive = true
-                    selected = 0
-                    for image in entry.images {
-                        if let uiImage = userVM.getImage(url: image) {
-                            uiImages.append(uiImage)
-                        }
-                    }
-                    if (entry.images.count != 0) {
-                        timer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { _ in
-                            guard isActive else {
-                                selected = 0
-                                return
-                            }
-                            if uiImages.count != 0 {
-                                selected = (selected + 1) % uiImages.count
-                            }
-                        }
-                    }
-                } else if frontDegrees == 0 {
-                    isActive = false
-                    timer?.invalidate()
-                    timer = nil
-                }
-        
-                
             }
         }
+        .onChange(of: frontDegrees) {
+            print("front degrees")
+            if frontDegrees < 0 && !isActive {
+                isActive = true
+                selected = 0
+                for image in entry.images {
+                    if let uiImage = userVM.getImage(url: image) {
+                        uiImages.append(uiImage)
+                    }
+                }
+                if (entry.images.count != 0) {
+                    timer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { _ in
+                        guard isActive else {
+                            selected = 0
+                            return
+                        }
+                        if uiImages.count != 0 {
+                            selected = (selected + 1) % uiImages.count
+                        }
+                    }
+                }
+            } else if frontDegrees == 0 {
+                isActive = false
+                timer?.invalidate()
+                timer = nil
+            }
+    
+            
+        }
+    }
+    
+    var imageCarousel: some View {
+        TabView(selection: $selected) {
+            ForEach(0..<uiImages.count, id: \.self) { index in
+                ZStack {
+                    Image(uiImage: uiImages[index])
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: entry.frameWidth, height: entry.frameHeight)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .tag(index)
+                    
+                    // Navigation Dots (Stacked on top of images)
+                    VStack {
+                        Spacer()
+                        Spacer()
+                        Spacer()
+                        HStack {
+                            ForEach(uiImages.indices, id: \.self) { dotIndex in
+                                Capsule()
+                                    .fill(Color.white.opacity(selected == dotIndex ? 1 : 0.33))
+                                    .frame(width: UIScreen.main.bounds.width * 0.07, height: UIScreen.main.bounds.height * 0.005)
+                                    .onTapGesture {
+                                        selected = dotIndex
+                                    }
+                            }
+                        }
+                        
+                        .background(RoundedRectangle(cornerRadius: 10).fill(.gray.opacity(0.33)))
+                        // Adjust dot position
+                        Spacer()
+                    }.frame(width: entry.frameWidth, height: entry.frameHeight)
+                }
+            }
+        }
+        .frame(width: entry.frameWidth, height: entry.frameHeight)
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never)) // Hides default dots
+        .ignoresSafeArea()
+    }
 }
 
 struct VoiceMemoEntryView: View {
@@ -403,7 +395,7 @@ struct VoiceMemoEntryView: View {
 
 #Preview {
     struct Preview: View {
-        @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1)
+        @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1)
         @State var selectedImageIndex: Int = 0
         @State var inEntry: EntryType = .openJournal
         @State var selectedEntry: Int = 0
@@ -411,11 +403,11 @@ struct VoiceMemoEntryView: View {
         @State var frontDegrees: CGFloat = -180
         var body: some View {
             WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: 10, pageNum: 2, page: page, isDisplay: true, inEntry: $inEntry, selectedEntry: $selectedEntry, userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
-                Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
+                Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), WrittenEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
                 Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
-            ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), showDeleteButton: $deleteEntry, journal: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3), fbVM: FirebaseViewModel(), frontDegrees: $frontDegrees)
+            ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), showDeleteButton: $deleteEntry, journal: Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), WrittenEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3), fbVM: FirebaseViewModel(), frontDegrees: $frontDegrees)
         }
     }
 

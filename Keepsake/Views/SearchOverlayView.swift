@@ -40,7 +40,7 @@ struct SearchOverlayView: View {
                         }
                 }
                 
-                ForEach(firebaseVM.searchedEntries, id: \.self) { journalEntry in
+                ForEach(firebaseVM.searchedEntries) { journalEntry in
                     Divider()
                         .overlay(Color.gray)
                     JournalTextWidgetView(entry: journalEntry)

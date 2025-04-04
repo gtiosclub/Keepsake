@@ -45,7 +45,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
             print(" watch reached")
         #endif
     #if os(iOS)
-        print(" iOS reached")
+        print("ios reached")
 #endif
         if let data = UserDefaults.standard.data(forKey: "reminders"),
            let savedReminders = try? JSONDecoder().decode([Reminder].self, from: data) {
@@ -65,7 +65,20 @@ final class Connectivity: NSObject, WCSessionDelegate {
             UserDefaults.standard.set(data, forKey: "reminders")
         }
     }
-
+    public func requestAudioFiles() {
+        print("files requested")
+        if WCSession.default.isReachable {
+            WCSession.default.sendMessage(["requesting audio files": true], replyHandler: { response in
+                //phone gives response then:
+                if let audioFilesUrl = response["audioFilesUrl"] as? [String] {
+                    DispatchQueue.main.async {
+                        self.audioFiles = audioFilesUrl
+                    }
+                }
+            })
+        }
+    }
+  
     public func send(reminder: Reminder) {
         print("sending")
         guard WCSession.default.activationState == .activated else { return }
@@ -136,10 +149,22 @@ final class Connectivity: NSObject, WCSessionDelegate {
             dispatchGroup.notify(queue: .main) {
                 print("audio processed")
                 self.audioFiles = audioFilesUrl
+                if WCSession.default.isReachable {
+                    WCSession.default.sendMessage(["audio files": audioFilesUrl], replyHandler: nil) { error in
+                        print("error: \(error.localizedDescription)")
+                    }
+                    print("sending audio to watch")
+                } else {
+                    print("the watch disappeared ಠ_ಠ")
+                }
                 
             }
+            
+            
         }
         #endif
+        print("after ios stuff")
+        
     }
 
     
@@ -156,6 +181,8 @@ final class Connectivity: NSObject, WCSessionDelegate {
             print("Error moving the file :( \(error.localizedDescription)")
         }
     }
+    
+    
     func uploadAudioToFirebase(fileURL: URL) {
         #if os(iOS)
         guard let uid = firebaseVM.currentUser?.id else {
@@ -180,6 +207,20 @@ final class Connectivity: NSObject, WCSessionDelegate {
     }
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
         print("recieved")
+        #if os(iOS)
+        if let messageFromWatch = message["requesting audio files"] as? Bool {
+            Task {
+                print("hi")
+                await fetchAudioFiles()
+            }
+        }
+        #endif
+        if let audioFilesUrl = message["audio files"] as? [String] {
+                DispatchQueue.main.async {
+                    self.audioFiles = audioFilesUrl
+                    print("Audio files received: \(audioFilesUrl)")
+                }
+        }
         guard let data = message["reminder"] as? Data,
               let reminder = try? JSONDecoder().decode(Reminder.self, from: data) else { return }
         
@@ -205,6 +246,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
                 }
             }
         #endif
+            
         
     }
     

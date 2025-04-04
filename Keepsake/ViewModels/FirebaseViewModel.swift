@@ -153,9 +153,11 @@ class FirebaseViewModel: ObservableObject {
                     for journal in shelf.journals {
                         for page in journal.pages {
                             for entry in page.entries {
-                                for url in entry.images {
-                                    if let image = await getImageFromURL(urlString: url) {
-                                        imageDict[url] = image
+                                if let entry = entry as? PictureEntry {
+                                    for url in entry.images {
+                                        if let image = await getImageFromURL(urlString: url) {
+                                            imageDict[url] = image
+                                        }
                                     }
                                 }
                             }
@@ -629,25 +631,25 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func createConversationEntry(entry: JournalEntry, journalID: String) async -> Bool {
-            let journalEntry = db.collection("JOURNAL_ENTRIES")
-            var conversationEntryData: [String: Any]  = [
-                "date": "",
-                "entryContents": "",
-                "conversationLog": [],
-                "id": "\(entry.id)",
-                "journal_id": journalID,
-                "summary": "",
-                "title": ""
-            ]
-            do {
-                try await journalEntry.document("\(entry.id.uuidString)").setData(conversationEntryData)
-                return true
-                
-            } catch {
-                print("Error making document: \(error.localizedDescription)")
-                return false
-            }
+        let journalEntry = db.collection("JOURNAL_ENTRIES")
+        var conversationEntryData: [String: Any]  = [
+            "date": "",
+            "entryContents": "",
+            "conversationLog": [],
+            "id": entry.id.uuidString,
+            "journal_id": journalID,
+            "summary": "",
+            "title": ""
+        ]
+        do {
+            try await journalEntry.document(entry.id.uuidString).setData(conversationEntryData)
+            return true
+            
+        } catch {
+            print("Error making document: \(error.localizedDescription)")
+            return false
         }
+    }
     func updateEntryWithConversationLog(id: UUID) async {
         let journalDoc = db.collection("JOURNAL_ENTRIES").document(id.uuidString)
         
@@ -662,53 +664,55 @@ class FirebaseViewModel: ObservableObject {
         
     }
         
-        func addConversationLog(text: [String], journalEntry: UUID) async -> Bool {
-            let conversationEntry = db.collection("JOURNAL_ENTRIES").document("\(journalEntry.uuidString)")
-            
-            do {
-                try await conversationEntry.updateData([
-                    "conversationLog": text
-                ])
-                return true
-                
-            } catch {
-                print("Error making document: \(error.localizedDescription)")
-                return false
-            }
-        }
-    
-    func conversationEntryCheck(journalEntryID: UUID) async -> Bool {
-        let entryDoc = db.collection("JOURNAL_ENTRIES").document("\(journalEntryID.uuidString)")
+    func addConversationLog(text: [String], journalEntry: UUID) async -> Bool {
+        let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntry.uuidString)
+        
         do {
-            let doc = try await entryDoc.getDocument()
-            if doc.exists {
-                return true
-            } else {
-                return false
-            }
+            try await docRef.updateData([
+                "conversationLog": text,
+            ])
+            return true
         } catch {
-            print("Error making document: \(error.localizedDescription)")
+            print("Error updating document: \(error.localizedDescription)")
             return false
         }
     }
     
-    func loadConversationLog(for journalEntryID: String, viewModel: AIViewModel) async {
-            let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntryID)
-
-            do {
-                let document = try await docRef.getDocument()
-                if let data = document.data(),
-                   let conversationLog = data["conversationLog"] as? [String], !conversationLog.isEmpty {
-
-                    await MainActor.run {
-                        if viewModel.conversationHistory.isEmpty {
-                            viewModel.conversationHistory = conversationLog
-                        }
-                    }
-                }
-            } catch {
-                print("Error loading conversationLog: \(error.localizedDescription)")
+    func conversationEntryCheck(journalEntryID: UUID) async -> (exists: Bool, hasContent: Bool) {
+        let entryDoc = db.collection("JOURNAL_ENTRIES").document(journalEntryID.uuidString)
+        do {
+            let doc = try await entryDoc.getDocument()
+            guard doc.exists,
+                  let data = doc.data(),
+                  let logs = data["conversationLog"] as? [String] else {
+                return (false, false)
             }
+            return (true, !logs.isEmpty)
+        } catch {
+            print("Error checking document: \(error.localizedDescription)")
+            return (false, false)
+        }
+    }
+    
+    func loadConversationLog(for journalEntryID: String, aiVM: AIViewModel) async -> Bool {
+        let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntryID)
+        
+        do {
+            let document = try await docRef.getDocument()
+            guard document.exists,
+                  let data = document.data(),
+                  let logs = data["conversationLog"] as? [String] else {
+                return false
+            }
+            
+            await MainActor.run {
+                aiVM.conversationHistory = logs
+            }
+            return true
+        } catch {
+            print("Error loading conversationLog: \(error.localizedDescription)")
+            return false
+        }
     }
     
     // SCRAPBOOKS

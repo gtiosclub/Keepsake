@@ -23,7 +23,7 @@ struct JournalVoiceMemoInputView: View {
     @Binding var inEntry: EntryType
     @ObservedObject var audioRecording: AudioRecording
     @State var transcription: String = ""
-    var entry: JournalEntry
+    var entry: VoiceEntry
     @State var showPromptSheet: Bool = false
     @State var selectedPrompt: String? = ""
     var body: some View {
@@ -31,7 +31,7 @@ struct JournalVoiceMemoInputView: View {
             HStack {
                 Button {
                     Task {
-                        if entry.summary == "***" {
+                        if entry.audio == nil {
                             userVM.removeJournalEntry(page: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex], index: entryIndex)
                         }
                         await MainActor.run {
@@ -46,12 +46,7 @@ struct JournalVoiceMemoInputView: View {
                 Spacer()
                 Button {
                     Task {
-                        var newEntry: JournalEntry = JournalEntry(date: date, title: title, text: audioRecording.transcript, summary: entry.summary, width: entry.width, height: entry.height, isFake: false, color: entry.color)
-                        if entry.text != audioRecording.transcript {
-                            newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(audioRecording.transcript.prefix(15))
-                        }
-                        newEntry.type = .voice
-                        newEntry.audio = audioRecording.getAudioData()
+                        let newEntry: VoiceEntry = VoiceEntry(date: date, title: title, audio: audioRecording.getAudioData(), width: entry.width, height: entry.height, isFake: false, color: entry.color)
                         userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
                         
                         await fbVM.updateJournalPage(entries: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex].entries, journalID: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).id, pageNumber: pageIndex)
@@ -98,33 +93,19 @@ struct JournalVoiceMemoInputView: View {
                     .lineLimit(nil)
             }
             HStack() {
-                Menu {
-                    Button {
-                        showPromptSheet = true
-                    } label: {
-                        HStack {
-                            Text("Need Suggestions?")
-                            Spacer()
-                            Image(systemName: "lightbulb")
-                        }
-                    }
+                Button {
+                    showPromptSheet = true
                 } label: {
-                    Image(systemName: "lightbulb.circle")
-                        .resizable()
-                        .scaledToFit()
-                        .foregroundStyle(.black)
-                        .frame(width: UIScreen.main.bounds.width * 0.1)
-                        .contextMenu {
-                            
-                        }
+                    Label("need suggestions?", systemImage: "lightbulb.max")
+                        .foregroundColor(Color(red: 127/255, green: 210/255, blue: 231/255))
                 }
                 .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-                .padding(.bottom, 10)
+                .padding(.bottom, 20)
                 Spacer()
             }
         }.onAppear() {
             title = entry.title
-            transcription = entry.text
+            transcription = entry.transcription
             date = entry.date
         }
         .sheet(isPresented: $showPromptSheet) {
@@ -135,11 +116,11 @@ struct JournalVoiceMemoInputView: View {
 
 #Preview {
     JournalVoiceMemoInputView(userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
-        Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), JournalEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [JournalEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), JournalEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
+        Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), WrittenEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
         Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
         Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
         Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
-    ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), fbVM: FirebaseViewModel(), shelfIndex: 0, journalIndex: 0, entryIndex: 0, pageIndex: 2, inEntry: .constant(EntryType.openJournal), audioRecording: AudioRecording(), entry: JournalEntry(date: "01/02/2024", title: "Oh my world", text: "I have started to text", summary: "summary"), selectedPrompt: "Summarize the highlights of your day and any moments of learning")
+    ]), JournalShelf(name: "Shelf 2", journals: [])], scrapbookShelves: [])), aiVM: AIViewModel(), fbVM: FirebaseViewModel(), shelfIndex: 0, journalIndex: 0, entryIndex: 0, pageIndex: 2, inEntry: .constant(EntryType.openJournal), audioRecording: AudioRecording(), entry: VoiceEntry(date: "01/02/2024", title: "Oh my world", audio: nil), selectedPrompt: "Summarize the highlights of your day and any moments of learning")
 }
 
 final class AudioRecording: NSObject, ObservableObject {
