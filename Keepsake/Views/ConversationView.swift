@@ -74,33 +74,33 @@ struct ConversationView: View {
                     
                     Button {
                         Task {
-                                    var updatedEntry = convoEntry
-                                    updatedEntry.conversationLog = aiVM.conversationHistory
-                                    
-                                    userVM.updateJournalEntry(
-                                        shelfIndex: shelfIndex,
-                                        bookIndex: journalIndex,
-                                        pageNum: pageIndex,
-                                        entryIndex: entryIndex,
-                                        newEntry: updatedEntry
-                                    )
-                                    
-                                    let success = await fbVM.addConversationLog(
-                                        text: aiVM.conversationHistory,
-                                        journalEntry: convoEntry.id // Use original ID
-                                    )
-                                    
-                                    if success {
-                                        await fbVM.updateJournalPage(
-                                            entries: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex].entries,
-                                            journalID: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).id,
-                                            pageNumber: pageIndex
-                                        )
-                                    }
-                                    
-                                    await MainActor.run {
-                                        inEntry = .openJournal
-                                    }
+                            var updatedEntry = convoEntry
+                            updatedEntry.conversationLog = aiVM.conversationHistory
+                            
+                            userVM.updateJournalEntry(
+                                shelfIndex: shelfIndex,
+                                bookIndex: journalIndex,
+                                pageNum: pageIndex,
+                                entryIndex: entryIndex,
+                                newEntry: updatedEntry
+                            )
+                            
+                            let success = await fbVM.addConversationLog(
+                                text: aiVM.conversationHistory,
+                                journalEntry: convoEntry.id // Use original ID
+                            )
+                            
+                            if success {
+                                await fbVM.updateJournalPage(
+                                    entries: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex].entries,
+                                    journalID: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).id,
+                                    pageNumber: pageIndex
+                                )
+                            }
+                            
+                            await MainActor.run {
+                                inEntry = .openJournal
+                            }
                         }
                     } label: {
                         Image(systemName: "checkmark")
