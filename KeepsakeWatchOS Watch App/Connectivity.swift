@@ -159,6 +159,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
                                 if let reminder = try? document.data(as: Reminder.self) {
                                     self.remindersWithAudio.append((reminder, url.absoluteString))
                                     print("Found reminder for audioUniqueId: \(audioUniqueId)")
+                                    scheduleReminderNotification(for: reminder)
                                 }
                             } else {
                                 print("No reminder found for \(audioUniqueId)")
@@ -184,6 +185,9 @@ final class Connectivity: NSObject, WCSessionDelegate {
                 } else {
                     print("the watch disappeared ಠ_ಠ")
                 }
+                
+                    
+
                 
             }
             
