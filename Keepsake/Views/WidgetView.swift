@@ -379,6 +379,12 @@ struct VoiceMemoEntryView: View {
 }
 
 
+public func todaysdate() -> String {
+    let date = Date()
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "MM/dd/YY"
+    return dateFormatter.string(from: date)
+}
 
 
 //#Preview {
