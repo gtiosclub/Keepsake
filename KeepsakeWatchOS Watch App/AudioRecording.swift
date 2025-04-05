@@ -66,7 +66,15 @@ final class AudioRecording {
             recordedAudio = fileURL.path
             print("File saved at: \(fileURL.path)")
             playAudio(from: fileURL)
-            Connectivity.shared.send(audioFileUrl: fileURL)
+            Task {
+                await Connectivity.shared.send(audioFileUrl: fileURL)
+                try await Task.sleep(for: .seconds(5))
+                
+            }
+            
+            
+            
+            
         }
     }
     

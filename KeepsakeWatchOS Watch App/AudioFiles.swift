@@ -5,28 +5,37 @@
 //  Created by Nitya Potti on 3/30/25.
 //
 import SwiftUI
+
 struct AudioFilesView: View {
-    
-    
+    @State private var remindersWithAudio: [(reminder: Reminder, audioUrl: String)] = []
+
     var body: some View {
         VStack {
-            if Connectivity.shared.audioFiles.isEmpty {
+            if remindersWithAudio.isEmpty {
                 Text("No audio files found")
                     .foregroundColor(.secondary)
                     .padding()
             } else {
                 List {
-                    ForEach(Connectivity.shared.audioFiles, id: \.self) { audioURL in
+                    ForEach(remindersWithAudio, id: \.audioUrl) { reminderWithAudio in
                         Button(action: {
-                            playAudio(from: audioURL)
+                            playAudio(from: reminderWithAudio.audioUrl)
                         }) {
                             HStack {
                                 Image(systemName: "play.circle.fill")
                                     .foregroundColor(Color(hex: "FFADF4"))
                                     .font(.title2)
-                                
-                                Text("Audio Recording \(Connectivity.shared.audioFiles.firstIndex(of: audioURL)! + 1)")
-                                    .foregroundColor(.primary)
+
+                                VStack(alignment: .leading) {
+                                    Text("Audio Recording")
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+
+                                    // Display reminder date
+                                    Text("Reminder Date: \(reminderWithAudio.reminder.date, style: .date)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                             .padding(.vertical, 8)
                         }
@@ -38,17 +47,17 @@ struct AudioFilesView: View {
             fetchAllAudioFiles()
         }
     }
-    
+
     func fetchAllAudioFiles() {
         #if os(iOS)
         Task {
             await Connectivity.shared.fetchAudioFiles()
+            remindersWithAudio = Connectivity.shared.remindersWithAudio
         }
         #endif
         #if os(watchOS)
         Connectivity.shared.requestAudioFiles()
         #endif
-        
     }
 }
 
@@ -56,6 +65,7 @@ struct AudioFilesView: View {
 import AVFoundation
 #if os(iOS)
 import AVKit
+import FirebaseCore
 #endif
 
 var audioPlayer: AVPlayer?

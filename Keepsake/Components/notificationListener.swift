@@ -32,4 +32,39 @@ struct NotificationView: View {
         notificationTitle = notification.request.content.title
         notificationBody = notification.request.content.body
     }
+    
+
 }
+func scheduleReminderNotification(for reminder: Reminder) {
+    let content = UNMutableNotificationContent()
+    content.title = "Reminder to Journal"
+    content.body = "It's time to journal! Don't forget to write your thoughts for the day."
+    content.sound = .default
+
+    // Trigger notification based on reminder date (use trigger date as reminder date)
+    let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: reminder.date)
+
+    let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+
+    let request = UNNotificationRequest(identifier: reminder.id ?? UUID().uuidString, content: content, trigger: trigger)
+
+    // Add request to notification center
+    UNUserNotificationCenter.current().add(request) { error in
+        if let error = error {
+            print("Error scheduling notification: \(error.localizedDescription)")
+        } else {
+            print("Notification scheduled for reminder with id: \(reminder.id)")
+        }
+    }
+}
+func scheduleNotificationsForAllReminders() {
+    // Assuming reminders have been fetched and are in Connectivity.shared.reminders
+    for reminder in Connectivity.shared.reminders {
+        // Check if reminder date is in the future
+        if reminder.date > Date() {
+            scheduleReminderNotification(for: reminder)
+        }
+    }
+}
+
+
