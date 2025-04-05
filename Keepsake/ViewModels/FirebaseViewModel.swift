@@ -153,9 +153,11 @@ class FirebaseViewModel: ObservableObject {
                     for journal in shelf.journals {
                         for page in journal.pages {
                             for entry in page.entries {
-                                for url in entry.images {
-                                    if let image = await getImageFromURL(urlString: url) {
-                                        imageDict[url] = image
+                                if let entry = entry as? PictureEntry {
+                                    for url in entry.images {
+                                        if let image = await getImageFromURL(urlString: url) {
+                                            imageDict[url] = image
+                                        }
                                     }
                                 }
                             }
@@ -304,7 +306,8 @@ class FirebaseViewModel: ObservableObject {
                     
                     journalPages.append(JournalPage(number: Int(num) ?? 0, entries: journalEntries, realEntryCount: entryCount))
                 }
-                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: journalPages, currentPage: currentPage)
+                let sortedPages = journalPages.sorted { $0.number < $1.number }
+                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: sortedPages, currentPage: currentPage)
                 
             } else {
                 print("No document found")
@@ -315,6 +318,7 @@ class FirebaseViewModel: ObservableObject {
             return nil
         }
     }
+    
     //#########################################################################################
     
     /****######################################################################################
@@ -433,7 +437,10 @@ class FirebaseViewModel: ObservableObject {
     func addJournalEntry(journalEntry: JournalEntry, journalID: UUID, pageNumber: Int) async -> Bool {
         let journal_entry_reference = db.collection("JOURNAL_ENTRIES").document(journalEntry.id.uuidString)
         do {
-            let journalEntryData = journalEntry.toDictionary(journalID: journalID)
+            var journalEntryData = journalEntry.toDictionary(journalID: journalID)
+            
+            print(journalEntryData["audioURL"])
+            
             try await journal_entry_reference.setData(journalEntryData)
             
             try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
@@ -460,6 +467,9 @@ class FirebaseViewModel: ObservableObject {
             try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
                 "pages.\(pageNumber + 1)": []
             ])
+            try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
+                "currentPage": pageNumber
+            ])
         } catch {
             print("error reseting page entries")
             return
@@ -468,9 +478,23 @@ class FirebaseViewModel: ObservableObject {
             if (entry.isFake == true) {
                 continue
             }
+            
             let entry_ref = db.collection("JOURNAL_ENTRIES").document(entry.id.uuidString)
+            var journalEntryData = entry.toDictionary(journalID: journalID)
+            
             do {
-                let journalEntryData = entry.toDictionary(journalID: journalID)
+                if let voiceEntry = entry as? VoiceEntry, let audioData = voiceEntry.audio {
+                    var result = await uploadAudio(audioData, fileName: UUID().uuidString)
+                    
+                    switch result {
+                    case .success(let url):
+                        voiceEntry.audioURL = url.absoluteString
+                        journalEntryData["audioURL"] = url.absoluteString
+                    case .failure(let error):
+                        print("Failed to upload audio:", error.localizedDescription)
+                    }
+                }
+                
                 try await entry_ref.updateData(journalEntryData)
                 
                 try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
@@ -483,11 +507,16 @@ class FirebaseViewModel: ObservableObject {
                 await addJournalEntry(journalEntry: entry, journalID: journalID, pageNumber: pageNumber)
             }
         }
-        for entry in previousEntryIds {
-            if let uuid = UUID(uuidString: entry) {
+        for oldEntryID in previousEntryIds {
+            for entry in entries {
+                if entry.id.uuidString == oldEntryID {
+                    continue
+                }
+            }
+            if let uuid = UUID(uuidString: oldEntryID) {
                 await removeJournalEntry(entryID: uuid)
             } else {
-                print("Invalid UUID string: \(entry)")
+                print("Invalid UUID string: \(oldEntryID)")
             }
         }
     }
@@ -511,9 +540,9 @@ class FirebaseViewModel: ObservableObject {
                 print(x)
                 return JournalEntry.fromDictionary(dict)
             } else {
+                print("fake entry improperly returned")
                 return JournalEntry()
                 //return nil
-                print("fake entry improperly returned")
             }
         } catch {
             print("Error fetching Journal Shelf: \(error.localizedDescription)")
@@ -624,25 +653,25 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func createConversationEntry(entry: JournalEntry, journalID: String) async -> Bool {
-            let journalEntry = db.collection("JOURNAL_ENTRIES")
-            var conversationEntryData: [String: Any]  = [
-                "date": "",
-                "entryContents": "",
-                "conversationLog": [],
-                "id": entry.id.uuidString,
-                "journal_id": journalID,
-                "summary": "",
-                "title": ""
-            ]
-            do {
-                try await journalEntry.document(entry.id.uuidString).setData(conversationEntryData)
-                return true
-                
-            } catch {
-                print("Error making document: \(error.localizedDescription)")
-                return false
-            }
+        let journalEntry = db.collection("JOURNAL_ENTRIES")
+        var conversationEntryData: [String: Any]  = [
+            "date": "",
+            "entryContents": "",
+            "conversationLog": [],
+            "id": entry.id.uuidString,
+            "journal_id": journalID,
+            "summary": "",
+            "title": ""
+        ]
+        do {
+            try await journalEntry.document(entry.id.uuidString).setData(conversationEntryData)
+            return true
+            
+        } catch {
+            print("Error making document: \(error.localizedDescription)")
+            return false
         }
+    }
     func updateEntryWithConversationLog(id: UUID) async {
         let journalDoc = db.collection("JOURNAL_ENTRIES").document(id.uuidString)
         
@@ -661,9 +690,9 @@ class FirebaseViewModel: ObservableObject {
         let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntry.uuidString)
         
         do {
-            try await docRef.setData([
+            try await docRef.updateData([
                 "conversationLog": text,
-            ], merge: true)
+            ])
             return true
         } catch {
             print("Error updating document: \(error.localizedDescription)")
@@ -894,4 +923,22 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    
+    func uploadAudio(_ audioData: Data, fileName: String) async -> Result<URL, Error> {
+        let storageRef = Storage.storage().reference().child("audio/\(fileName).m4a")
+
+        let metadata = StorageMetadata()
+        metadata.contentType = "audio/m4a"
+
+        do {
+            // Upload the audio data
+            let _ = try await storageRef.putDataAsync(audioData, metadata: metadata)
+            
+            // Download the URL after upload
+            let url = try await storageRef.downloadURL()
+            return .success(url)
+        } catch {
+            return .failure(error)
+        }
+    }
 }
