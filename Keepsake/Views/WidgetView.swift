@@ -46,6 +46,7 @@ struct WidgetView: View {
                         .onLongPressGesture {
                             withAnimation {
                                 showDeleteButton = index
+                                print(type(of: widget))
                                 isWiggling = true
                             }
                         }
