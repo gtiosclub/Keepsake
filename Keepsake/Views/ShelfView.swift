@@ -6,41 +6,6 @@
 //
 import SwiftUI
 
-private struct ViewOffsetKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
-
-struct ViewFrameKey: PreferenceKey {
-    static var defaultValue: CGRect = .zero
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
-        value = nextValue()
-    }
-}
-
-extension View {
-    func printFrame(_ label: String = "") -> some View {
-        self.background(
-            GeometryReader { geometry in
-                Color.clear
-                    .preference(
-                        key: ViewFrameKey.self,
-                        value: geometry.frame(in: .global)
-                    )
-                    .onAppear {
-                        let frame = geometry.frame(in: .global)
-                        print("\(label.isEmpty ? "View" : label) frame: \(frame)")
-                    }
-            }
-        )
-        .onPreferenceChange(ViewFrameKey.self) { frame in
-            print("\(label.isEmpty ? "View" : label) frame changed: \(frame)")
-        }
-    }
-}
-
 struct ShelfView: View {
     @Namespace private var shelfNamespace
     @ObservedObject var userVM: UserViewModel
@@ -283,15 +248,27 @@ struct ShelfView: View {
 
             case .written:
                 let temp = userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry)
-                JournalTextInputView(userVM: userVM,
-                                     aiVM: aiVM, fbVM: fbVM,
-                                     shelfIndex: shelfIndex,
-                                     journalIndex: selectedJournal,
-                                     entryIndex: selectedEntry,
-                                     pageIndex: displayPage,
-                                     inEntry: $inEntry,
-                                     entry: WrittenEntry(date: "", title: "", text: "", summary: "", width: temp.width, height: temp.height, isFake: false, color: temp.color), dailyPrompt: $dailyPrompt)
-                .navigationBarBackButtonHidden(true)
+                if let writtenEntry = temp as? WrittenEntry {
+                    JournalTextInputView(userVM: userVM,
+                                         aiVM: aiVM, fbVM: fbVM,
+                                         shelfIndex: shelfIndex,
+                                         journalIndex: selectedJournal,
+                                         entryIndex: selectedEntry,
+                                         pageIndex: displayPage,
+                                         inEntry: $inEntry,
+                                         entry: writtenEntry, dailyPrompt: $dailyPrompt)
+                    .navigationBarBackButtonHidden(true)
+                } else {
+                    JournalTextInputView(userVM: userVM,
+                                         aiVM: aiVM, fbVM: fbVM,
+                                         shelfIndex: shelfIndex,
+                                         journalIndex: selectedJournal,
+                                         entryIndex: selectedEntry,
+                                         pageIndex: displayPage,
+                                         inEntry: $inEntry,
+                                         entry: WrittenEntry(date: "", title: "", text: "", summary: "", width: temp.width, height: temp.height, isFake: false, color: temp.color), dailyPrompt: $dailyPrompt)
+                    .navigationBarBackButtonHidden(true)
+                }
                 
             case .voice:
                 JournalVoiceMemoInputView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, shelfIndex: shelfIndex, journalIndex: selectedJournal, entryIndex: selectedEntry, pageIndex: displayPage, inEntry: $inEntry, audioRecording: AudioRecording(), entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry) as? VoiceEntry ?? VoiceEntry(date: "", title: "", audio: nil))
