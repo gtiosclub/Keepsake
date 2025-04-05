@@ -21,7 +21,7 @@ class User: Identifiable, ObservableObject {
     @Published var friends: [String]
     @Published var images: [String:UIImage] = [:]
     @Published var streaks: Int = 0
-    
+    @Published var lastJournaled: Date?
     
     init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String], lastUsedShelfID: UUID, isJournalLastUsed: Bool, images: [String: UIImage] = [:]) {
         self.id = id
