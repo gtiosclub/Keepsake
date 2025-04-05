@@ -1,4 +1,6 @@
 
+
+
 import SwiftUI
 import UIKit
 
@@ -8,14 +10,11 @@ struct ProfileView: View {
     @State private var showImagePicker = false
     @State private var showImageOptions = false
     @State private var showCamera = false
-    
-    
+    @State private var isCamera = false // Determine if camera or photo library should be used
     
     var body: some View {
-        
         VStack {
             if let user = viewModel.currentUser {
-                //            let user = User(id: "123", name: viewModel.currentUser?.name ?? "Nitya", username: viewModel.currentUser?.username ?? "hi@gmail.com", journalShelves: [], scrapbookShelves: [], friends: viewModel.currentUser?.friends ?? [])
                 List {
                     Section {
                         HStack {
@@ -46,21 +45,19 @@ struct ProfileView: View {
                                     .padding(.top)
                                 
                                 Text(user.username)
-                                
                                     .font(.footnote)
                                     .accentColor(.pink)
                             }
                         }
                     }
                     
-                    
+                    // Additional sections...
                     Section("Friends") {
                         NavigationLink(destination: FriendsView()) {
-                            SettingsRowView(imageName: "person.2.fill",
-                                            title: "View Friends",
-                                            tintColor: .blue)
+                            SettingsRowView(imageName: "person.2.fill", title: "View Friends", tintColor: .blue)
                         }
                     }
+                    
                     Section("Audio Reminders") {
                         NavigationLink(
                             destination: AudioFilesView(),
@@ -76,23 +73,33 @@ struct ProfileView: View {
                                 .shadow(radius: 5)
                             }
                         )
-                        
-                        .padding(.vertical)
                     }
                     
                     Section("Account") {
                         Button {
                             viewModel.signOut()
                         } label: {
-                            
-                            SettingsRowView(imageName: "arrow.backward.circle.fill",
-                                            
-                                            title: "Sign Out",
-                                            tintColor: .red)
+                            SettingsRowView(imageName: "arrow.backward.circle.fill", title: "Sign Out", tintColor: .red)
                         }
                     }
                 }
             }
+        }
+        .actionSheet(isPresented: $showImageOptions) {
+            ActionSheet(title: Text("Select Profile Image"), buttons: [
+                .default(Text("Camera")) {
+                    self.isCamera = true
+                    self.showImagePicker.toggle()
+                },
+                .default(Text("Photo Library")) {
+                    self.isCamera = false
+                    self.showImagePicker.toggle()
+                },
+                .cancel()
+            ])
+        }
+        .sheet(isPresented: $showImagePicker) {
+            ImagePickerController(image: $profileImage, isCamera: isCamera)
         }
     }
 }
