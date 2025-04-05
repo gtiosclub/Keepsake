@@ -7,14 +7,21 @@
 
 import Foundation
 import SwiftUI
+#if os(iOS)
+import FirebaseFirestore
+#endif
 //
 // Reminder Model
+
 struct Reminder: Identifiable, Codable {
-    let id = UUID()
-    var title: String
+    #if os(iOS)
+    @DocumentID var id: String?
+    #endif
+    #if os(watchOS)
+    var id: String
+    #endif
     var date: Date
-    var body: String
-    var audioFileURL: String?
+//    var body: String
 }
 extension Color {
     init(hex: String) {
@@ -39,12 +46,8 @@ struct RemindersListView: View {
             VStack {
                 ForEach(viewModel.reminders) { reminder in
                     VStack(alignment: .leading) {
-                        Text(reminder.title)
-                            .font(.headline)
                         Text(reminder.date, style: .date)
                             .font(.subheadline)
-                        Text(reminder.body)
-                            .font(.body)
                     }
                     .padding(.vertical, 5)
                 }
