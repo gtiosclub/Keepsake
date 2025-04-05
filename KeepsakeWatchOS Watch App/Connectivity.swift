@@ -208,7 +208,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
         print("recieved")
         #if os(iOS)
-        if let messageFromWatch = message["requesting audio files"] as? Bool {
+        if let _ = message["requesting audio files"] as? Bool {
             Task {
                 print("hi")
                 await fetchAudioFiles()

@@ -22,10 +22,7 @@ struct ContentView: View {
                     Tab("Home", systemImage: "house") {
                         HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: .journal_shelf)
                     }
-                    Tab("Reminders", systemImage:"house") {
-                        RemindersListView()
-                            .environmentObject(reminderViewModel)
-                    }
+                    
                     
                     Tab("Community", systemImage: "person.2") {
                         CommunityView()
