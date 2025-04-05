@@ -275,16 +275,18 @@ class ConversationEntry: JournalEntry {
 class VoiceEntry: JournalEntry {
     var audio: Data?
     var transcription: String
+    var audioURL: String?
 
-    init(date: String, title: String, audio: Data?, transcription: String = "", width: Int = 1, height: Int = 1, isFake: Bool = false, color: [Double] = [0.5,0.5,0.5]) {
+    init(date: String, title: String, audio: Data?, audioURL: String = "", transcription: String = "", width: Int = 1, height: Int = 1, isFake: Bool = false, color: [Double] = [0.5,0.5,0.5]) {
         self.audio = audio
         self.transcription = transcription
+        self.audioURL = audioURL
         super.init(date: date, title: title, entryContents: transcription, width: width, height: height, isFake: isFake, color: color, type: .voice)
     }
     
     override func toDictionary(journalID: UUID) -> [String: Any] {
         var dict = super.toDictionary(journalID: journalID)
-        dict["audio"] = "slfkdsf"
+        dict["audioURL"] = audioURL
         dict["transcription"] = transcription
         return dict
     }
@@ -292,15 +294,24 @@ class VoiceEntry: JournalEntry {
     override static func fromDictionary(_ dict: [String: Any]) -> VoiceEntry? {
         guard let date = dict["date"] as? String,
               let title = dict["title"] as? String,
-              let audioString = dict["audio"] as? String,
-              let audio = Data(base64Encoded: audioString),
+              let audioURL = dict["audioURL"] as? String,
+              let transcription = dict["transcription"] as? String,
               let width = dict["width"] as? Int,
               let height = dict["height"] as? Int,
               let isFake = dict["isFake"] as? Bool,
               let color = dict["color"] as? [Double]
         else { return nil }
 
-        return VoiceEntry(date: date, title: title, audio: audio, width: width, height: height, isFake: isFake, color: color)
+        return VoiceEntry(date: date, title: title, audio: nil, audioURL: audioURL, transcription: transcription, width: width, height: height, isFake: isFake, color: color)
+    }
+    
+    func fetchAudioData(from urlString: String) async throws -> Data {
+        guard let url = URL(string: urlString) else {
+            throw URLError(.badURL)
+        }
+
+        let (data, _) = try await URLSession.shared.data(from: url)
+        return data
     }
     
     required init(from decoder: Decoder) throws {

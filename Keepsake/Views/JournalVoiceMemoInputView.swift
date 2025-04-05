@@ -31,9 +31,6 @@ struct JournalVoiceMemoInputView: View {
             HStack {
                 Button {
                     Task {
-                        if entry.audio == nil {
-                            userVM.removeJournalEntry(page: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex], index: entryIndex)
-                        }
                         await MainActor.run {
                             inEntry = .openJournal
                         }
@@ -46,7 +43,7 @@ struct JournalVoiceMemoInputView: View {
                 Spacer()
                 Button {
                     Task {
-                        let newEntry: VoiceEntry = VoiceEntry(date: date, title: title, audio: audioRecording.getAudioData(), width: entry.width, height: entry.height, isFake: false, color: entry.color)
+                        let newEntry: VoiceEntry = VoiceEntry(date: date, title: title, audio: audioRecording.getAudioData(), transcription: audioRecording.transcript, width: entry.width, height: entry.height, isFake: false, color: entry.color)
                         userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
                         
                         await fbVM.updateJournalPage(entries: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex].entries, journalID: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).id, pageNumber: pageIndex)
@@ -107,6 +104,16 @@ struct JournalVoiceMemoInputView: View {
             title = entry.title
             transcription = entry.transcription
             date = entry.date
+            
+            if let audioData = entry.audioURL {
+                Task {
+                    do {
+                        try await audioRecording.loadAudioData(audioData)
+                    } catch {
+                        print("Error loading audio data: \(error)")
+                    }
+                }
+            }
         }
         .sheet(isPresented: $showPromptSheet) {
             SuggestedPromptsView(aiVM: aiVM, selectedPrompt: $selectedPrompt, isPresented: $showPromptSheet)
@@ -131,10 +138,28 @@ final class AudioRecording: NSObject, ObservableObject {
     private let audioSession = AVAudioSession.sharedInstance()
 
     private var audioFile: AVAudioFile?
-    private var audioURL: URL?
+    @Published var audioURL: URL?
 
     @Published var isRecording = false
     @Published var transcript: String = ""
+    
+    func loadAudioData(_ urlString: String) async throws {
+        // Save the data to a temporary file
+        
+        guard let url = URL(string: urlString) else {
+            throw URLError(.badURL)
+        }
+
+        let (data, _) = try await URLSession.shared.data(from: url)
+        
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".caf")
+        try data.write(to: tempURL)
+        
+        // Update on main thread
+        await MainActor.run {
+            self.audioURL = tempURL
+        }
+    }
 
     func startRecording() {
         isRecording = true
@@ -273,7 +298,7 @@ final class AudioRecording: NSObject, ObservableObject {
 
 struct VoiceRecordingView: View {
     @State private var isRecording = false
-    var audioRecording: AudioRecording
+    @ObservedObject var audioRecording: AudioRecording
 
     var body: some View {
         VStack(spacing: 12) {
@@ -294,7 +319,7 @@ struct VoiceRecordingView: View {
             .frame(width: UIScreen.main.bounds.width / 5)
 
             // Playback Button – only show if audio exists
-            if audioRecording.hasRecording() {
+            if audioRecording.audioURL != nil {
                 Button(action: {
                     audioRecording.playRecording()
                 }) {
