@@ -282,6 +282,7 @@ struct ShelfView: View {
                 .navigationBarBackButtonHidden(true)
 
             case .written:
+                let temp = userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry)
                 JournalTextInputView(userVM: userVM,
                                      aiVM: aiVM, fbVM: fbVM,
                                      shelfIndex: shelfIndex,
@@ -289,7 +290,7 @@ struct ShelfView: View {
                                      entryIndex: selectedEntry,
                                      pageIndex: displayPage,
                                      inEntry: $inEntry,
-                                     entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry) as? WrittenEntry ?? WrittenEntry(date: "", title: "", text: "", summary: "***"), dailyPrompt: $dailyPrompt)
+                                     entry: WrittenEntry(date: "", title: "", text: "", summary: "", width: temp.width, height: temp.height, isFake: false, color: temp.color), dailyPrompt: $dailyPrompt)
                 .navigationBarBackButtonHidden(true)
                 
             case .voice:

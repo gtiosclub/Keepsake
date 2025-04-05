@@ -64,16 +64,34 @@ class JournalEntry: ObservableObject, Identifiable, Hashable, Codable {
         self.entryContents = entryContents
     }
     
-    init(entry: JournalEntry, width: Int, height: Int) {
-        self.id = entry.id
-        self.date = entry.date
-        self.title = entry.title
-        self.width = width
-        self.height = height
-        self.isFake = entry.isFake
-        self.color = entry.color
-        self.type = entry.type
-        self.entryContents = entry.entryContents
+//    init(entry: JournalEntry, width: Int, height: Int) {
+//        self.id = UUID()
+//        self.date = entry.date
+//        self.title = entry.title
+//        self.width = width
+//        self.height = height
+//        self.isFake = entry.isFake
+//        self.color = entry.color
+//        self.type = entry.type
+//        self.entryContents = entry.entryContents
+//    }
+    
+    static func create(from entry: JournalEntry, width: Int, height: Int) -> JournalEntry {
+        print(Swift.type(of: entry))
+        switch entry.type {
+        case .picture:
+            let pictureEntry = entry as! PictureEntry
+            return PictureEntry(date: pictureEntry.date, title: pictureEntry.title, images: pictureEntry.images, width: width, height: height, isFake: false, color: pictureEntry.color)
+        case .voice:
+            let voice = entry as! VoiceEntry
+            return VoiceEntry(date: voice.date, title: voice.title, audio: voice.audio, transcription: voice.transcription, width: width, height: height, isFake: false, color: voice.color)
+        case .chat:
+            let chat = entry as! ConversationEntry
+            return ConversationEntry(date: chat.date, title: chat.title, conversationLog: chat.conversationLog, width: width, height: height, color: chat.color)
+        default:
+            let written = entry as! WrittenEntry
+            return WrittenEntry(date: written.date, title: written.title, text: written.text, summary: written.summary, width: width, height: height, isFake: false, color: written.color)
+        }
     }
 
     // MARK: - Hashable
@@ -246,9 +264,9 @@ class WrittenEntry: JournalEntry {
 class ConversationEntry: JournalEntry {
     var conversationLog: [String]
 
-    init(date: String, title: String, conversationLog: [String], color: [Double] = [0.5,0.5,0.5]) {
+    init(date: String, title: String, conversationLog: [String], width: Int = 1, height: Int = 1, color: [Double] = [0.5,0.5,0.5]) {
         self.conversationLog = conversationLog
-        super.init(date: date, title: title, entryContents: conversationLog.description, width: 1, height: 1, isFake: false, color: color, type: .chat)
+        super.init(date: date, title: title, entryContents: conversationLog.description, width: width, height: height, isFake: false, color: color, type: .chat)
     }
     
     override func toDictionary(journalID: UUID) -> [String: Any] {

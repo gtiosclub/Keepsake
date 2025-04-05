@@ -490,11 +490,16 @@ class FirebaseViewModel: ObservableObject {
                 await addJournalEntry(journalEntry: entry, journalID: journalID, pageNumber: pageNumber)
             }
         }
-        for entry in previousEntryIds {
-            if let uuid = UUID(uuidString: entry) {
+        for oldEntryID in previousEntryIds {
+            for entry in entries {
+                if entry.id.uuidString == oldEntryID {
+                    continue
+                }
+            }
+            if let uuid = UUID(uuidString: oldEntryID) {
                 await removeJournalEntry(entryID: uuid)
             } else {
-                print("Invalid UUID string: \(entry)")
+                print("Invalid UUID string: \(oldEntryID)")
             }
         }
     }
@@ -518,9 +523,9 @@ class FirebaseViewModel: ObservableObject {
                 print(x)
                 return JournalEntry.fromDictionary(dict)
             } else {
+                print("fake entry improperly returned")
                 return JournalEntry()
                 //return nil
-                print("fake entry improperly returned")
             }
         } catch {
             print("Error fetching Journal Shelf: \(error.localizedDescription)")

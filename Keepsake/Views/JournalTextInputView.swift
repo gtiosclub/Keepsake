@@ -48,12 +48,16 @@ struct JournalTextInputView: View {
                     Spacer()
                     Button {
                         Task {
+                            print(entry.width, entry.title)
                             var newEntry = WrittenEntry(date: date, title: title, text: inputText, summary: entry.summary, width: entry.width, height: entry.height, isFake: false, color: entry.color)
                             if entry.text != inputText {
                                 newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
                             }
                             
                             userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
+                            for entry in userVM.user.journalShelves[shelfIndex].journals[journalIndex].pages[pageIndex].entries {
+                                print(entry.width, entry.height, entry.title, entry.id)
+                            }
                             await fbVM.updateJournalPage(entries: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex].entries, journalID: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).id, pageNumber: pageIndex)
                             
                             await MainActor.run {
