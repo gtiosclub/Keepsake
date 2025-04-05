@@ -48,7 +48,7 @@ struct RemindersListView: View {
                     }
                     .padding(.vertical, 5)
                 }
-                
+                #if os(watchOS)
                 NavigationLink(
                     destination: AudioFilesView(),
                     label: {
@@ -63,7 +63,9 @@ struct RemindersListView: View {
                         .shadow(radius: 5)
                     }
                 )
+                
                 .padding(.vertical)
+                #endif
                 
                 #if os(iOS)
                 NavigationLink(

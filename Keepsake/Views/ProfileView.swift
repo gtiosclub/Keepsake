@@ -61,6 +61,24 @@ struct ProfileView: View {
                                             tintColor: .blue)
                         }
                     }
+                    Section("Audio Reminders") {
+                        NavigationLink(
+                            destination: AudioFilesView(),
+                            label: {
+                                HStack {
+                                    Image(systemName: "headphones")
+                                        .foregroundColor(Color(hex: "FFADF4"))
+                                    Text("Audio Recordings")
+                                        .foregroundColor(.primary)
+                                }
+                                .padding()
+                                .background(RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.3)))
+                                .shadow(radius: 5)
+                            }
+                        )
+                        
+                        .padding(.vertical)
+                    }
                     
                     Section("Account") {
                         Button {
