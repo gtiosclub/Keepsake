@@ -435,7 +435,10 @@ class FirebaseViewModel: ObservableObject {
     func addJournalEntry(journalEntry: JournalEntry, journalID: UUID, pageNumber: Int) async -> Bool {
         let journal_entry_reference = db.collection("JOURNAL_ENTRIES").document(journalEntry.id.uuidString)
         do {
-            let journalEntryData = journalEntry.toDictionary(journalID: journalID)
+            var journalEntryData = journalEntry.toDictionary(journalID: journalID)
+            
+            print(journalEntryData["audioURL"])
+            
             try await journal_entry_reference.setData(journalEntryData)
             
             try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
@@ -470,9 +473,23 @@ class FirebaseViewModel: ObservableObject {
             if (entry.isFake == true) {
                 continue
             }
+            
             let entry_ref = db.collection("JOURNAL_ENTRIES").document(entry.id.uuidString)
+            var journalEntryData = entry.toDictionary(journalID: journalID)
+            
             do {
-                let journalEntryData = entry.toDictionary(journalID: journalID)
+                if let voiceEntry = entry as? VoiceEntry, let audioData = voiceEntry.audio {
+                    var result = await uploadAudio(audioData, fileName: UUID().uuidString)
+                    
+                    switch result {
+                    case .success(let url):
+                        voiceEntry.audioURL = url.absoluteString
+                        journalEntryData["audioURL"] = url.absoluteString
+                    case .failure(let error):
+                        print("Failed to upload audio:", error.localizedDescription)
+                    }
+                }
+                
                 try await entry_ref.updateData(journalEntryData)
                 
                 try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
@@ -896,4 +913,22 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    
+    func uploadAudio(_ audioData: Data, fileName: String) async -> Result<URL, Error> {
+        let storageRef = Storage.storage().reference().child("audio/\(fileName).m4a")
+
+        let metadata = StorageMetadata()
+        metadata.contentType = "audio/m4a"
+
+        do {
+            // Upload the audio data
+            let _ = try await storageRef.putDataAsync(audioData, metadata: metadata)
+            
+            // Download the URL after upload
+            let url = try await storageRef.downloadURL()
+            return .success(url)
+        } catch {
+            return .failure(error)
+        }
+    }
 }
