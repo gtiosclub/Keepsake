@@ -187,15 +187,9 @@ struct DateTimeSelectionView: View {
                 formatter.timeStyle = .long
                 formatter.timeZone = TimeZone.current
                 print("Final Date Selected: (\(formatter.string(from: finalDate))")
-                if let audioFilePath = recordedAudio {
-                    let reminderData: [String: Any] = [
-                        "audioFilePath": audioFilePath,
-                        "reminderDate": finalDate
-                    ]
-//                    WatchSessionManager.shared.sendMessageToPhone(data: reminderData)
-                } else {
-                    print("No audio file path available!")
-                }
+                
+                let reminder = Reminder(id: Connectivity.shared.audioUniqueId ?? "hi", date: finalDate)
+                Connectivity.shared.send(reminder: reminder)
 
             } label: {
                 Text("Confirm")

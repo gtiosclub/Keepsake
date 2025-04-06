@@ -24,7 +24,7 @@ class FirebaseViewModel: ObservableObject {
     @Published var searchedEntries: [JournalEntry] = []
     @Published var userSession: FirebaseAuth.User?
     @Published var currentUser: User?
-    
+    @Published var retrievedImage: UIImage?
     let auth = Auth.auth()
     static let vm = FirebaseViewModel()
     func configure() {
@@ -47,7 +47,7 @@ class FirebaseViewModel: ObservableObject {
     private struct QueryResponse: Codable {
       var ids: [String]
     }
-    
+     
     
     private lazy var vectorSearchQueryCallable: Callable<QueryRequest, QueryResponse> = functions.httpsCallable("ext-firestore-vector-search-queryCallable")
     
@@ -68,7 +68,51 @@ class FirebaseViewModel: ObservableObject {
             await fetchUser()
         }
     }
-    
+    func storeProfilePic(image: UIImage) {
+            guard let uid = currentUser?.id else { return }
+            let file = "\(uid).jpg"
+            let storageRef = Storage.storage().reference(withPath: "profile pic/\(file)")
+            
+            if let imageData = image.jpegData(compressionQuality: 0.8) {
+                let metadata = StorageMetadata()
+                metadata.contentType = "image/jpeg"
+                
+                storageRef.putData(imageData, metadata: metadata) { [weak self] metadata, error in
+                    if let error = error {
+                        print("Error uploading the image: \(error.localizedDescription)")
+                        return
+                    }
+                    print("Image uploaded successfully!")
+                    
+                }
+            }
+        }
+        
+    func getProfilePic() -> UIImage? {
+        let uid = currentUser?.id
+        
+        let storageRef = Storage.storage().reference().child("profile pic").child("\(uid!).jpg")
+                storageRef.getData(maxSize: 3 * 2048 * 2048) { data, error in
+                    if let error = error {
+                        print("Error fetching image data: \(error)")
+                        return
+                    }
+                    guard let data = data else {
+                                            print("No data returned")
+                                            return
+                                        }
+                    if let image = UIImage(data: data) {
+                        DispatchQueue.main.async {
+                            self.retrievedImage = image
+                            print("Image successfully retrieved and set")
+                        }
+                    } else {
+                        print("Error creating image from data")
+                    }
+                }
+        return retrievedImage
+        
+    }
     func signIn(withEmail email: String, password: String) async throws {
         
             let result = try await auth.signIn(withEmail: email, password: password)
@@ -120,6 +164,46 @@ class FirebaseViewModel: ObservableObject {
         
     }
     
+    func fetchOtherUser(newUserID: String) async -> User? {
+        
+        do {
+            guard let snapshot = try? await Firestore.firestore().collection("USERS").document(newUserID).getDocument() else { return nil}
+            if snapshot.exists {
+                // Manually extract data from the snapshot
+                if let uid = snapshot.get("uid") as? String,
+                   let name = snapshot.get("name") as? String,
+                   let username = snapshot.get("username") as? String,
+                   let journalShelfIds = snapshot.get("journalShelves") as? [String],
+                   let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
+                   let templates = snapshot.get("templates") as? [String],
+                   let friends = snapshot.get("friends") as? [String],
+                   let lastUsed = snapshot.get("lastUsedShelfId") as? String,
+                   let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
+                {
+                    var journalShelves: [JournalShelf] = []
+                    for astr in journalShelfIds {
+                        let shelf = await getJournalShelfFromID(id: astr)!
+                        journalShelves.append(shelf)
+                    }
+                    let lastUsedID: UUID
+                    if let temp = UUID(uuidString: lastUsed) {
+                        lastUsedID = temp
+                    } else {
+                        print("Error getting last used ID")
+                        lastUsedID = UUID()
+                    }
+                    let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed)
+                    
+                    return user
+                    
+                }
+            }
+        }
+        
+        return nil
+        
+    }
+    
     func fetchUser() async {
         guard let uid = auth.currentUser?.uid else {return}
         
@@ -153,9 +237,11 @@ class FirebaseViewModel: ObservableObject {
                     for journal in shelf.journals {
                         for page in journal.pages {
                             for entry in page.entries {
-                                for url in entry.images {
-                                    if let image = await getImageFromURL(urlString: url) {
-                                        imageDict[url] = image
+                                if let entry = entry as? PictureEntry {
+                                    for url in entry.images {
+                                        if let image = await getImageFromURL(urlString: url) {
+                                            imageDict[url] = image
+                                        }
                                     }
                                 }
                             }
@@ -435,7 +521,10 @@ class FirebaseViewModel: ObservableObject {
     func addJournalEntry(journalEntry: JournalEntry, journalID: UUID, pageNumber: Int) async -> Bool {
         let journal_entry_reference = db.collection("JOURNAL_ENTRIES").document(journalEntry.id.uuidString)
         do {
-            let journalEntryData = journalEntry.toDictionary(journalID: journalID)
+            var journalEntryData = journalEntry.toDictionary(journalID: journalID)
+            
+            print(journalEntryData["audioURL"])
+            
             try await journal_entry_reference.setData(journalEntryData)
             
             try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
@@ -473,9 +562,23 @@ class FirebaseViewModel: ObservableObject {
             if (entry.isFake == true) {
                 continue
             }
+            
             let entry_ref = db.collection("JOURNAL_ENTRIES").document(entry.id.uuidString)
+            var journalEntryData = entry.toDictionary(journalID: journalID)
+            
             do {
-                let journalEntryData = entry.toDictionary(journalID: journalID)
+                if let voiceEntry = entry as? VoiceEntry, let audioData = voiceEntry.audio {
+                    var result = await uploadAudio(audioData, fileName: UUID().uuidString)
+                    
+                    switch result {
+                    case .success(let url):
+                        voiceEntry.audioURL = url.absoluteString
+                        journalEntryData["audioURL"] = url.absoluteString
+                    case .failure(let error):
+                        print("Failed to upload audio:", error.localizedDescription)
+                    }
+                }
+                
                 try await entry_ref.updateData(journalEntryData)
                 
                 try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
@@ -488,11 +591,16 @@ class FirebaseViewModel: ObservableObject {
                 await addJournalEntry(journalEntry: entry, journalID: journalID, pageNumber: pageNumber)
             }
         }
-        for entry in previousEntryIds {
-            if let uuid = UUID(uuidString: entry) {
+        for oldEntryID in previousEntryIds {
+            for entry in entries {
+                if entry.id.uuidString == oldEntryID {
+                    continue
+                }
+            }
+            if let uuid = UUID(uuidString: oldEntryID) {
                 await removeJournalEntry(entryID: uuid)
             } else {
-                print("Invalid UUID string: \(entry)")
+                print("Invalid UUID string: \(oldEntryID)")
             }
         }
     }
@@ -516,9 +624,9 @@ class FirebaseViewModel: ObservableObject {
                 print(x)
                 return JournalEntry.fromDictionary(dict)
             } else {
+                print("fake entry improperly returned")
                 return JournalEntry()
                 //return nil
-                print("fake entry improperly returned")
             }
         } catch {
             print("Error fetching Journal Shelf: \(error.localizedDescription)")
@@ -629,25 +737,25 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func createConversationEntry(entry: JournalEntry, journalID: String) async -> Bool {
-            let journalEntry = db.collection("JOURNAL_ENTRIES")
-            var conversationEntryData: [String: Any]  = [
-                "date": "",
-                "entryContents": "",
-                "conversationLog": [],
-                "id": "\(entry.id)",
-                "journal_id": journalID,
-                "summary": "",
-                "title": ""
-            ]
-            do {
-                try await journalEntry.document("\(entry.id.uuidString)").setData(conversationEntryData)
-                return true
-                
-            } catch {
-                print("Error making document: \(error.localizedDescription)")
-                return false
-            }
+        let journalEntry = db.collection("JOURNAL_ENTRIES")
+        var conversationEntryData: [String: Any]  = [
+            "date": "",
+            "entryContents": "",
+            "conversationLog": [],
+            "id": entry.id.uuidString,
+            "journal_id": journalID,
+            "summary": "",
+            "title": ""
+        ]
+        do {
+            try await journalEntry.document(entry.id.uuidString).setData(conversationEntryData)
+            return true
+            
+        } catch {
+            print("Error making document: \(error.localizedDescription)")
+            return false
         }
+    }
     func updateEntryWithConversationLog(id: UUID) async {
         let journalDoc = db.collection("JOURNAL_ENTRIES").document(id.uuidString)
         
@@ -662,53 +770,55 @@ class FirebaseViewModel: ObservableObject {
         
     }
         
-        func addConversationLog(text: [String], journalEntry: UUID) async -> Bool {
-            let conversationEntry = db.collection("JOURNAL_ENTRIES").document("\(journalEntry.uuidString)")
-            
-            do {
-                try await conversationEntry.updateData([
-                    "conversationLog": text
-                ])
-                return true
-                
-            } catch {
-                print("Error making document: \(error.localizedDescription)")
-                return false
-            }
-        }
-    
-    func conversationEntryCheck(journalEntryID: UUID) async -> Bool {
-        let entryDoc = db.collection("JOURNAL_ENTRIES").document("\(journalEntryID.uuidString)")
+    func addConversationLog(text: [String], journalEntry: UUID) async -> Bool {
+        let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntry.uuidString)
+        
         do {
-            let doc = try await entryDoc.getDocument()
-            if doc.exists {
-                return true
-            } else {
-                return false
-            }
+            try await docRef.updateData([
+                "conversationLog": text,
+            ])
+            return true
         } catch {
-            print("Error making document: \(error.localizedDescription)")
+            print("Error updating document: \(error.localizedDescription)")
             return false
         }
     }
     
-    func loadConversationLog(for journalEntryID: String, viewModel: AIViewModel) async {
-            let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntryID)
-
-            do {
-                let document = try await docRef.getDocument()
-                if let data = document.data(),
-                   let conversationLog = data["conversationLog"] as? [String], !conversationLog.isEmpty {
-
-                    await MainActor.run {
-                        if viewModel.conversationHistory.isEmpty {
-                            viewModel.conversationHistory = conversationLog
-                        }
-                    }
-                }
-            } catch {
-                print("Error loading conversationLog: \(error.localizedDescription)")
+    func conversationEntryCheck(journalEntryID: UUID) async -> (exists: Bool, hasContent: Bool) {
+        let entryDoc = db.collection("JOURNAL_ENTRIES").document(journalEntryID.uuidString)
+        do {
+            let doc = try await entryDoc.getDocument()
+            guard doc.exists,
+                  let data = doc.data(),
+                  let logs = data["conversationLog"] as? [String] else {
+                return (false, false)
             }
+            return (true, !logs.isEmpty)
+        } catch {
+            print("Error checking document: \(error.localizedDescription)")
+            return (false, false)
+        }
+    }
+    
+    func loadConversationLog(for journalEntryID: String, aiVM: AIViewModel) async -> Bool {
+        let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntryID)
+        
+        do {
+            let document = try await docRef.getDocument()
+            guard document.exists,
+                  let data = document.data(),
+                  let logs = data["conversationLog"] as? [String] else {
+                return false
+            }
+            
+            await MainActor.run {
+                aiVM.conversationHistory = logs
+            }
+            return true
+        } catch {
+            print("Error loading conversationLog: \(error.localizedDescription)")
+            return false
+        }
     }
     
     // SCRAPBOOKS
@@ -897,4 +1007,22 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    
+    func uploadAudio(_ audioData: Data, fileName: String) async -> Result<URL, Error> {
+        let storageRef = Storage.storage().reference().child("audio/\(fileName).m4a")
+
+        let metadata = StorageMetadata()
+        metadata.contentType = "audio/m4a"
+
+        do {
+            // Upload the audio data
+            let _ = try await storageRef.putDataAsync(audioData, metadata: metadata)
+            
+            // Download the URL after upload
+            let url = try await storageRef.downloadURL()
+            return .success(url)
+        } catch {
+            return .failure(error)
+        }
+    }
 }
