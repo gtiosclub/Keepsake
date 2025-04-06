@@ -362,6 +362,7 @@ class FirebaseViewModel: ObservableObject {
                 let template = Template.fromDictionary(templateDict) ?? Template()
                 let pagesArray = dict["pages"] as? [String: [String]] ?? [:]
                 let currentPage = dict["currentPage"] as? Int ?? 0
+                let favoritePages = dict["favoritePages"] as? [Int] ?? []
                 
                 var journalPages: [JournalPage] = []
                 
@@ -391,7 +392,7 @@ class FirebaseViewModel: ObservableObject {
                     journalPages.append(JournalPage(number: Int(num) ?? 0, entries: journalEntries, realEntryCount: entryCount))
                 }
                 let sortedPages = journalPages.sorted { $0.number < $1.number }
-                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: sortedPages, currentPage: currentPage)
+                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: sortedPages, currentPage: currentPage, favoritePages: favoritePages)
                 
             } else {
                 print("No document found")
@@ -400,6 +401,17 @@ class FirebaseViewModel: ObservableObject {
         } catch {
             print("Error fetching Journal Shelf: \(error.localizedDescription)")
             return nil
+        }
+    }
+    
+    func updateFavoritePages(journalID: UUID, newPages: [Int]) async {
+        let journal_reference = db.collection("JOURNALS").document(journalID.uuidString)
+        do {
+            try await journal_reference.updateData([
+                "favoritePages": newPages
+            ])
+        } catch {
+            print("Error updating pages: \(error.localizedDescription)")
         }
     }
     

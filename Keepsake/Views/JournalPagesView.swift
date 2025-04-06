@@ -18,7 +18,14 @@ struct JournalPagesView: View {
 
     // Track selection states for circles and stars per page
     @State private var selectedCircles: [Int: Bool] = [:]
-    @State private var selectedStars: [Int: Bool] = [:]
+    @State private var selectedStars: [Int: Bool] = [:] {
+        didSet {
+            updateFavoritePages()
+            Task {
+                await fbVM.updateFavoritePages(journalID: journal.id, newPages: journal.favoritePages)
+            }
+        }
+    }
     
     // State to track the selected option (All or Favorites)
     @State private var selectedOption = 0 // 0: All, 1: Favorites
@@ -131,6 +138,10 @@ struct JournalPagesView: View {
                 }
 
             }
+        }.onAppear() {
+            for num in journal.favoritePages {
+                selectedStars[num] = true
+            }
         }
     
     }
@@ -138,14 +149,21 @@ struct JournalPagesView: View {
     // A computed property to filter pages based on the selected option (All or Favorites)
     private func filteredPages() -> [JournalPage] {
         if selectedOption == 0 {
-            // Show all pages
-            return journal.pages
-        } else {
-            // Show only favorite pages (where star is selected)
-            return journal.pages.filter { selectedStars[$0.number] == true }
-        }
+                // Show all pages
+                return journal.pages
+            } else {
+                // Show only favorite pages (where star is selected)
+                return journal.pages.filter { page in
+                    journal.favoritePages.contains(page.number)
+                }
+            }
     }
     
+    private func updateFavoritePages() {
+        journal.favoritePages = selectedStars
+            .filter { $0.value }
+            .map { $0.key }
+    }
 }
 
 struct ActionButton: View {
