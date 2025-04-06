@@ -5,25 +5,43 @@
 //  Created by Rik Roy on 2/2/25.
 //
 
-import SwiftUI
 
+import UIKit
+import UserNotifications
+import SwiftUI
 import FirebaseCore
 
-class AppDelegate: NSObject, UIApplicationDelegate {
-  func application(_ application: UIApplication,
-                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-    FirebaseApp.configure()
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
-    return true
-  }
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        FirebaseApp.configure()
+        UNUserNotificationCenter.current().delegate = self
+        requestNotificationPermission()
+        return true
+    }
+
 }
+
+func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
+            if granted {
+                print("Notification permission granted")
+            } else {
+                print("Notification permission denied")
+            }
+        }
+}
+
+
 
 @main
 struct KeepsakeApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var firebaseViewModel = FirebaseViewModel.vm
     @StateObject private var reminderViewModel = RemindersViewModel()
-    //@StateObject private var authViewModel = AuthViewModel()
+      init() {
+          requestNotificationPermission()
+      }
     var body: some Scene {
         WindowGroup {
              isLoggedInView()
