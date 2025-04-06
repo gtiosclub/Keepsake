@@ -16,15 +16,15 @@ struct VoiceRecordingView: View {
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
 
-    private let audioRecording = AudioRecording()
+    
 
     @State private var showDateTimeSelection = false
-    @State private var recordedAudio: String? // Placeholder for recorded file name
+    @State private var recordedAudio: String?
 
 
     var onRecordingComplete: (Reminder) -> Void
-    @Environment(\.dismiss) private var dismiss  // Dismiss when done
-
+    @Environment(\.dismiss) private var dismiss
+    private let audioRecording = AudioRecording()
     var body: some View {
         ZStack {
             Color.black.edgesIgnoringSafeArea(.all)

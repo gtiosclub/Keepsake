@@ -38,9 +38,11 @@ extension Color {
         self.init(red: red, green: green, blue: blue)
     }
 }
-struct RemindersListView: View {
-    @EnvironmentObject private var viewModel: RemindersViewModel
 
+struct RemindersListView: View {
+    @State private var navigateToRecording = false
+    @EnvironmentObject private var viewModel: RemindersViewModel
+    var audioRecording = AudioRecording()
     var body: some View {
         NavigationStack {
             VStack {
@@ -86,6 +88,12 @@ struct RemindersListView: View {
                 .buttonStyle(PlainButtonStyle())
                 #endif
             }
+            .navigationDestination(isPresented: $navigateToRecording) {
+                VoiceRecordingView(audioRecording: AudioRecording())
+                   }
+                   .onReceive(NotificationCenter.default.publisher(for: .navigateToVoiceRecording)) { _ in
+                       navigateToRecording = true
+                   }
         }
     }
 }
