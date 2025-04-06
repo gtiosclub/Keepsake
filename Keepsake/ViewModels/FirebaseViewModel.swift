@@ -87,7 +87,7 @@ class FirebaseViewModel: ObservableObject {
                 }
             }
         }
-        
+    
     func getProfilePic() -> UIImage? {
         let uid = currentUser?.id
         
@@ -113,6 +113,7 @@ class FirebaseViewModel: ObservableObject {
         return retrievedImage
         
     }
+    
     func signIn(withEmail email: String, password: String) async throws {
         
             let result = try await auth.signIn(withEmail: email, password: password)

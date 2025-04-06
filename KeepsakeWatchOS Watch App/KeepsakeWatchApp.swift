@@ -27,12 +27,14 @@ class AppDelegate: NSObject, WKExtensionDelegate, UNUserNotificationCenterDelega
         UNUserNotificationCenter.current().delegate = self
         requestNotificationPermission()
     }
-    
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async {
-    }
-
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        if response.actionIdentifier == "RECORD_ACTION" {
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .navigateToVoiceRecording, object: nil)
+            }
+        }
     }
+    
     private func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
             if granted {

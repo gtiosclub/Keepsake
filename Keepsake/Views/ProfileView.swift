@@ -10,100 +10,103 @@ struct ProfileView: View {
     @State private var isCamera = false
     
     var body: some View {
-        VStack {
-            if let user = viewModel.currentUser {
-                List {
-                    Section {
-                        HStack {
-                            if let profileImage = viewModel.retrievedImage {
-                               Image(uiImage: profileImage)
-                                 .resizable()
-                                 .scaledToFill()
-                                 .frame(width: 72, height: 72)
-                                 .clipShape(Circle())
-                                 .onTapGesture {
-                                    showImageOptions.toggle()
-                                 }
-                            } else {
-                               Image(systemName: "person.crop.circle.fill")
-                                 .resizable()
-                                 .scaledToFill()
-                                 .frame(width: 72, height: 72)
-                                 .foregroundColor(.gray)
-                                 .onTapGesture {
-                                    showImageOptions.toggle()
-                                 }
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(user.name)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .padding(.top)
-                                
-                                Text(user.username)
-                                    .font(.footnote)
-                                    .accentColor(.pink)
-                            }
-                        }
-                    }
-                    Section("Friends") {
-                        NavigationLink(destination: FriendsView()) {
-                            SettingsRowView(imageName: "person.2.fill", title: "View Friends", tintColor: .blue)
-                        }
-                    }
-                    
-                    Section("Audio Reminders") {
-                        NavigationLink(
-                            destination: AudioFilesView(),
-                            label: {
-                                HStack {
-                                    Image(systemName: "headphones")
-                                        .foregroundColor(Color(hex: "FFADF4"))
-                                    Text("Audio Recordings")
-                                        .foregroundColor(.primary)
+        NavigationView {
+            VStack {
+                if let user = viewModel.currentUser {
+                    List {
+                        Section {
+                            HStack {
+                                if let profileImage = viewModel.retrievedImage {
+                                    Image(uiImage: profileImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 72, height: 72)
+                                        .clipShape(Circle())
+                                        .onTapGesture {
+                                            showImageOptions.toggle()
+                                        }
+                                } else {
+                                    Image(systemName: "person.crop.circle.fill")
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 72, height: 72)
+                                        .foregroundColor(.gray)
+                                        .onTapGesture {
+                                            showImageOptions.toggle()
+                                        }
                                 }
-                                .padding()
-                                .background(RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.3)))
-                                .shadow(radius: 5)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(user.name)
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .padding(.top)
+                                    
+                                    Text(user.username)
+                                        .font(.footnote)
+                                        .accentColor(.pink)
+                                }
                             }
-                        )
-                    }
-                    
-                    Section("Account") {
-                        Button {
-                            viewModel.signOut()
-                        } label: {
-                            SettingsRowView(imageName: "arrow.backward.circle.fill", title: "Sign Out", tintColor: .red)
+                        }
+                        Section("Friends") {
+                            NavigationLink(destination: FriendsView()) {
+                                SettingsRowView(imageName: "person.2.fill", title: "View Friends", tintColor: .blue)
+                            }
+                        }
+                        
+                        Section("Audio Reminders") {
+                            NavigationLink(
+                                destination: AudioFilesView()
+                                    .environmentObject(viewModel),
+                                label: {
+                                    HStack {
+                                        Image(systemName: "headphones")
+                                            .foregroundColor(Color(hex: "FFADF4"))
+                                        Text("Audio Recordings")
+                                            .foregroundColor(.primary)
+                                    }
+                                    .padding()
+                                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.3)))
+                                    .shadow(radius: 5)
+                                }
+                            )
+                        }
+                        
+                        Section("Account") {
+                            Button {
+                                viewModel.signOut()
+                            } label: {
+                                SettingsRowView(imageName: "arrow.backward.circle.fill", title: "Sign Out", tintColor: .red)
+                            }
                         }
                     }
                 }
             }
-        }
-        .onAppear() {
-           viewModel.getProfilePic()
-            
-        }
-        .actionSheet(isPresented: $showImageOptions) {
-            ActionSheet(title: Text("Select Profile Image"), buttons: [
-                .default(Text("Camera")) {
-                    self.isCamera = true
-                    self.showImagePicker.toggle()
-                },
-                .default(Text("Photo Library")) {
-                    self.isCamera = false
-                    self.showImagePicker.toggle()
-                },
-                .cancel()
-            ])
-        }
-        .sheet(isPresented: $showImagePicker) {
-            ImagePickerController(image: $profileImage, isCamera: isCamera)
-        }
-        .onChange(of: profileImage) { newImage in
-            if let image = newImage {
-                viewModel.storeProfilePic(image: image)
+            .onAppear() {
+                viewModel.getProfilePic()
                 
+            }
+            .actionSheet(isPresented: $showImageOptions) {
+                ActionSheet(title: Text("Select Profile Image"), buttons: [
+                    .default(Text("Camera")) {
+                        self.isCamera = true
+                        self.showImagePicker.toggle()
+                    },
+                    .default(Text("Photo Library")) {
+                        self.isCamera = false
+                        self.showImagePicker.toggle()
+                    },
+                    .cancel()
+                ])
+            }
+            .sheet(isPresented: $showImagePicker) {
+                ImagePickerController(image: $profileImage, isCamera: isCamera)
+            }
+            .onChange(of: profileImage) { newImage in
+                if let image = newImage {
+                    viewModel.storeProfilePic(image: image)
+                    
+                }
             }
         }
     }
