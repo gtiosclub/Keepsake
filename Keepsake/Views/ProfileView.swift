@@ -1,6 +1,3 @@
-
-
-
 import SwiftUI
 import UIKit
 
@@ -10,7 +7,7 @@ struct ProfileView: View {
     @State private var showImagePicker = false
     @State private var showImageOptions = false
     @State private var showCamera = false
-    @State private var isCamera = false // Determine if camera or photo library should be used
+    @State private var isCamera = false
     
     var body: some View {
         VStack {
@@ -18,24 +15,24 @@ struct ProfileView: View {
                 List {
                     Section {
                         HStack {
-                            if let profileImage = profileImage {
-                                Image(uiImage: profileImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 72, height: 72)
-                                    .clipShape(Circle())
-                                    .onTapGesture {
-                                        showImageOptions.toggle()
-                                    }
+                            if let profileImage = viewModel.retrievedImage {
+                               Image(uiImage: profileImage)
+                                 .resizable()
+                                 .scaledToFill()
+                                 .frame(width: 72, height: 72)
+                                 .clipShape(Circle())
+                                 .onTapGesture {
+                                    showImageOptions.toggle()
+                                 }
                             } else {
-                                Image(systemName: "person.crop.circle.fill")
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 72, height: 72)
-                                    .foregroundColor(.gray)
-                                    .onTapGesture {
-                                        showImageOptions.toggle()
-                                    }
+                               Image(systemName: "person.crop.circle.fill")
+                                 .resizable()
+                                 .scaledToFill()
+                                 .frame(width: 72, height: 72)
+                                 .foregroundColor(.gray)
+                                 .onTapGesture {
+                                    showImageOptions.toggle()
+                                 }
                             }
                             
                             VStack(alignment: .leading, spacing: 4) {
@@ -50,8 +47,6 @@ struct ProfileView: View {
                             }
                         }
                     }
-                    
-                    // Additional sections...
                     Section("Friends") {
                         NavigationLink(destination: FriendsView()) {
                             SettingsRowView(imageName: "person.2.fill", title: "View Friends", tintColor: .blue)
@@ -85,6 +80,10 @@ struct ProfileView: View {
                 }
             }
         }
+        .onAppear() {
+           viewModel.getProfilePic()
+            
+        }
         .actionSheet(isPresented: $showImageOptions) {
             ActionSheet(title: Text("Select Profile Image"), buttons: [
                 .default(Text("Camera")) {
@@ -100,6 +99,12 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showImagePicker) {
             ImagePickerController(image: $profileImage, isCamera: isCamera)
+        }
+        .onChange(of: profileImage) { newImage in
+            if let image = newImage {
+                viewModel.storeProfilePic(image: image)
+                
+            }
         }
     }
 }
