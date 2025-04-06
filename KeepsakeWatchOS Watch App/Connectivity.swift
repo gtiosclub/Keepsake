@@ -108,6 +108,21 @@ final class Connectivity: NSObject, WCSessionDelegate {
         print("Audio file sent: \(audioFileUrl)")
     }
     
+    func updateIsCheckedInFirestore(reminderId: String, isChecked: Bool) {
+#if os(iOS)
+        let reminderRef = firebaseVM.db.collection("reminders").document(reminderId)
+            reminderRef.updateData([
+                "isChecked": isChecked
+            ]) { error in
+                if let error = error {
+                    print("error updating document: \(error.localizedDescription)")
+                } else {
+                    print("successfully updated isChecked for reminder with ID \(reminderId)")
+                }
+            }
+#endif
+        }
+    
     func fetchAudioFiles() async {
         print("Starting audio files fetch")
         #if os(iOS)

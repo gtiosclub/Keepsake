@@ -87,7 +87,7 @@ class FirebaseViewModel: ObservableObject {
                 }
             }
         }
-        
+    
     func getProfilePic() -> UIImage? {
         let uid = currentUser?.id
         
