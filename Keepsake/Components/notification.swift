@@ -43,7 +43,7 @@ class ViewController: UIViewController {
         Task {
             await prompt = aiViewModel.getPromptOfTheDay()
             let body = "Write down your answer to this prompt: \(prompt)"
-            UserDefaults.standard.set(prompt, forKey: "pendingPrompt")
+            UserDefaults.standard.set(prompt, forKey: "prompt")
             let isDaily = true
             let notificationCenter = UNUserNotificationCenter.current()
             let content = UNMutableNotificationContent()

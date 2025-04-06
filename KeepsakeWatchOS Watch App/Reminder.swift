@@ -20,6 +20,7 @@ struct Reminder: Identifiable, Codable {
     #if os(watchOS)
     var id: String
     #endif
+    var prompt: String
     var date: Date
 //    var body: String
 }
@@ -72,10 +73,9 @@ struct RemindersListView: View {
                 .padding(.vertical)
                 #endif
                 
-                #if os(iOS)
+                #if os(watchOS)
                 NavigationLink(
-                    destination: TextReminder()
-                        .environmentObject(viewModel),
+                    destination: VoiceRecordingView(onRecordingComplete: { _ in }),
                     label: {
                         Image(systemName: "plus.circle.fill")
                             .foregroundColor(Color(hex: "FFADF4"))
