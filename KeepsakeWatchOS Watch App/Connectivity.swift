@@ -214,7 +214,25 @@ final class Connectivity: NSObject, WCSessionDelegate {
     }
 
     
-    
+    func deleteReminder(reminderId: String) {
+        #if os(iOS)
+        firebaseVM.db.collection("reminders").document(reminderId).delete() { error in
+            if let error = error {
+                print("error removing the reminder \(error.localizedDescription)")
+            } else {
+                print("reminder is deleted")
+            }
+        }
+        let storageRefForAudio = Storage.storage().reference().child("audio").child(firebaseVM.currentUser!.id).child(reminderId)
+        storageRefForAudio.delete() { error in
+            if let error = error {
+                print("error deleting audio \(error.localizedDescription)")
+            } else {
+                print("audio has been deleted")
+            }
+        }
+        #endif
+    }
 
 
     func session(_ session: WCSession, didReceive file: WCSessionFile) {

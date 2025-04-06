@@ -24,7 +24,7 @@ struct AudioFilesView: View {
                             HStack {
                                 Button(action: {
                                     isChecked.toggle()
-                                    Connectivity.shared.updateIsCheckedInFirestore(reminderId: reminderWithAudio.audioUrl, isChecked: isChecked)
+                                    Connectivity.shared.updateIsCheckedInFirestore(reminderId: reminderWithAudio.reminder.id ?? "BHvWzK2PF7YBA0cyiyYwOPUbzof2/", isChecked: isChecked)
                                 }) {
                                     Image(systemName: isChecked ? "checkmark.circle.fill" : "circle")
                                         .foregroundColor(isChecked ? Color.pink : Color.gray)
@@ -45,10 +45,22 @@ struct AudioFilesView: View {
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                 }
+                                Button(action: {
+                                    Connectivity.shared.deleteReminder(reminderId: reminderWithAudio.reminder.id ?? "BHvWzK2PF7YBA0cyiyYwOPUbzof2/")
+                                }) {
+                                    Image(systemName: "trash.fill")
+                                        .foregroundColor(.red)
+                                        .padding()
+                                }
+
                             }
+
                             .padding(.vertical, 8)
                         }
+                        
                     }
+
+                    
                 }
             }
         }
