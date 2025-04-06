@@ -24,7 +24,7 @@ class FirebaseViewModel: ObservableObject {
     @Published var searchedEntries: [JournalEntry] = []
     @Published var userSession: FirebaseAuth.User?
     @Published var currentUser: User?
-    
+    @Published var retrievedImage: UIImage?
     let auth = Auth.auth()
     static let vm = FirebaseViewModel()
     func configure() {
@@ -47,7 +47,7 @@ class FirebaseViewModel: ObservableObject {
     private struct QueryResponse: Codable {
       var ids: [String]
     }
-    
+     
     
     private lazy var vectorSearchQueryCallable: Callable<QueryRequest, QueryResponse> = functions.httpsCallable("ext-firestore-vector-search-queryCallable")
     
@@ -68,7 +68,51 @@ class FirebaseViewModel: ObservableObject {
             await fetchUser()
         }
     }
-    
+    func storeProfilePic(image: UIImage) {
+            guard let uid = currentUser?.id else { return }
+            let file = "\(uid).jpg"
+            let storageRef = Storage.storage().reference(withPath: "profile pic/\(file)")
+            
+            if let imageData = image.jpegData(compressionQuality: 0.8) {
+                let metadata = StorageMetadata()
+                metadata.contentType = "image/jpeg"
+                
+                storageRef.putData(imageData, metadata: metadata) { [weak self] metadata, error in
+                    if let error = error {
+                        print("Error uploading the image: \(error.localizedDescription)")
+                        return
+                    }
+                    print("Image uploaded successfully!")
+                    
+                }
+            }
+        }
+        
+    func getProfilePic() -> UIImage? {
+        let uid = currentUser?.id
+        
+        let storageRef = Storage.storage().reference().child("profile pic").child("\(uid!).jpg")
+                storageRef.getData(maxSize: 3 * 2048 * 2048) { data, error in
+                    if let error = error {
+                        print("Error fetching image data: \(error)")
+                        return
+                    }
+                    guard let data = data else {
+                                            print("No data returned")
+                                            return
+                                        }
+                    if let image = UIImage(data: data) {
+                        DispatchQueue.main.async {
+                            self.retrievedImage = image
+                            print("Image successfully retrieved and set")
+                        }
+                    } else {
+                        print("Error creating image from data")
+                    }
+                }
+        return retrievedImage
+        
+    }
     func signIn(withEmail email: String, password: String) async throws {
         
             let result = try await auth.signIn(withEmail: email, password: password)
