@@ -129,9 +129,9 @@ struct OpenJournal: View {
         .toolbar(.hidden, for: .tabBar)
         .sheet(isPresented: $showPagesSheet) {
             if showNewPageSheet {
-                NewPageView(userVM: userVM, fbVM: fbVM, journal: journal, isPresented: $showNewPageSheet)
+                NewPageView(userVM: userVM, fbVM: fbVM, journal: journal, isPresented: $showPagesSheet, showNewPage: $showNewPageSheet, displayPage: $displayPageIndex)
             } else {
-                JournalPagesView(userVM: userVM, fbVM: fbVM, journal: journal, isPresented: $showPagesSheet, showNewPageSheet: $showNewPageSheet)
+                JournalPagesView(userVM: userVM, fbVM: fbVM, journal: journal, isPresented: $showPagesSheet, showNewPageSheet: $showNewPageSheet, displayPage: $displayPageIndex)
             }
         }
     }

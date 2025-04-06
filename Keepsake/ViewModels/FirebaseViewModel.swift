@@ -605,6 +605,7 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    
     func removeJournalEntry(entryID: UUID) async {
         do {
             try await db.collection("JOURNAL_ENTRIES").document(entryID.uuidString).delete()

@@ -13,6 +13,7 @@ struct JournalPagesView: View {
     @ObservedObject var journal: Journal
     @Binding var isPresented: Bool
     @Binding var showNewPageSheet: Bool
+    @Binding var displayPage: Int
     let columns = [GridItem(.flexible()), GridItem(.flexible())] // Two columns per row
 
     // Track selection states for circles and stars per page
@@ -180,8 +181,9 @@ struct ActionButton: View {
             Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .flower3), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
         ])], scrapbookShelves: []))
         @State var showNewPageSheet: Bool = false
+        @State var displayPage: Int = 0
         var body: some View {
-            JournalPagesView(userVM: userVM, fbVM: FirebaseViewModel(), journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), isPresented: $isPresented, showNewPageSheet: $showNewPageSheet)
+            JournalPagesView(userVM: userVM, fbVM: FirebaseViewModel(), journal: userVM.getJournal(shelfIndex: 0, bookIndex: 0), isPresented: $isPresented, showNewPageSheet: $showNewPageSheet, displayPage: $displayPage)
         }
     }
 

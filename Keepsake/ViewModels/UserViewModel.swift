@@ -170,6 +170,10 @@ class UserViewModel: ObservableObject {
         }
     }
     
+    func addPage(page: JournalPage, journal: Journal) {
+        journal.pages.append(JournalPage(number: journal.pages.count + 1, page: page))
+    }
+    
     func addJournalToShelfAndAddEntries(journal: Journal, shelfIndex: Int) {
         user.getJournalShelves()[shelfIndex].journals.append(journal)
         

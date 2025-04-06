@@ -22,6 +22,9 @@ class JournalPage: ObservableObject {
         self.init(number: number, entries: [JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry(), JournalEntry()], realEntryCount: 0)
     }
     
+    convenience init(number: Int, page: JournalPage) {
+        self.init(number: number, entries: page.entries, realEntryCount: page.realEntryCount)
+    }
 }
 
 extension JournalPage: CustomStringConvertible {
