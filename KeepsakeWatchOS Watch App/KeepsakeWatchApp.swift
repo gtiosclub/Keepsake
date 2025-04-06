@@ -7,7 +7,9 @@
 
 import SwiftUI
 import UserNotifications
-
+extension Notification.Name {
+    static let navigateToVoiceRecording = Notification.Name("navigateToVoiceRecording")
+}
 @main
 struct KeepsakeWatch_Watch_AppApp: App {
     @StateObject private var viewModel = RemindersViewModel()
