@@ -37,6 +37,7 @@ struct OpenJournal: View {
     @Binding var hideToolBar: Bool
     @Binding var dailyPrompt: String?
     @State var showPagesSheet: Bool = false
+    @State var showNewPageSheet: Bool = false
     var body: some View {
         // This ZStack will define the base frame
         ZStack {
@@ -127,7 +128,11 @@ struct OpenJournal: View {
         .fixedSize()
         .toolbar(.hidden, for: .tabBar)
         .sheet(isPresented: $showPagesSheet) {
-            JournalPagesView(userVM: userVM, fbVM: fbVM, journal: journal, isPresented: $showPagesSheet)
+            if showNewPageSheet {
+                NewPageView(userVM: userVM, fbVM: fbVM, journal: journal, isPresented: $showNewPageSheet)
+            } else {
+                JournalPagesView(userVM: userVM, fbVM: fbVM, journal: journal, isPresented: $showPagesSheet, showNewPageSheet: $showNewPageSheet)
+            }
         }
     }
 }

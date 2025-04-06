@@ -116,7 +116,7 @@ struct TextEntryView: View {
                     .scaledToFill()
                     .lineLimit(1)
             }
-        }.frame(height: height, alignment: .top)
+        }.frame(width: width, height: height, alignment: .topLeading)
     }
 }
 
@@ -125,7 +125,9 @@ struct TextEntryView: View {
 func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, padding: CGFloat, isDisplay: Bool, inEntry: Binding<EntryType>, selectedEntry: Binding<Int>, fbVM: FirebaseViewModel, journal: Journal, userVM: UserViewModel, pageNum: Int, entryIndex: Int, frontDegrees: Binding<CGFloat>, showDeleteButton: Binding<Int>, isWiggling: Binding<Bool>, fontSize: Int) -> some View {
     switch widget.type {
     case .picture:
-        PictureEntryView(entry: widget as! PictureEntry, width: width, height: height, isDisplay: isDisplay, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: entryIndex, frontDegrees: frontDegrees, showDeleteButton: showDeleteButton, isWiggling: isWiggling).opacity(widget.isFake ? 0 : 1)
+        PictureEntryView(entry: widget as! PictureEntry, width: width, height: height, isDisplay: isDisplay, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: entryIndex, frontDegrees: frontDegrees, showDeleteButton: showDeleteButton, isWiggling: isWiggling, padding: padding, fontSize: CGFloat(fontSize)).opacity(widget.isFake ? 0 : 1)
+    case .voice:
+        VoiceMemoEntryView(entry: widget as! VoiceEntry, width: width, height: height, padding: padding, fontSize: CGFloat(fontSize))
     default:
         TextEntryView(entry: widget, width: width, height: height, padding: padding, fontSize: CGFloat(fontSize)).opacity(widget.isFake ? 0 : 1)
     }
@@ -152,6 +154,8 @@ struct PictureEntryView: View {
     @Binding var frontDegrees: CGFloat
     @Binding var showDeleteButton: Int
     @Binding var isWiggling: Bool
+    var padding: CGFloat
+    var fontSize: CGFloat
     var body: some View {
         ZStack {
             // Background Color
@@ -164,13 +168,15 @@ struct PictureEntryView: View {
             } else {
                 HStack {
                     Text("Upload")
+                        .font(.system(size: fontSize + 2))
                     Image(systemName: "camera")
-                }.frame(width: entry.frameWidth, height: entry.frameHeight)
+                        .font(.system(size: fontSize + 2))
+                }.frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
                     .background(RoundedRectangle(cornerRadius: 10).fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2])))
                     
             }
             // Carousel
-        }.frame(height: height, alignment: .top)
+        }.frame(width: width, height: height, alignment: .topLeading)
         .photosPicker(isPresented: $isPickerPresented, selection: $selectedItems)
         .onChange(of: selectedItems) {
             Task {
@@ -295,7 +301,7 @@ struct PictureEntryView: View {
                     Image(uiImage: uiImages[index])
                         .resizable()
                         .scaledToFill()
-                        .frame(width: entry.frameWidth, height: entry.frameHeight)
+                        .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                         .tag(index)
                     
@@ -318,11 +324,11 @@ struct PictureEntryView: View {
                         .background(RoundedRectangle(cornerRadius: 10).fill(.gray.opacity(0.33)))
                         // Adjust dot position
                         Spacer()
-                    }.frame(width: entry.frameWidth, height: entry.frameHeight)
+                    }.frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
                 }
             }
         }
-        .frame(width: entry.frameWidth, height: entry.frameHeight)
+        .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never)) // Hides default dots
         .ignoresSafeArea()
     }
@@ -332,14 +338,14 @@ struct VoiceMemoEntryView: View {
     var entry: JournalEntry
     var width: CGFloat
     var height: CGFloat
-
+    var padding: CGFloat
+    var fontSize: CGFloat
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]))
-                .frame(width: entry.frameWidth, height: entry.frameHeight)
+                .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
                 .opacity(entry.isFake ? 0 : 1)
-                .frame(height: height, alignment: .center)
 
             VStack(spacing: 8) {
                 Image(systemName: "waveform.circle.fill")
@@ -349,13 +355,12 @@ struct VoiceMemoEntryView: View {
                     .foregroundColor(.black)
 
                 Text(entry.title)
-                    .font(.headline)
+                    .font(.system(size: fontSize + 2))
                     .multilineTextAlignment(.center)
                     .lineLimit(titleLineLimit)
-                    .frame(width: entry.frameWidth - 16)
+                    .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1))
             }
-            .padding(.horizontal, 8)
-        }
+        }.frame(width: width, height: height, alignment: .topLeading)
     }
 
     var iconSize: CGFloat {
@@ -385,7 +390,8 @@ public func todaysdate() -> String {
 
 #Preview {
     struct Preview: View {
-        @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [WrittenEntry(date: "", title: "", text: "Text", summary: "summary", width: 1, height: 2, isFake: false, color: [0.5, 0.5, 0.5]), WrittenEntry(date: "", title: "", text: "Text", summary: "summary", width: 1, height: 2, isFake: false, color: [0.5, 0.5, 0.5]), WrittenEntry(date: "", title: "", text: "Text", summary: "summary", width: 2, height: 2, isFake: false, color: [0.5, 0.5, 0.5])], realEntryCount: 3)
+//        @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [PictureEntry(date: "Date", title: "title", images: [], width: 1, height: 2, isFake: false, color: [0.5, 0.5, 0.5]), WrittenEntry(date: "", title: "", text: "Text", summary: "summary", width: 1, height: 2, isFake: false, color: [0.5, 0.5, 0.5]), JournalEntry(), JournalEntry(), WrittenEntry(date: "", title: "", text: "Text", summary: "summary", width: 2, height: 2, isFake: false, color: [0.5, 0.5, 0.5])], realEntryCount: 3)
+        @ObservedObject var page = JournalPage.dailyReflectionTemplate(pageNumber: 1)
         @State var selectedImageIndex: Int = 0
         @State var inEntry: EntryType = .openJournal
         @State var selectedEntry: Int = 0
