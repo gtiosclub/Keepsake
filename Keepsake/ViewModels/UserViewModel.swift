@@ -66,6 +66,12 @@ class UserViewModel: ObservableObject {
         return user.getJournalShelves()[shelfIndex].journals[bookIndex]
     }
     
+    
+    func getScrapbook(shelfIndex: Int, bookIndex: Int) -> Scrapbook {
+        return user.getScrapbookShelves()[shelfIndex].scrapbooks[bookIndex]
+    }
+    
+    
     func getJournalIndex(journal: Journal, shelfIndex: Int) -> Int {
         var journals = getJournalShelves()[shelfIndex].journals
         for index in journals.indices {
@@ -87,6 +93,13 @@ class UserViewModel: ObservableObject {
     
     func updateJournalEntry(journal: Journal, pageNum: Int, entryIndex: Int, newEntry: JournalEntry) {
         journal.pages[pageNum].entries[entryIndex] = newEntry
+    }
+    
+    func updateScrapbookEntry(scrapbook: Scrapbook, pageNum: Int, newEntry: ScrapbookEntry) {
+        scrapbook.pages[pageNum].entries.append(newEntry)
+    }
+    func clearScrapbookPage(scrapbook: Scrapbook, pageNum: Int) {
+        scrapbook.pages[pageNum].entries = []
     }
     
     func getShelfIndex() -> Int {
