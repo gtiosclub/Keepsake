@@ -10,7 +10,9 @@ import RealityKit
 import PhotosUI
 
 struct CreateScrapbookView: View {
-    @ObservedObject var vm: FirebaseViewModel
+    @ObservedObject var fbVM: FirebaseViewModel
+    @ObservedObject var userVM: UserViewModel
+    var scrapbook: Scrapbook
     // variables for editing entity positions
     @State var currentScale: CGFloat = 1.0
     @State var finalScale: CGFloat = 1.0
@@ -52,7 +54,47 @@ struct CreateScrapbookView: View {
                 let newAnchor = AnchorEntity(world: SIMD3<Float>(x: 0, y: 0, z: -2))
                 self.anchor = newAnchor
                 content.add(newAnchor)
-
+                
+                let scrapbookPage = scrapbook.pages[0]
+                
+                print(scrapbookPage.entries)
+                
+                
+                for entry in scrapbookPage.entries {
+                    var entity = Entity()
+                    if entry.type == "text" {
+                        entity = await TextBoxEntity(text: entry.text ?? "[Blank]")
+                    } else if entry.type == "image" {
+                        entity = await ImageEntity(image: fbVM.getImageFromURL(urlString: entry.imageURL ?? "") ?? UIImage())
+                    }
+                    
+                    entity.name = "\(counter)"
+                    counter += 1
+                    entityPos.append(.zero)
+                    entity.position = SIMD3<Float>(x: entry.position[0], y: entry.position[1], z: entry.position[2])
+                    entity.scale = SIMD3<Float>(repeating: Float(entry.scale))
+                    
+                    let dy = Float(entry.position[1]) * 0.002
+                    let maxAngle: Float = .pi / 2.5  // 45 degrees in radians
+                    let dx = Float(entry.position[0]) * 0.002
+                    
+                    let clampedDX = min(max(dx, -maxAngle), maxAngle)
+                    let clampedDY = min(max(dy, -maxAngle), maxAngle)
+                    
+                    // Create the rotation using the clamped value:
+                    
+                    let userRotationAngle = entry.rotation * (.pi / 180) // degrees to radians
+                    let userRotation = simd_quatf(angle: userRotationAngle, axis: SIMD3<Float>(0, 1, 0))
+                    
+                    //                    let horizontalRotation = simd_quatf(angle: -clampedDX, axis: SIMD3<Float>(0, 1, 0))
+                    //                    let verticalRotation = simd_quatf(angle: -clampedDY, axis: SIMD3<Float>(1, 0, 0))
+                    
+                    // Combine rotations (order matters)
+                    entity.transform.rotation = userRotation
+                    
+                    self.anchor?.addChild(entity)
+                }
+                
             } update: { content in
                 // creates a new textbox when the button in toolbar is pressed
                 if isTextClicked {
@@ -62,6 +104,7 @@ struct CreateScrapbookView: View {
                         entityPos.append(.zero)
                         counter += 1
                         self.anchor?.addChild(newTextbox)
+                        
                     }
                 }
                 // creates a new image when the button in toolbar is pressed
@@ -95,7 +138,7 @@ struct CreateScrapbookView: View {
                     }
                     print(selectedEntity?.name ?? "No Entity Selected")
                 })
-
+            
             // drag gesture to move the entities around in a sphere-like shape
             // gets change in 2D drag distance and converts that into 3D transformations
             .gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
@@ -109,11 +152,11 @@ struct CreateScrapbookView: View {
                     let dx = Float(value.translation.width + position.x) * 0.002
                     selectedEntity?.position.x = dx
                     selectedEntity?.position.y = -dy
-
+                    
                     // Clamp the horizontal rotation angle:
                     let clampedDX = min(max(dx, -maxAngle), maxAngle)
                     let clampedDY = min(max(dy, -maxAngle), maxAngle)
-                            
+                    
                     // Create the rotation using the clamped value:
                     let horizontalRotation = simd_quatf(angle: -clampedDX, axis: SIMD3<Float>(0, 1, 0))
                     let verticalRotation = simd_quatf(angle: -clampedDY, axis: SIMD3<Float>(1, 0, 0))
@@ -137,7 +180,7 @@ struct CreateScrapbookView: View {
                         finalScale = currentScale
                     }
             )
-
+            
             VStack {
                 Spacer()
                 if isEditing {
@@ -152,7 +195,7 @@ struct CreateScrapbookView: View {
                                 isEditing = false
                                 textInput = "[Enter text]"
                             }
-    
+                        
                         Button("Done") {
                             updateTextBox()
                             isEditing = false
@@ -214,7 +257,7 @@ struct CreateScrapbookView: View {
                         RoundedRectangle(cornerRadius: 10.0)
                             .frame(width: 80, height: 40)
                         Button {
-    //                        vm.saveScrapbook(scrapbook: scrapbook)
+                            //                        vm.saveScrapbook(scrapbook: scrapbook)
                         } label: {
                             Text("Save")
                                 .foregroundStyle(.black)
@@ -226,6 +269,27 @@ struct CreateScrapbookView: View {
                 .background(Color.white.opacity(0.5)) // Semi-transparent background
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .padding(.bottom, 20) // Lifted up slightly
+            }
+        }
+        .onDisappear {
+            print(scrapbook.id)
+            Task {
+                userVM.clearScrapbookPage(scrapbook: scrapbook, pageNum: 0)
+                if let anchor = anchor {  // Replace `self.anchor` with your actual anchor
+                    for entity in anchor.children {
+                        if let textEntity = entity as? TextBoxEntity {
+                            var entry = ScrapbookEntry(id: UUID(), type: "text", position: [textEntity.position.x, textEntity.position.y, textEntity.position.z], scale: simd_length(textEntity.scale), rotation: 2 * acos(textEntity.transform.rotation.imag.x), text: textEntity.getText(), imageURL: "nil")
+                            
+                            userVM.updateScrapbookEntry(scrapbook: scrapbook, pageNum: 0, newEntry: entry)
+                        } else if let imageEntity = entity as? ImageEntity {
+                            var entry = ScrapbookEntry(id: UUID(), type: "image", position: [imageEntity.position.x, imageEntity.position.y, imageEntity.position.z], scale: simd_length(imageEntity.scale), rotation: 2 * acos(imageEntity.transform.rotation.imag.x), text: "", imageURL: "nil")
+                            
+                            userVM.updateScrapbookEntry(scrapbook: scrapbook, pageNum: 0, newEntry: entry)
+                        }
+                    }
+                    
+                    await fbVM.updateScrapbookPage(entries: scrapbook.pages[0].entries, scrapbookID: scrapbook.id, pageNumber: 1)
+                }
             }
         }
     }
