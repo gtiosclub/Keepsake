@@ -204,7 +204,7 @@ class AIViewModel: ObservableObject {
             let trimmedResponse: String = response.trimmingCharacters(in: .whitespacesAndNewlines)
             return trimmedResponse
         } catch {
-            print("Error: \(error)")
+            print("Error with prompt: \(error)")
             return errorResponse
         }
     }

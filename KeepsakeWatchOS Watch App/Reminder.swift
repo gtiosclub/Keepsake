@@ -88,12 +88,15 @@ struct RemindersListView: View {
                 .buttonStyle(PlainButtonStyle())
                 #endif
             }
+#if os(watchOS)
             .navigationDestination(isPresented: $navigateToRecording) {
-                VoiceRecordingView(audioRecording: AudioRecording())
+                VoiceRecordingView(onRecordingComplete: { _ in })
                    }
+            
                    .onReceive(NotificationCenter.default.publisher(for: .navigateToVoiceRecording)) { _ in
                        navigateToRecording = true
                    }
+            #endif
         }
     }
 }

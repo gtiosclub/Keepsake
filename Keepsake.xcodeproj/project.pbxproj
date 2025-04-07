@@ -84,7 +84,6 @@
 		5B5A19682DA2D6F3000760D5 /* Exceptions for "Keepsake" folder in "KeepsakeWatchOS Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Components/notification.swift,
 				Components/notificationListener.swift,
 			);
 			target = 5BA743492D98D27700055877 /* KeepsakeWatchOS Watch App */;
@@ -590,13 +589,17 @@
 				INFOPLIST_FILE = "KeepsakeWatchOS-Watch-App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatchOS;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.rik.Keepsake;
+
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+
 				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake.watch;
+
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -621,13 +624,17 @@
 				INFOPLIST_FILE = "KeepsakeWatchOS-Watch-App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatchOS;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.rik.Keepsake;
+
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+
 				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake.watch;
+
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -647,7 +654,7 @@
 				DEVELOPMENT_TEAM = 5VM646AGC4;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "nityapotti.KeepsakeWatchOS-Watch-AppTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "nitya.KeepsakeWatchOS-Watch-AppTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -667,7 +674,7 @@
 				DEVELOPMENT_TEAM = 5VM646AGC4;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "nityapotti.KeepsakeWatchOS-Watch-AppTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "nitya.KeepsakeWatchOS-Watch-AppTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -686,7 +693,7 @@
 				DEVELOPMENT_TEAM = 5VM646AGC4;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "nityapotti.KeepsakeWatchOS-Watch-AppUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = "nitya.KeepsakeWatchOS-Watch-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -705,7 +712,7 @@
 				DEVELOPMENT_TEAM = 5VM646AGC4;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "nityapotti.KeepsakeWatchOS-Watch-AppUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = "nitya.KeepsakeWatchOS-Watch-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -864,7 +871,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+
 				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake;
+
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -901,7 +910,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+
 				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake;
+
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -920,7 +931,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.nityapotti.KeepsakeTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.nitya.KeepsakeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -940,7 +951,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.nityapotti.KeepsakeTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.nitya.KeepsakeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -958,7 +969,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.nityapotti.KeepsakeUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.nitya.KeepsakeUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -976,7 +987,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.nityapotti.KeepsakeUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.nitya.KeepsakeUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;

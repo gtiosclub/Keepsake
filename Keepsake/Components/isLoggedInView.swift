@@ -18,8 +18,13 @@ struct isLoggedInView: View {
                     if navigateToHomeFromNotification {
                         HomeView(userVM: UserViewModel(user: user), aiVM: AIViewModel(), fbVM: viewModel)
                     } else {
-                        ContentView(userVM: UserViewModel(user: user), aiVM: AIViewModel(), fbVM: viewModel)
-                            .environmentObject(reminderViewModel)
+                        ZStack {
+                            ContentView(userVM: UserViewModel(user: user), aiVM: AIViewModel(), fbVM: viewModel)
+                                .environmentObject(reminderViewModel)
+                            ViewControllerWrapper()
+                                .frame(width: 0, height: 0)
+                                .hidden()
+                        }
                     }
                     
                     

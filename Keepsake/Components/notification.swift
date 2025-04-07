@@ -10,14 +10,13 @@
 
 import UIKit
 import UserNotifications
-extension Notification.Name {
-    static let navigateToVoiceRecording = Notification.Name("navigateToVoiceRecording")
-}
+import SwiftUI
+
 extension Notification.Name {
     static let navigateToHome = Notification.Name("navigateToHome")
 }
 class ViewController: UIViewController {
-    var aiViewModel = AIViewModel()
+    @ObservedObject var aiViewModel = AIViewModel()
     override func viewDidLoad() {
         print("hi")
         super.viewDidLoad()
@@ -38,6 +37,7 @@ class ViewController: UIViewController {
         }
     }
     func dispatchNotification() {
+        print("Scheduling notification now with prompt")
         let title = "Keep Journaling!"
         var prompt = ""
         Task {
@@ -54,8 +54,8 @@ class ViewController: UIViewController {
             
             let calendar = Calendar.current
             var dateComponents = DateComponents(calendar: calendar, timeZone: TimeZone.current)
-            let hour = 12
-            let minute = 0
+            let hour = 20
+            let minute = 8
             dateComponents.hour = hour
             dateComponents.minute = minute
             print("Notification will trigger at: \(calendar.date(from: dateComponents) ?? Date())")
@@ -65,7 +65,7 @@ class ViewController: UIViewController {
             do {
                 try await notificationCenter.add(request)
             } catch {
-                
+                print("ugh")
             }
             
         }

@@ -20,6 +20,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         registerNotificationActions()
         return true
     }
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                    willPresent notification: UNNotification,
+                                    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+            completionHandler([.banner, .sound]) // Show notification even in foreground
+    }
 
 }
 func registerNotificationActions() {
@@ -35,9 +40,10 @@ func registerNotificationActions() {
     UNUserNotificationCenter.current().setNotificationCategories([category])
 }
 func requestNotificationPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if granted {
                 print("Notification permission granted")
+                
             } else {
                 print("Notification permission denied")
             }
