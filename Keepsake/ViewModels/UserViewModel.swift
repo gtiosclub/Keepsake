@@ -82,6 +82,32 @@ class UserViewModel: ObservableObject {
         return 0
     }
     
+    func deletePage(journal: Journal, pageNumber: Int) {
+        guard let index = journal.pages.firstIndex(where: { $0.number == pageNumber }) else {
+            print("Page \(pageNumber) not found")
+            return
+        }
+        journal.pages.remove(at: index)
+        for page in journal.pages {
+            if page.number > pageNumber {
+                page.number = page.number - 1
+            }
+        }
+//        let favoritePagesIndex = journal.favoritePages.firstIndex(of: pageNumber) ?? -1
+//        if favoritePagesIndex >= 0 {
+//            journal.favoritePages.remove(at: favoritePagesIndex)
+//        }
+//        journal.favoritePages = journal.favoritePages.map { num in
+//            if num > pageNumber {
+//                return num - 1
+//            } else {
+//                return num
+//            }
+//        }
+//        print(journal.favoritePages)
+        
+    }
+    
     func getJournalEntry(shelfIndex: Int, bookIndex: Int, pageNum: Int, entryIndex: Int) -> JournalEntry {
         return user.getJournalShelves()[shelfIndex].journals[bookIndex].pages[pageNum].entries[entryIndex]
     }
@@ -181,6 +207,10 @@ class UserViewModel: ObservableObject {
                 return
             }
         }
+    }
+    
+    func addPage(page: JournalPage, journal: Journal) {
+        journal.pages.append(JournalPage(number: journal.pages.count + 1, page: page))
     }
     
     func addJournalToShelfAndAddEntries(journal: Journal, shelfIndex: Int) {

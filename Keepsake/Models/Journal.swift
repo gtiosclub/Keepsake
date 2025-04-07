@@ -23,9 +23,10 @@ class Journal: Book, ObservableObject, Identifiable {
     var template: Template
     @Published var pages: [JournalPage]
     var currentPage: Int
+    @Published var favoritePages: [Int]
     
     //Full Constructor
-    init(name: String, id: UUID, createdDate: String, category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage], currentPage: Int) {
+    init(name: String, id: UUID, createdDate: String, category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage], currentPage: Int, favoritePages: [Int] = []) {
         self.name = name
         self.id = id
         self.createdDate = createdDate
@@ -35,6 +36,7 @@ class Journal: Book, ObservableObject, Identifiable {
         self.template = template
         self.pages = pages
         self.currentPage = currentPage
+        self.favoritePages = favoritePages
     }
     
     convenience init(name: String, id: UUID, createdDate: String, entries: [JournalEntry], category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage], currentPage: Int) {
@@ -73,7 +75,8 @@ extension Journal: CustomStringConvertible {
             "isShared": isShared,
             "template": template.toDictionary(),
             "pages": pageDict,
-            "currentPage": currentPage
+            "currentPage": currentPage,
+            "favoritePages": favoritePages
         ]
     }
     
@@ -88,13 +91,14 @@ extension Journal: CustomStringConvertible {
               let templateDict = dict["template"] as? [String: Any],
               let template = Template.fromDictionary(templateDict),
               let pagesArray = dict["pages"] as? [[String: Any]],
-              let currentPage = dict["currentPage"] as? Int else {
+              let currentPage = dict["currentPage"] as? Int,
+                let favoritePages = dict["favoritePages"] as? [Int] else {
             return nil
         }
 
         let pages = pagesArray.compactMap { JournalPage.fromDictionary($0) }
         
-        return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: pages, currentPage: currentPage)
+        return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: pages, currentPage: currentPage, favoritePages: favoritePages)
     }
     
     var description: String {

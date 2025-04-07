@@ -373,6 +373,7 @@ class FirebaseViewModel: ObservableObject {
                 let template = Template.fromDictionary(templateDict) ?? Template()
                 let pagesArray = dict["pages"] as? [String: [String]] ?? [:]
                 let currentPage = dict["currentPage"] as? Int ?? 0
+                let favoritePages = dict["favoritePages"] as? [Int] ?? []
                 
                 var journalPages: [JournalPage] = []
                 
@@ -402,7 +403,7 @@ class FirebaseViewModel: ObservableObject {
                     journalPages.append(JournalPage(number: Int(num) ?? 0, entries: journalEntries, realEntryCount: entryCount))
                 }
                 let sortedPages = journalPages.sorted { $0.number < $1.number }
-                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: sortedPages, currentPage: currentPage)
+                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: sortedPages, currentPage: currentPage, favoritePages: favoritePages)
                 
             } else {
                 print("No document found")
@@ -411,6 +412,28 @@ class FirebaseViewModel: ObservableObject {
         } catch {
             print("Error fetching Journal Shelf: \(error.localizedDescription)")
             return nil
+        }
+    }
+    
+    func updateFavoritePages(journalID: UUID, newPages: [Int]) async {
+        let journal_reference = db.collection("JOURNALS").document(journalID.uuidString)
+        do {
+            try await journal_reference.updateData([
+                "favoritePages": newPages
+            ])
+        } catch {
+            print("Error updating pages: \(error.localizedDescription)")
+        }
+    }
+    
+    func updateCurrentPage(journalID: UUID, currentPage: Int) async {
+        let journal_reference = db.collection("JOURNALS").document(journalID.uuidString)
+        do {
+            try await journal_reference.updateData([
+                "currentPage": currentPage
+            ])
+        } catch {
+            print("Error updating currentPage: \(error.localizedDescription)")
         }
     }
     
@@ -613,6 +636,55 @@ class FirebaseViewModel: ObservableObject {
             } else {
                 print("Invalid UUID string: \(oldEntryID)")
             }
+        }
+    }
+    
+    func deletePage(journalID: UUID, pageNumber: Int) async {
+        do {
+            let docRef = db.collection("JOURNALS").document(journalID.uuidString)
+            let document = try await docRef.getDocument()
+            
+            guard var data = document.data(),
+                  var pages = data["pages"] as? [String: [String]] else {
+                print("Couldn't get page entries")
+                return
+            }
+            
+            // 1. Delete entries for this page
+            let entryIDs = pages["\(pageNumber)"] ?? []
+            for entry in entryIDs {
+                if let entryID = UUID(uuidString: entry) {
+                    await removeJournalEntry(entryID: entryID)
+                }
+            }
+            
+            // 2. Remove the page
+            pages.removeValue(forKey: "\(pageNumber)")
+            
+            // 3. Decrement higher-numbered pages
+            var updatedPages = [String: [String]]()
+            
+            // Sort the remaining pages by their number
+            let sortedKeys = pages.keys.compactMap { Int($0) }.sorted()
+            
+            for oldPageNum in sortedKeys {
+                if oldPageNum < pageNumber {
+                    // Keep pages before the deleted one as-is
+                    updatedPages["\(oldPageNum)"] = pages["\(oldPageNum)"]
+                } else if oldPageNum > pageNumber {
+                    // Decrement pages after the deleted one
+                    updatedPages["\(oldPageNum - 1)"] = pages["\(oldPageNum)"]
+                }
+                // Skip the deleted page (oldPageNum == pageNumber)
+            }
+            
+            // 4. Update Firestore
+            try await docRef.updateData(["pages": updatedPages])
+            
+            print("Successfully deleted page \(pageNumber) and updated subsequent pages")
+            
+        } catch {
+            print("Error deleting page: \(error)")
         }
     }
     

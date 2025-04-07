@@ -28,7 +28,7 @@ struct ContentView: View {
                         CommunityView()
                     }
                     Tab("Scrapbooks", systemImage: "ellipsis.viewfinder") {
-                        ScrapbookShelfView(userVM: userVM, shelf: userVM.user.getScrapbookShelves()[userVM.getShelfIndex()], aiVM: aiVM, fbVM: fbVM, shelfIndex: userVM.getShelfIndex(), selectedOption: .constant(.journal_shelf))
+                        ScrapbookShelfView(userVM: userVM, shelf: userVM.user.getScrapbookShelves()[0], aiVM: aiVM, fbVM: fbVM, shelfIndex: userVM.getShelfIndex(), selectedOption: .constant(.journal_shelf))
                     }
                     Tab("Profile", systemImage:"person.crop.circle") {
                         ProfileView()
