@@ -53,8 +53,8 @@ class ViewController: UIViewController {
             
             let calendar = Calendar.current
             var dateComponents = DateComponents(calendar: calendar, timeZone: TimeZone.current)
-            let hour = 19
-            let minute = 45
+            let hour = 20
+            let minute = 8
             dateComponents.hour = hour
             dateComponents.minute = minute
             print("Notification will trigger at: \(calendar.date(from: dateComponents) ?? Date())")
