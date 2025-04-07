@@ -62,7 +62,7 @@ struct KeepsakeApp: App {
       }
     var body: some Scene {
         WindowGroup {
-             isLoggedInView()
+            SplashView()
                  .environmentObject(firebaseViewModel)
                  .environmentObject(reminderViewModel)
 
