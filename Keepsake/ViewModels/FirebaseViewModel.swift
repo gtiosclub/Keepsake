@@ -145,6 +145,7 @@ class FirebaseViewModel: ObservableObject {
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
             await self.addJournalShelf(journalShelf: initialShelf, userID: user.id)
+            await self.addScrapbookShelf(scrapbookShelf: initialScrapbookShelf, userID: user.id)
             await fetchUser()
             
         } catch {
@@ -224,6 +225,7 @@ class FirebaseViewModel: ObservableObject {
                 
                 var scrapbookShelves: [ScrapbookShelf] = []
                 for scrapbookShelfId in scrapbookShelfIds {
+                    print(scrapbookShelfId)
                     let shelf = await getScrapbookShelfFromID(id: scrapbookShelfId)!
                     scrapbookShelves.append(shelf)
 
@@ -832,6 +834,23 @@ class FirebaseViewModel: ObservableObject {
     }
     
     // SCRAPBOOKS
+    
+    func addScrapbookShelf(scrapbookShelf: ScrapbookShelf, userID: String) async -> Bool {
+        let scrapbookShelfReference = db.collection("SCRAPBOOK_SHELVES").document(scrapbookShelf.id.uuidString)
+        do {
+            // Chains together each Model's "toDictionary()" method for simplicity in code and scalability in editing each Model
+            let scrapbookShelfData = scrapbookShelf.toDictionary()
+            try await scrapbookShelfReference.setData(scrapbookShelfData)
+            
+            try await db.collection("USERS").document(userID).updateData([
+                "scrapbookShelves": FieldValue.arrayUnion([scrapbookShelf.id.uuidString])
+            ])
+            return true
+        } catch {
+            print("Error adding Journal Shelf: \(error.localizedDescription)")
+            return false
+        }
+    }
     
     func getScrapbookShelfFromID(id: String) async -> ScrapbookShelf? {
         let journalShelfReference = db.collection("SCRAPBOOK_SHELVES").document(id)
