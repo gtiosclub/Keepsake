@@ -10,12 +10,13 @@
 
 import UIKit
 import UserNotifications
+import SwiftUI
 
 extension Notification.Name {
     static let navigateToHome = Notification.Name("navigateToHome")
 }
 class ViewController: UIViewController {
-    var aiViewModel = AIViewModel()
+    @ObservedObject var aiViewModel = AIViewModel()
     override func viewDidLoad() {
         print("hi")
         super.viewDidLoad()
