@@ -272,17 +272,19 @@ struct CreateScrapbookView: View {
             }
         }
         .onDisappear {
-            print(scrapbook.id)
             Task {
                 userVM.clearScrapbookPage(scrapbook: scrapbook, pageNum: 0)
                 if let anchor = anchor {  // Replace `self.anchor` with your actual anchor
                     for entity in anchor.children {
                         if let textEntity = entity as? TextBoxEntity {
-                            var entry = ScrapbookEntry(id: UUID(), type: "text", position: [textEntity.position.x, textEntity.position.y, textEntity.position.z], scale: simd_length(textEntity.scale), rotation: 2 * acos(textEntity.transform.rotation.imag.x), text: textEntity.getText(), imageURL: "nil")
+                            let entry = ScrapbookEntry(id: UUID(), type: "text", position: [textEntity.position.x, textEntity.position.y, textEntity.position.z], scale: simd_length(textEntity.scale), rotation: 2 * acos(textEntity.transform.rotation.imag.x), text: textEntity.getText(), imageURL: "nil")
                             
                             userVM.updateScrapbookEntry(scrapbook: scrapbook, pageNum: 0, newEntry: entry)
                         } else if let imageEntity = entity as? ImageEntity {
-                            var entry = ScrapbookEntry(id: UUID(), type: "image", position: [imageEntity.position.x, imageEntity.position.y, imageEntity.position.z], scale: simd_length(imageEntity.scale), rotation: 2 * acos(imageEntity.transform.rotation.imag.x), text: "", imageURL: "nil")
+                            let url = await fbVM.convertImageToURL(image: imageEntity.image)
+                        
+                            
+                            let entry = ScrapbookEntry(id: UUID(), type: "image", position: [imageEntity.position.x, imageEntity.position.y, imageEntity.position.z], scale: simd_length(imageEntity.scale), rotation: 2 * acos(imageEntity.transform.rotation.imag.x), text: "", imageURL: url)
                             
                             userVM.updateScrapbookEntry(scrapbook: scrapbook, pageNum: 0, newEntry: entry)
                         }

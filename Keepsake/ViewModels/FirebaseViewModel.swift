@@ -756,6 +756,14 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func convertImageToURL(image: UIImage) async -> String {
+        await withCheckedContinuation { continuation in
+            storeImage(image: image) { urlString in
+                continuation.resume(returning: urlString ?? "")
+            }
+        }
+    }
+    
     func getImageFromURL(urlString: String) async -> UIImage? {
         guard let url = URL(string: urlString) else {
             print("Invalid URL string: \(urlString)")
