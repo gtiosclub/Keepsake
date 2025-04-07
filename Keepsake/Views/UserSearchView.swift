@@ -96,7 +96,7 @@ struct UserSearchView: View {
                     }
                     .background(
                         NavigationLink(
-                            destination: SearchedUserProfileView(currentUserID: newUser?.id ?? "", selectedUserID: user.id),
+                            destination: SearchedUserProfileView(currentUserID: newUser!, selectedUserID: user.id),
                             tag: user.id,
                             selection: $selectedUserID
                         ) {
