@@ -129,7 +129,7 @@ struct LibraryScrapbookView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
-                    userVM.addScrapbookShelfToUser(ScrapbookShelf(id: UUID(), name: "new", scrapbooks: []))
+                    userVM.addScrapbookShelfToUser(ScrapbookShelf(name: "new", id: UUID(), scrapbooks: []))
                 } label: {
                     Image(systemName: "plus.circle")
                 }

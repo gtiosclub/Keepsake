@@ -7,8 +7,21 @@
 
 import Foundation
 
-struct ScrapbookShelf {
+class ScrapbookShelf: ObservableObject {
     var id: UUID
     var name: String
-    var scrapbooks: [Scrapbook]
+    @Published var scrapbooks: [Scrapbook]
+    
+    init(name: String, id: UUID, scrapbooks: [Scrapbook]) {
+        self.name = name
+        self.id = id
+        self.scrapbooks = scrapbooks
+    }
+    
+    init(name: String, scrapbooks: [Scrapbook]) {
+        self.name = name
+        self.id = UUID()
+        self.scrapbooks = scrapbooks
+    }
+    
 }

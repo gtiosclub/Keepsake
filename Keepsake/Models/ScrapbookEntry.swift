@@ -67,19 +67,41 @@ extension ScrapbookEntry: CustomStringConvertible {
     }
     
     static func fromDictionary(_ dict: [String: Any]) -> ScrapbookEntry? {
-        guard let idString = dict["id"] as? String,
-              let id = UUID(uuidString: idString),
-              let type = dict["type"] as? String,
-              let position = dict["position"] as? [Float],
-              let scale = dict["scale"] as? Float,
-              let rotation = dict["rotation"] as? Float else {
+        guard let idString = dict["id"] as? String else {
+            print("id problem")
+            return nil
+        }
+        guard let id = UUID(uuidString: idString) else {
+            print("id problem")
+            return nil
+        }
+        guard let type = dict["type"] as? String else {
+            print("type problem")
+            return nil
+        }
+        
+        guard let rawPosition = dict["position"] as? [Any],
+              let position = rawPosition as? [NSNumber] else {
+            print("position problem")
+            return nil
+        }
+
+        let floatPosition = position.map { $0.floatValue }
+        
+        guard let scale = (dict["scale"] as? NSNumber)?.floatValue else {
+            print("scale problem")
+            return nil
+        }
+        
+        guard let rotation = (dict["rotation"] as? NSNumber)?.floatValue else {
+            print("rotation problem")
             return nil
         }
         
         let text = dict["text"] as? String
         let imageURL = dict["imageURL"] as? String
         
-        return ScrapbookEntry(id: id, type: type, position: position, scale: scale, rotation: rotation, text: text, imageURL: imageURL)
+        return ScrapbookEntry(id: id, type: type, position: floatPosition, scale: scale, rotation: rotation, text: text, imageURL: imageURL)
     }
     
     var description: String {
