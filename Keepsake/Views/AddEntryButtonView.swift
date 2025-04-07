@@ -76,10 +76,12 @@ struct AddEntryButtonView: View {
                         GridItem(.flexible()),
                         GridItem(.flexible())
                     ]
+                    
+                    
                     LazyVGrid(columns: columns, spacing: 20) {
                         Button {
                             if journal.pages[journal.currentPage].entries.count <= 8 {
-                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: WrittenEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: WrittenEntry(date: todaysdate(), title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
                                 var newIndex = 0
                                 switch journal.pages[journal.currentPage].realEntryCount {
                                 case 1: newIndex = 0
@@ -120,7 +122,8 @@ struct AddEntryButtonView: View {
                                 }
                             }
                             if journal.pages[journal.currentPage].entries.count <= 8 {
-                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: WrittenEntry(date: "", title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: WrittenEntry(date: todaysdate(), title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
                                 var newIndex = 0
                                 switch journal.pages[journal.currentPage].realEntryCount {
                                 case 1: newIndex = 0
@@ -154,7 +157,7 @@ struct AddEntryButtonView: View {
                         }
                         Button {
                             if journal.pages[journal.currentPage].entries.count <= 8 {
-                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: VoiceEntry(date: "", title: "", audio: nil, width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: VoiceEntry(date: todaysdate(), title: "", audio: nil, width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
                                 var newIndex = 0
                                 switch journal.pages[journal.currentPage].realEntryCount {
                                 case 1: newIndex = 0
@@ -189,7 +192,7 @@ struct AddEntryButtonView: View {
                         }
                         Button {
                             if journal.pages[journal.currentPage].entries.count <= 8 {
-                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: ConversationEntry(date: "", title: "", conversationLog: []))
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: ConversationEntry(date: todaysdate(), title: "", conversationLog: []))
                                 
                                 aiVM.conversationHistory = []
                                 
@@ -299,7 +302,9 @@ struct SelectedPhotoView: View {
 //                                    print("added")
                                 }
                                 if count == selectedImages.count {
+
                                     selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: PictureEntry(date: "", title: "", images: imageURLs, width: 1, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+
 //                                    print()
 //                                    print(journal.pages[displayPage].entries[selectedEntry])
 //                                    print()

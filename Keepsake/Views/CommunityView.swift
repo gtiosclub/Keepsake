@@ -23,7 +23,7 @@ struct CommunityView: View {
     @State private var searchText = ""
     @StateObject private var viewModel = UserLookupViewModel()
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView (.vertical, showsIndicators: false) {
                 VStack (alignment: .leading) {
                     HStack {

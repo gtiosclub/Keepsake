@@ -6,41 +6,6 @@
 //
 import SwiftUI
 
-private struct ViewOffsetKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
-
-struct ViewFrameKey: PreferenceKey {
-    static var defaultValue: CGRect = .zero
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
-        value = nextValue()
-    }
-}
-
-extension View {
-    func printFrame(_ label: String = "") -> some View {
-        self.background(
-            GeometryReader { geometry in
-                Color.clear
-                    .preference(
-                        key: ViewFrameKey.self,
-                        value: geometry.frame(in: .global)
-                    )
-                    .onAppear {
-                        let frame = geometry.frame(in: .global)
-                        print("\(label.isEmpty ? "View" : label) frame: \(frame)")
-                    }
-            }
-        )
-        .onPreferenceChange(ViewFrameKey.self) { frame in
-            print("\(label.isEmpty ? "View" : label) frame changed: \(frame)")
-        }
-    }
-}
-
 struct ShelfView: View {
     @Namespace private var shelfNamespace
     @ObservedObject var userVM: UserViewModel
@@ -282,15 +247,28 @@ struct ShelfView: View {
                 .navigationBarBackButtonHidden(true)
 
             case .written:
-                JournalTextInputView(userVM: userVM,
-                                     aiVM: aiVM, fbVM: fbVM,
-                                     shelfIndex: shelfIndex,
-                                     journalIndex: selectedJournal,
-                                     entryIndex: selectedEntry,
-                                     pageIndex: displayPage,
-                                     inEntry: $inEntry,
-                                     entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry) as? WrittenEntry ?? WrittenEntry(date: "", title: "", text: "", summary: "***"), dailyPrompt: $dailyPrompt)
-                .navigationBarBackButtonHidden(true)
+                let temp = userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry)
+                if let writtenEntry = temp as? WrittenEntry {
+                    JournalTextInputView(userVM: userVM,
+                                         aiVM: aiVM, fbVM: fbVM,
+                                         shelfIndex: shelfIndex,
+                                         journalIndex: selectedJournal,
+                                         entryIndex: selectedEntry,
+                                         pageIndex: displayPage,
+                                         inEntry: $inEntry,
+                                         entry: writtenEntry, dailyPrompt: $dailyPrompt)
+                    .navigationBarBackButtonHidden(true)
+                } else {
+                    JournalTextInputView(userVM: userVM,
+                                         aiVM: aiVM, fbVM: fbVM,
+                                         shelfIndex: shelfIndex,
+                                         journalIndex: selectedJournal,
+                                         entryIndex: selectedEntry,
+                                         pageIndex: displayPage,
+                                         inEntry: $inEntry,
+                                         entry: WrittenEntry(date: "", title: "", text: "", summary: "", width: temp.width, height: temp.height, isFake: false, color: temp.color), dailyPrompt: $dailyPrompt)
+                    .navigationBarBackButtonHidden(true)
+                }
                 
             case .voice:
                 JournalVoiceMemoInputView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, shelfIndex: shelfIndex, journalIndex: selectedJournal, entryIndex: selectedEntry, pageIndex: displayPage, inEntry: $inEntry, audioRecording: AudioRecording(), entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry) as? VoiceEntry ?? VoiceEntry(date: "", title: "", audio: nil))
@@ -360,7 +338,7 @@ struct ShelfView: View {
         var body: some View {
             ShelfView(userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
                 Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), WrittenEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
-                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [    JournalPage.dailyReflectionTemplate(pageNumber: 1), JournalPage.springBreakTemplate(pageNumber: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
+                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [    JournalPage.dailyReflectionTemplate(pageNumber: 1), JournalPage.tripTemplate(pageNumber: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
             ]), JournalShelf(name: "Shelf 2", journals: [
