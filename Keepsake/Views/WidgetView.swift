@@ -44,10 +44,14 @@ struct WidgetView: View {
                             }
                         }
                         .onLongPressGesture {
-                            withAnimation {
-                                showDeleteButton = index
-                                print(type(of: widget))
-                                isWiggling = true
+                            if isWiggling == true {
+                                isWiggling = false
+                                showDeleteButton = -1
+                            } else {
+                                withAnimation {
+                                    showDeleteButton = index
+                                    isWiggling = true
+                                }
                             }
                         }
 
@@ -223,7 +227,6 @@ struct PictureEntryView: View {
             }
         }
         .onChange(of: entry) {
-            print("Entry changes")
             uiImages = []
             for image in entry.images {
                 if let uiImage = userVM.getImage(url: image) {
@@ -264,7 +267,6 @@ struct PictureEntryView: View {
             }
         }
         .onChange(of: frontDegrees) {
-            print("front degrees")
             if frontDegrees < 0 && !isActive {
                 isActive = true
                 selected = 0

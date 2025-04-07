@@ -15,7 +15,7 @@ struct JournalPagesView: View {
     @Binding var showNewPageSheet: Bool
     @Binding var displayPage: Int
     let columns = [GridItem(.flexible()), GridItem(.flexible())] // Two columns per row
-
+    
     // Track selection states for circles and stars per page
     @State private var selectedCircles: [Int: Bool] = [:]
     @State private var selectedStars: [Int: Bool] = [:] {
@@ -35,6 +35,8 @@ struct JournalPagesView: View {
     @State var showDeleteButton: Int = -1
     @State var frontDegrees: CGFloat = -180
     @State var isWiggling: Bool = false
+    @State var deletePage: Int = -1
+    @State var pageWiggling: Bool = false
     var body: some View {
         VStack {
             // Picker for toggling between All and Favorites
@@ -45,18 +47,23 @@ struct JournalPagesView: View {
             .pickerStyle(SegmentedPickerStyle()) // Segmented control style
             .padding()
             
-            // Action Buttons
-            HStack(spacing: 60) {
-                ActionButton(icon: "document.on.document", label: "Duplicate")
-                ActionButton(icon: "square.and.arrow.up", label: "Export")
-                ActionButton(icon: "arrow.up.and.down.and.arrow.left.and.right", label: "Move")
-                ActionButton(icon: "trash", label: "Trash")
-            }
-            .padding(.vertical, 10)
-            
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 20) {
                     // Filter pages based on the selected option
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.gray.opacity(0.2))
+                            .frame(width: 180, height: 250) // Adjusted to match new paper size
+                            .shadow(radius: 5)
+                        
+                        Image(systemName: "plus")
+                            .font(.largeTitle)
+                            .foregroundColor(.black)
+                    }
+                    .onTapGesture {
+                        print("Tapped Add Page")
+                        showNewPageSheet.toggle()
+                    }
                     ForEach(filteredPages(), id: \.number) { page in
                         ZStack(alignment: .topLeading) {
                             // Rectangle shaped like a paper
@@ -68,14 +75,36 @@ struct JournalPagesView: View {
                             HStack {
                                 // Circle (Top-left)
                                 Button(action: {
-                                    selectedCircles[page.number]?.toggle()
+                                    if journal.pages.count > 1 {
+                                        updateSelectedStars(afterDeleting: page.number)
+                                        userVM.deletePage(journal: journal, pageNumber: page.number)
+                                        Task {
+                                            await fbVM.deletePage(journalID: journal.id, pageNumber: page.number)
+                                        }
+                                    }
+                                    for num in journal.favoritePages {
+                                        selectedStars[num] = true
+                                    }
+                                    deletePage = -1
+                                    pageWiggling = false
+                                    if displayPage == page.number {
+                                        displayPage = page.number == 0 ? 0 : page.number - 1
+                                    } else if displayPage > page.number {
+                                        displayPage = displayPage - 1
+                                    }
+                                    journal.currentPage = displayPage
+                                    Task {
+                                        await fbVM.updateCurrentPage(journalID: journal.id, currentPage: journal.currentPage)
+                                    }
                                 }) {
-                                    Image(systemName: (selectedCircles[page.number] ?? false) ? "circle.fill" : "circle")
+                                    Image(systemName: "minus.circle")
                                         .resizable()
                                         .frame(width: 25, height: 25)
-                                        .foregroundColor((selectedCircles[page.number] ?? false) ? .blue : .gray)
+                                        .foregroundStyle(.black)
                                 }
                                 .padding(.leading, 8)
+                                .opacity(deletePage == page.number ? 1 : 0)
+                                .animation(.easeInOut(duration: 0.2), value: deletePage)
                                 
                                 Spacer()
                                 
@@ -93,19 +122,19 @@ struct JournalPagesView: View {
                             .frame(width: 180) // Ensure the buttons align within the rectangle
                             .padding(.top, 6)
                             
-                            VStack {
+                            ZStack {
                                 let gridItems = [GridItem(.fixed(75), spacing: UIScreen.main.bounds.width * 0.015, alignment: .leading),
                                                  GridItem(.fixed(75), spacing: UIScreen.main.bounds.width * 0.015, alignment: .leading),]
-
+                                
                                 LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.015) {
                                     ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
                                         ZStack(alignment: .topLeading) {
                                             createView(for: widget, width: 75, height: 45, padding: 0.01, isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: page.number, entryIndex: index, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling, fontSize: 10)
-                                        }
+                                        }.allowsHitTesting(false)
                                     }
                                 }.padding(.top, 15)
                             }
-                            .frame(width: 180, height: 250) // Ensure VStack takes the full space of the rectangle
+                            .frame(width: 180, height: 250)
                         }
                         .onAppear {
                             if selectedCircles[page.number] == nil {
@@ -116,53 +145,79 @@ struct JournalPagesView: View {
                             }
                         }
                         .onTapGesture {
-                            print("Tapped on Page \(page.number)")
+                            if deletePage != -1 {
+                                deletePage = -1
+                                pageWiggling = false
+                            } else {
+                                displayPage = page.number - 1
+                                isPresented.toggle()
+                            }
                         }
+                        .onLongPressGesture {
+                            if (pageWiggling == true) {
+                                deletePage = -1
+                                pageWiggling = false
+                            }
+                            withAnimation {
+                                deletePage = page.number
+                                pageWiggling = true
+                            }
+                        }
+                        .rotationEffect(.degrees(pageWiggling && deletePage == page.number ? 2 : 0)) // Wiggle effect
+                        .animation(pageWiggling && deletePage == page.number ?
+                                   Animation.easeInOut(duration: 0.1).repeatForever(autoreverses: true)
+                                   : .default, value: pageWiggling)
                     }
                     
                     // "Add Page" Button
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.gray.opacity(0.2))
-                            .frame(width: 180, height: 250) // Adjusted to match new paper size
-                            .shadow(radius: 5)
-                        
-                        Image(systemName: "plus")
-                            .font(.largeTitle)
-                            .foregroundColor(.black)
-                    }
-                    .onTapGesture {
-                        print("Tapped Add Page")
-                        showNewPageSheet.toggle()
-                    }
                 }
-
+                
             }
         }.onAppear() {
             for num in journal.favoritePages {
                 selectedStars[num] = true
             }
         }
-    
+        
     }
     
     // A computed property to filter pages based on the selected option (All or Favorites)
     private func filteredPages() -> [JournalPage] {
         if selectedOption == 0 {
-                // Show all pages
-                return journal.pages
-            } else {
-                // Show only favorite pages (where star is selected)
-                return journal.pages.filter { page in
-                    journal.favoritePages.contains(page.number)
-                }
+            // Show all pages
+            return journal.pages
+        } else {
+            // Show only favorite pages (where star is selected)
+            return journal.pages.filter { page in
+                journal.favoritePages.contains(page.number)
             }
+        }
     }
     
     private func updateFavoritePages() {
         journal.favoritePages = selectedStars
             .filter { $0.value }
             .map { $0.key }
+    }
+    
+    func updateSelectedStars(afterDeleting pageNumber: Int) {
+        // Create a new dictionary to store updated mappings
+        var updatedStars = [Int: Bool]()
+        // Iterate through all starred pages
+        for (num, isStarred) in selectedStars {
+            if num == pageNumber {
+                // Skip the deleted page
+                continue
+            } else if num > pageNumber {
+                // Shift stars down by 1 for higher-numbered pages
+                updatedStars[num - 1] = isStarred
+            } else {
+                // Keep stars for lower-numbered pages
+                updatedStars[num] = isStarred
+            }
+        }
+        // Update the state
+        selectedStars = updatedStars
     }
 }
 

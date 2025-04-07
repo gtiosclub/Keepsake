@@ -27,10 +27,19 @@ struct NewPageView: View {
     
     var body: some View {
         VStack {
+            Button {
+                showNewPage.toggle()
+            } label: {
+                Image(systemName: "chevron.left")
+                Text("Back")
+            }.buttonStyle(.plain).padding(.top, 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 20)
+                
             Text("Create a New Page")
                 .font(.title)
                 .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.top, 25)
+                .padding(.top, 5)
             
             // Vertical ScrollView with LazyVGrid
             ScrollView {
@@ -57,24 +66,26 @@ struct NewPageView: View {
                                     
                                     LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.015) {
                                         ForEach(Array(zip(pageTemplates[index].entries.indices, pageTemplates[index].entries)), id: \.0) { indice, widget in
-                                            createView(
-                                                for: widget,
-                                                width: 75,
-                                                height: 45,
-                                                padding: 0.01,
-                                                isDisplay: false,
-                                                inEntry: $inEntry,
-                                                selectedEntry: $selectedEntry,
-                                                fbVM: fbVM,
-                                                journal: journal,
-                                                userVM: userVM,
-                                                pageNum: pageTemplates[index].number,
-                                                entryIndex: indice,
-                                                frontDegrees: $frontDegrees,
-                                                showDeleteButton: $showDeleteButton,
-                                                isWiggling: $isWiggling,
-                                                fontSize: 10
-                                            )
+                                            ZStack {
+                                                createView(
+                                                    for: widget,
+                                                    width: 75,
+                                                    height: 53,
+                                                    padding: 0.01,
+                                                    isDisplay: false,
+                                                    inEntry: $inEntry,
+                                                    selectedEntry: $selectedEntry,
+                                                    fbVM: fbVM,
+                                                    journal: journal,
+                                                    userVM: userVM,
+                                                    pageNum: pageTemplates[index].number,
+                                                    entryIndex: indice,
+                                                    frontDegrees: $frontDegrees,
+                                                    showDeleteButton: $showDeleteButton,
+                                                    isWiggling: $isWiggling,
+                                                    fontSize: 10
+                                                )
+                                            }.allowsHitTesting(false)
                                         }
                                     }
                                     .padding(.top, 15)
@@ -86,6 +97,7 @@ struct NewPageView: View {
                                     await fbVM.updateJournalPage(entries: pageTemplates[index].entries, journalID: journal.id, pageNumber: journal.pages.count - 1)
                                 }
                                 displayPage = journal.pages.count - 1
+                                journal.currentPage = displayPage
                                 showNewPage.toggle()
                                 isPresented.toggle()
                             }
@@ -93,7 +105,7 @@ struct NewPageView: View {
                         .padding(.vertical, 10)
                     }
                 }
-                .padding()
+                
             }
             .padding(.top)
         }
