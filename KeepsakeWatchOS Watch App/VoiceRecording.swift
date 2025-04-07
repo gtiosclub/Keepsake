@@ -16,24 +16,23 @@ struct VoiceRecordingView: View {
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
 
-    private let audioRecording = AudioRecording()
-
+    @State var isPrompt = false
+    @State var prompt = UserDefaults.standard.string(forKey: "prompt") ?? "Tap to record"
     @State private var showDateTimeSelection = false
-    @State private var recordedAudio: String? // Placeholder for recorded file name
+    @State private var recordedAudio: String?
 
 
     var onRecordingComplete: (Reminder) -> Void
-    @Environment(\.dismiss) private var dismiss  // Dismiss when done
-
+    @Environment(\.dismiss) private var dismiss
+    private let audioRecording = AudioRecording()
     var body: some View {
         ZStack {
             Color.black.edgesIgnoringSafeArea(.all)
             
             VStack(spacing: 8) {
-                Text(isRecording ? formattedTime : "Tap to Record")
+                Text(isRecording ? formattedTime : prompt)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
-                
                 Button(action: {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         isRecording.toggle()
@@ -89,7 +88,7 @@ struct VoiceRecordingView: View {
                 )
             animatedOverlay
         }
-        .scaleEffect(isRecording ? 1.1 : 1.0) // Slightly larger when recording
+        .scaleEffect(isRecording ? 1.1 : 1.0)
         .animation(.easeInOut(duration: 0.2), value: isRecording)
 
     }
@@ -188,7 +187,7 @@ struct DateTimeSelectionView: View {
                 formatter.timeZone = TimeZone.current
                 print("Final Date Selected: (\(formatter.string(from: finalDate))")
                 
-                let reminder = Reminder(id: Connectivity.shared.audioUniqueId ?? "hi", date: finalDate)
+                let reminder = Reminder(id: Connectivity.shared.audioUniqueId ?? "hi", prompt: UserDefaults.standard.string(forKey: "prompt") ?? "No prompt used", date: finalDate)
                 Connectivity.shared.send(reminder: reminder)
 
             } label: {

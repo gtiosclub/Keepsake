@@ -7,7 +7,9 @@
 
 import SwiftUI
 import UserNotifications
-
+extension Notification.Name {
+    static let navigateToVoiceRecording = Notification.Name("navigateToVoiceRecording")
+}
 @main
 struct KeepsakeWatch_Watch_AppApp: App {
     @StateObject private var viewModel = RemindersViewModel()
@@ -27,12 +29,14 @@ class AppDelegate: NSObject, WKExtensionDelegate, UNUserNotificationCenterDelega
         UNUserNotificationCenter.current().delegate = self
         requestNotificationPermission()
     }
-    
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async {
-    }
-
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        if response.actionIdentifier == "RECORD_ACTION" {
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .navigateToVoiceRecording, object: nil)
+            }
+        }
     }
+    
     private func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
             if granted {

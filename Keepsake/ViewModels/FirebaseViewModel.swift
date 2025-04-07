@@ -87,7 +87,7 @@ class FirebaseViewModel: ObservableObject {
                 }
             }
         }
-        
+    
     func getProfilePic() -> UIImage? {
         let uid = currentUser?.id
         
@@ -113,6 +113,7 @@ class FirebaseViewModel: ObservableObject {
         return retrievedImage
         
     }
+    
     func signIn(withEmail email: String, password: String) async throws {
         
             let result = try await auth.signIn(withEmail: email, password: password)
@@ -129,6 +130,7 @@ class FirebaseViewModel: ObservableObject {
         do {
             let result = try await auth.createUser(withEmail: email, password: password)
             let initialShelf = JournalShelf(name: "Initial Shelf", id: UUID(), journals: [])
+            let initialScrapbookShelf = ScrapbookShelf(name: "Initial Shelf", id: UUID(), scrapbooks: [])
             self.userSession = result.user
             let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedShelfID: initialShelf.id, isJournalLastUsed: true)
             let userData: [String: Any] = [
@@ -136,7 +138,7 @@ class FirebaseViewModel: ObservableObject {
                 "name": user.name,
                 "username": user.username,
                 "journalShelves": ["\(initialShelf.id)"],
-                "scrapbookShelves": [],
+                "scrapbookShelves": ["\(initialScrapbookShelf.id)"],
                 "templates": [],
                 "friends": [],
                 "lastUsedShelfId": "\(initialShelf.id)",
@@ -220,9 +222,17 @@ class FirebaseViewModel: ObservableObject {
                let lastUsed = snapshot.get("lastUsedShelfId") as? String,
                let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
             {
+                
+                var scrapbookShelves: [ScrapbookShelf] = []
+                for scrapbookShelfId in scrapbookShelfIds {
+                    let shelf = await getScrapbookShelfFromID(id: scrapbookShelfId)!
+                    scrapbookShelves.append(shelf)
+
+                }
+                
                 var journalShelves: [JournalShelf] = []
-                for astr in journalShelfIds {
-                    let shelf = await getJournalShelfFromID(id: astr)!
+                for journalShelfID in journalShelfIds {
+                    let shelf = await getJournalShelfFromID(id: journalShelfID)!
                     journalShelves.append(shelf)
                 }
                 let lastUsedID: UUID
@@ -232,6 +242,7 @@ class FirebaseViewModel: ObservableObject {
                     print("Error getting last used ID")
                     lastUsedID = UUID()
                 }
+                
                 var imageDict: [String: UIImage] = [:]
                 for shelf in journalShelves {
                     for journal in shelf.journals {
@@ -249,11 +260,11 @@ class FirebaseViewModel: ObservableObject {
                     }
                 }
                 print(imageDict)
-                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed, images: imageDict)
+                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed, images: imageDict)
                 
                 // Assign the user object to currentUser
                 await MainActor.run {
-                                self.currentUser = user
+                    self.currentUser = user
                 }
                 
             }
@@ -894,6 +905,38 @@ class FirebaseViewModel: ObservableObject {
     }
     
     // SCRAPBOOKS
+    
+    func getScrapbookShelfFromID(id: String) async -> ScrapbookShelf? {
+        let journalShelfReference = db.collection("SCRAPBOOK_SHELVES").document(id)
+        do {
+            let document = try await journalShelfReference.getDocument()
+            if let data = document.data() {
+                let name = data["name"] as? String ?? ""
+                let idString = data["id"] as? String ?? ""
+                let id = UUID(uuidString: idString) ?? UUID()
+                let scrapbookIDs = data["scrapbooks"] as? [String] ?? []
+                
+                var arrScrapbooks: [Scrapbook] = []
+                
+                for scrapbookID in scrapbookIDs {
+                    let scrapbook = await loadScrapbook(scrapbookID: scrapbookID)
+                    if let scrapbook = scrapbook {
+                        arrScrapbooks.append(scrapbook)
+                    }
+                }
+                return ScrapbookShelf(name: name, id: id, scrapbooks: arrScrapbooks)
+                
+            } else {
+                print("No document found")
+                return nil
+            }
+        } catch {
+            print("Error fetching Journal Shelf: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    
     func saveScrapbook(scrapbook: Scrapbook) async -> Bool {
         // Reference to the scrapbook document in Firestore.
         let scrapbookRef = db.collection("SCRAPBOOKS").document(scrapbook.id.uuidString)
@@ -932,56 +975,53 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    func loadScrapbook(scrapbookID: UUID) async -> Scrapbook? {
-        let scrapbookRef = db.collection("SCRAPBOOKS").document(scrapbookID.uuidString)
+    func loadScrapbook(scrapbookID: String) async -> Scrapbook? {
+        let scrapbookReference = db.collection("SCRAPBOOKS").document(scrapbookID)
         
         do {
-            let document = try await scrapbookRef.getDocument()
-            guard var data = document.data() else {
-                print("No data found for scrapbook")
-                return nil
-            }
-            
-            // Extract the pages dictionary: keys are page numbers (as strings) and values are arrays of entry IDs.
-            guard let pagesDict = data["pages"] as? [String: [String]] else {
-                print("Pages field missing in scrapbook document")
-                return nil
-            }
-            
-            var pages: [ScrapbookPage] = []
-            
-            // For each page, fetch its entries.
-            for (pageStr, entryIDs) in pagesDict {
-                if let pageNum = Int(pageStr) {
-                    var entries: [ScrapbookEntry] = []
+            let document = try await scrapbookReference.getDocument()
+            if let dict = document.data() {
+                let name = dict["name"] as? String ?? ""
+                let idString = dict["id"] as? String ?? ""
+                let id = UUID(uuidString: idString) ?? UUID()
+                let createdDate = dict["createdDate"] as? String ?? ""
+                let category = dict["category"] as? String ?? ""
+                let isSaved = dict["isSaved"] as? Bool ?? true
+                let isShared = dict["isShared"] as? Bool ?? false
+                let templateDict = dict["template"] as? [String: Any] ?? [:]
+                let template = Template.fromDictionary(templateDict) ?? Template()
+                let pagesArray = dict["pages"] as? [String: [String]] ?? [:]
+                let currentPage = dict["currentPage"] as? Int ?? 0
+                
+                var scrapbookPages: [ScrapbookPage] = []
+                
+                for (page, entryIDs) in pagesArray {
+                    print("scrapbook page; \(page)")
+                    let num = page
+                    let entryCount = entryIDs.count
+                    print("scrapbook entries; \(entryIDs)")
+                    var scrapbookEntries: [ScrapbookEntry] = []
+                    
                     for entryID in entryIDs {
-                        let entryDoc = try await db.collection("SCRAPBOOK_ENTRIES").document(entryID).getDocument()
-                        if let entryData = entryDoc.data(),
-                           let entry = ScrapbookEntry.fromDictionary(entryData) {
-                            entries.append(entry)
+                        let entry = await getScrapbookEntryFromID(id: entryID)
+                        if let entry = entry {
+                            scrapbookEntries.append(entry)
+                            
                         }
+                        
+                        
                     }
-                    // Use the count of entries as the entryCount.
-                    let page = ScrapbookPage(number: pageNum, entries: entries, entryCount: entries.count)
-                    pages.append(page)
+                    scrapbookPages.append(ScrapbookPage(number: Int(num) ?? 0, entries: scrapbookEntries, entryCount: entryCount))
                 }
+                let sortedPages = scrapbookPages.sorted { $0.number < $1.number }
+                return Scrapbook(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: sortedPages, currentPage: currentPage)
+                
+            } else {
+                print("No document found")
+                return nil
             }
-            
-            // Sort pages by their number.
-            pages.sort { $0.number < $1.number }
-            
-            // Convert pages to an array of dictionaries so that Scrapbook.fromDictionary can parse it.
-            var pagesArray: [[String: Any]] = []
-            for page in pages {
-                pagesArray.append(page.toDictionary())
-            }
-            data["pages"] = pagesArray
-            
-            // Create and return the Scrapbook object.
-            let scrapbook = Scrapbook.fromDictionary(data)
-            return scrapbook
         } catch {
-            print("Error loading scrapbook: \(error.localizedDescription)")
+            print("Error fetching Journal Shelf: \(error.localizedDescription)")
             return nil
         }
     }
@@ -1066,9 +1106,13 @@ class FirebaseViewModel: ObservableObject {
         let entryRef = db.collection("SCRAPBOOK_ENTRIES").document(id)
         do {
             let document = try await entryRef.getDocument()
-            if let data = document.data(),
-               let entry = ScrapbookEntry.fromDictionary(data) {
-                return entry
+            if let data = document.data() {
+                if let entry = ScrapbookEntry.fromDictionary(data) {
+                    return entry
+                } else {
+                    print("From dictionary doesn't work \(id)")
+                    return nil
+                }
             } else {
                 print("No data found for scrapbook entry \(id)")
                 return nil

@@ -8,7 +8,7 @@ import SwiftUI
 
 struct AudioFilesView: View {
     @State private var remindersWithAudio: [(reminder: Reminder, audioUrl: String)] = []
-
+    @State private var isChecked: Bool = false
     var body: some View {
         VStack {
             if remindersWithAudio.isEmpty {
@@ -22,6 +22,15 @@ struct AudioFilesView: View {
                             playAudio(from: reminderWithAudio.audioUrl)
                         }) {
                             HStack {
+                                Button(action: {
+                                    isChecked.toggle()
+                                    Connectivity.shared.updateIsCheckedInFirestore(reminderId: reminderWithAudio.reminder.id ?? "BHvWzK2PF7YBA0cyiyYwOPUbzof2/", isChecked: isChecked)
+                                }) {
+                                    Image(systemName: isChecked ? "checkmark.circle.fill" : "circle")
+                                        .foregroundColor(isChecked ? Color.pink : Color.gray)
+                                        .font(.title2)
+                                }
+
                                 Image(systemName: "play.circle.fill")
                                     .foregroundColor(Color(hex: "FFADF4"))
                                     .font(.title2)
@@ -35,11 +44,26 @@ struct AudioFilesView: View {
                                     Text("Reminder Date: \(reminderWithAudio.reminder.date, style: .date)")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
+                                    Text("Prompt: \(reminderWithAudio.reminder.prompt)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
                                 }
+                                Button(action: {
+                                    Connectivity.shared.deleteReminder(reminderId: reminderWithAudio.reminder.id ?? "BHvWzK2PF7YBA0cyiyYwOPUbzof2/")
+                                }) {
+                                    Image(systemName: "trash.fill")
+                                        .foregroundColor(.red)
+                                        .padding()
+                                }
+
                             }
+
                             .padding(.vertical, 8)
                         }
+                        
                     }
+
+                    
                 }
             }
         }

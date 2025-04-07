@@ -20,6 +20,7 @@ struct Reminder: Identifiable, Codable {
     #if os(watchOS)
     var id: String
     #endif
+    var prompt: String
     var date: Date
 //    var body: String
 }
@@ -38,9 +39,11 @@ extension Color {
         self.init(red: red, green: green, blue: blue)
     }
 }
-struct RemindersListView: View {
-    @EnvironmentObject private var viewModel: RemindersViewModel
 
+struct RemindersListView: View {
+    @State private var navigateToRecording = false
+    @EnvironmentObject private var viewModel: RemindersViewModel
+    var audioRecording = AudioRecording()
     var body: some View {
         NavigationStack {
             VStack {
@@ -70,10 +73,9 @@ struct RemindersListView: View {
                 .padding(.vertical)
                 #endif
                 
-                #if os(iOS)
+                #if os(watchOS)
                 NavigationLink(
-                    destination: TextReminder()
-                        .environmentObject(viewModel),
+                    destination: VoiceRecordingView(onRecordingComplete: { _ in }),
                     label: {
                         Image(systemName: "plus.circle.fill")
                             .foregroundColor(Color(hex: "FFADF4"))
@@ -86,6 +88,15 @@ struct RemindersListView: View {
                 .buttonStyle(PlainButtonStyle())
                 #endif
             }
+#if os(watchOS)
+            .navigationDestination(isPresented: $navigateToRecording) {
+                VoiceRecordingView(onRecordingComplete: { _ in })
+                   }
+            
+                   .onReceive(NotificationCenter.default.publisher(for: .navigateToVoiceRecording)) { _ in
+                       navigateToRecording = true
+                   }
+            #endif
         }
     }
 }
