@@ -57,6 +57,7 @@ struct KeepsakeApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var firebaseViewModel = FirebaseViewModel.vm
     @StateObject private var reminderViewModel = RemindersViewModel()
+    @StateObject private var aiViewModel = AIViewModel()
       init() {
           requestNotificationPermission()
       }
@@ -65,6 +66,7 @@ struct KeepsakeApp: App {
              isLoggedInView()
                  .environmentObject(firebaseViewModel)
                  .environmentObject(reminderViewModel)
+                 .environmentObject(aiViewModel)
 
         }
     }
