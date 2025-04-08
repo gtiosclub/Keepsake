@@ -37,9 +37,32 @@ struct ScrapbookView: View {
     @State var currImage: UIImage?
     @State var images: [UIImage] = []
     
-    // for editing text
+    // for editing text and text font options
     @State private var textInput: String = "[Enter text]"
     @State var isEditing: Bool = false
+    @State private var selectedFont: String = "Helvetica"
+    @State private var fontSize: CGFloat = 200
+    @State private var backgroundColor: Color = .white
+    @State private var textColor: Color = .black
+    @State private var textAlignment: NSTextAlignment = .center
+    let fontSizes: [CGFloat] = Array(stride(from: 100, to: 300, by: 10))
+    @State private var isBold: Bool = false
+    @State private var isItalic: Bool = false
+    @State private var isUnderlined: Bool = false
+    @State private var showTextColorPicker: Bool = false
+    @State private var showBackgroundColorPicker: Bool = false
+    let fontOptions = [
+        "Helvetica",
+        "Times New Roman",
+        "Courier",
+        "Comic Sans",
+        "Arial",
+        "Impact",
+        "Lato",
+        "Oswald",
+    ]
+
+
 
     var body: some View {
         ZStack {
@@ -140,31 +163,131 @@ struct ScrapbookView: View {
             VStack {
                 Spacer()
                 if isEditing {
-                    VStack {
+                    VStack (spacing: 16) {
+                        // Place to input new/updated text
                         TextField("Edit Text", text: $textInput)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
                             .padding()
-                            .background(Color.white.opacity(0.8))
+                            .background(Color.pink.opacity(0.2))
                             .cornerRadius(10)
-                            .onSubmit {
-                                updateTextBox()
-                                isEditing = false
-                                textInput = "[Enter text]"
+                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.3)))
+                            .padding(.horizontal)
+
+                        HStack(spacing: 12) {
+                            // Menu for updating font family
+                            Menu {
+                                ForEach(fontOptions, id: \.self) { font in
+                                    Button(font) {
+                                        selectedFont = font
+                                    }
+                                }
+                            } label: {
+                                Text(selectedFont)
+                                    .frame(minWidth: 80)
+                                    .padding()
+                                    .background(Color.white.opacity(0.4))
+                                    .cornerRadius(12)
                             }
-    
+
+                            // Menu for updating font size
+                            Menu {
+                                ForEach(fontSizes, id: \.self) { size in
+                                    Button("\(Int(size))") {
+                                        fontSize = size
+                                    }
+                                }
+                            } label: {
+                                Text("\(Int(fontSize))")
+                                    .frame(minWidth: 50)
+                                    .padding()
+                                    .background(Color.white.opacity(0.4))
+                                    .cornerRadius(12)
+                            }
+                        }
+                        
+                        // Font Styling Buttons
+                        HStack(spacing: 20) {
+                            Toggle(isOn: $isBold) {
+                                Text("B").bold()
+                            }
+                            .toggleStyle(.button)
+
+                            Toggle(isOn: $isItalic) {
+                                Text("I").italic()
+                            }
+                            .toggleStyle(.button)
+
+                            Toggle(isOn: $isUnderlined) {
+                                Text("U").underline()
+                            }
+                            .toggleStyle(.button)
+                        }
+                        
+                        // Text Alignment
+                        HStack(spacing: 20) {
+                            Button(action: { textAlignment = .left }) {
+                                Image(systemName: "text.alignleft")
+                            }
+                            Button(action: { textAlignment = .center }) {
+                                Image(systemName: "text.aligncenter")
+                            }
+                            Button(action: { textAlignment = .right }) {
+                                Image(systemName: "text.alignright")
+                            }
+                        }
+                        .font(.system(size: 18))
+                        .foregroundColor(.primary)
+                        
+                        // Text Color & Background Buttons
+                        HStack(spacing: 20) {
+                            Button(action: {
+                                showTextColorPicker.toggle()
+                            }) {
+                                Text("text color")
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(Color.gray.opacity(0.6))
+                                    .foregroundColor(.white)
+                                    .cornerRadius(12)
+                            }
+
+                            Button(action: {
+                                showBackgroundColorPicker.toggle()
+                            }) {
+                                Text("background")
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(Color.pink.opacity(0.5))
+                                    .foregroundColor(.white)
+                                    .cornerRadius(12)
+                            }
+                        }
+                        
+                        // Pop-Up for editing text color
+                        if showTextColorPicker {
+                            ColorPicker("Select Text Color", selection: $textColor)
+                                .padding(.horizontal)
+                        }
+                        // Pop-Up for editing background color
+                        if showBackgroundColorPicker {
+                            ColorPicker("Select Background Color", selection: $backgroundColor)
+                                .padding(.horizontal)
+                        }
+
+                        
                         Button("Done") {
                             updateTextBox()
                             isEditing = false
-                            textInput = "[Enter text]"
                         }
                         .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.white.opacity(0.6))
+                        .cornerRadius(12)
+                        .padding(.top)
                     }
-                    .frame(maxWidth: 250)
-                    .background(Color.black.opacity(0.6))
-                    .cornerRadius(15)
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(25)
+                    .shadow(radius: 10)
                     .padding()
                 }
                 
@@ -231,7 +354,8 @@ struct ScrapbookView: View {
     
     private func updateTextBox() {
         if let editingTextEntity = selectedEntity as? TextBoxEntity {
-            editingTextEntity.updateText(textInput)
+            //editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, bgColor: backgroundColor, textColor: textColor)
+            editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, isBold: isBold, isItalic: isItalic, isUnderlined: isUnderlined, textColor: textColor, backgroundColor: backgroundColor)
         }
     }
 }

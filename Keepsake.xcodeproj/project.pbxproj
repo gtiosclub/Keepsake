@@ -153,7 +153,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4873C38C2D6138F400BDBC2D /* RealityKit.framework in Frameworks */,
 				F71261692D5405C000F65745 /* ChatGPTSwift in Frameworks */,
 				5724A44D2D64E87F0012A6F2 /* FirebaseCore in Frameworks */,
 				5724A4492D64E87F0012A6F2 /* FirebaseAuth in Frameworks */,
@@ -560,13 +559,13 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatch;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.rik.Keepsake;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.aryan.Keepsake;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake.watch;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.aryan.Keepsake.watch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -590,13 +589,13 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = KeepsakeWatch;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.rik.Keepsake;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.app.aryan.Keepsake;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake.watch;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.aryan.Keepsake.watch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -830,7 +829,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.aryan.Keepsake;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -864,7 +863,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.app.rik.Keepsake;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.aryan.Keepsake;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
