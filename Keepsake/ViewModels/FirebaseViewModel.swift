@@ -129,7 +129,7 @@ class FirebaseViewModel: ObservableObject {
             let initialShelf = JournalShelf(name: "Initial Shelf", id: UUID(), journals: [])
             let initialScrapbookShelf = ScrapbookShelf(name: "Initial Shelf", id: UUID(), scrapbooks: [])
             self.userSession = result.user
-            let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedShelfID: initialShelf.id, isJournalLastUsed: true)
+            let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedJShelfID: initialShelf.id, lastUsedSShelfID: initialScrapbookShelf.id, isJournalLastUsed: true)
             let userData: [String: Any] = [
                 "uid": user.id,
                 "name": user.name,
@@ -138,7 +138,8 @@ class FirebaseViewModel: ObservableObject {
                 "scrapbookShelves": ["\(initialScrapbookShelf.id)"],
                 "templates": [],
                 "friends": [],
-                "lastUsedShelfId": "\(initialShelf.id)",
+                "lastUsedJShelfId": "\(initialShelf.id)",
+                "lastUsedSShelfId": "\(initialScrapbookShelf.id)",
                 "isJournalLastUsed": true
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
@@ -177,7 +178,8 @@ class FirebaseViewModel: ObservableObject {
                    let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
                    let templates = snapshot.get("templates") as? [String],
                    let friends = snapshot.get("friends") as? [String],
-                   let lastUsed = snapshot.get("lastUsedShelfId") as? String,
+                   let lastUsedJ = snapshot.get("lastUsedJShelfId") as? String,
+                   let lastUsedS = snapshot.get("lastUsedSShelfId") as? String,
                    let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
                 {
                     var journalShelves: [JournalShelf] = []
@@ -185,14 +187,22 @@ class FirebaseViewModel: ObservableObject {
                         let shelf = await getJournalShelfFromID(id: astr)!
                         journalShelves.append(shelf)
                     }
-                    let lastUsedID: UUID
-                    if let temp = UUID(uuidString: lastUsed) {
-                        lastUsedID = temp
+                    let lastUsedJID: UUID
+                    if let temp = UUID(uuidString: lastUsedJ) {
+                        lastUsedJID = temp
                     } else {
-                        print("Error getting last used ID")
-                        lastUsedID = UUID()
+                        print("Error getting last used journal ID")
+                        lastUsedJID = UUID()
                     }
-                    let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed)
+                    
+                    let lastUsedSID: UUID
+                    if let temp = UUID(uuidString: lastUsedS) {
+                        lastUsedSID = temp
+                    } else {
+                        print("Error getting last used scrapbook shelf ID")
+                        lastUsedSID = UUID()
+                    }
+                    let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed)
                     
                     return user
                     
@@ -206,9 +216,11 @@ class FirebaseViewModel: ObservableObject {
     
     func fetchUser() async {
         guard let uid = auth.currentUser?.uid else {return}
-        
+        print("Fetch User Started")
         guard let snapshot = try? await Firestore.firestore().collection("USERS").document(uid).getDocument() else { return }
+        print("Hello darkness")
         if snapshot.exists {
+            print("It exits")
             // Manually extract data from the snapshot
             if let uid = snapshot.get("uid") as? String,
                let name = snapshot.get("name") as? String,
@@ -217,10 +229,10 @@ class FirebaseViewModel: ObservableObject {
                let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
                let templates = snapshot.get("templates") as? [String],
                let friends = snapshot.get("friends") as? [String],
-               let lastUsed = snapshot.get("lastUsedShelfId") as? String,
+               let lastUsedJ = snapshot.get("lastUsedJShelfID") as? String,
+               let lastUsedS = snapshot.get("lastUsedSShelfID") as? String,
                let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
             {
-                
                 var scrapbookShelves: [ScrapbookShelf] = []
                 for scrapbookShelfId in scrapbookShelfIds {
                     print(scrapbookShelfId)
@@ -228,20 +240,26 @@ class FirebaseViewModel: ObservableObject {
                     scrapbookShelves.append(shelf)
 
                 }
-                
                 var journalShelves: [JournalShelf] = []
                 for journalShelfID in journalShelfIds {
                     let shelf = await getJournalShelfFromID(id: journalShelfID)!
                     journalShelves.append(shelf)
                 }
-                let lastUsedID: UUID
-                if let temp = UUID(uuidString: lastUsed) {
-                    lastUsedID = temp
+                let lastUsedJID: UUID
+                if let temp = UUID(uuidString: lastUsedJ) {
+                    lastUsedJID = temp
                 } else {
-                    print("Error getting last used ID")
-                    lastUsedID = UUID()
+                    print("Error getting last used journal ID")
+                    lastUsedJID = UUID()
                 }
-                
+                print("Halloween")
+                let lastUsedSID: UUID
+                if let temp = UUID(uuidString: lastUsedS) {
+                    lastUsedSID = temp
+                } else {
+                    print("Error getting last used scrapbook shelf ID")
+                    lastUsedSID = UUID()
+                }
                 var imageDict: [String: UIImage] = [:]
                 for shelf in journalShelves {
                     for journal in shelf.journals {
@@ -258,8 +276,8 @@ class FirebaseViewModel: ObservableObject {
                         }
                     }
                 }
-                print(imageDict)
-                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed, images: imageDict)
+                print("is journal: \(isJournalLastUsed)")
+                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed, images: imageDict)
                 
                 // Assign the user object to currentUser
                 await MainActor.run {
@@ -490,11 +508,23 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    func updateUserLastUsedShelf(user: User) async {
+    func updateUserLastUsedJShelf(user: User) async {
         let userRef = db.collection("USERS").document(user.id)
         do {
             try await userRef.updateData([
-                "lastUsedShelfId": user.lastUsedShelfID.uuidString,
+                "lastUsedJShelfId": user.lastUsedJShelfID.uuidString,
+                "isJournalLastUsed": user.isJournalLastUsed
+            ])
+        } catch {
+            print("error setting last used shelf")
+        }
+    }
+    
+    func updateUserLastUsedSShelf(user: User) async {
+        let userRef = db.collection("USERS").document(user.id)
+        do {
+            try await userRef.updateData([
+                "lastUsedSShelfId": user.lastUsedJShelfID.uuidString,
                 "isJournalLastUsed": user.isJournalLastUsed
             ])
         } catch {

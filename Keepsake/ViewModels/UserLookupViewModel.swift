@@ -65,7 +65,7 @@ class UserLookupViewModel: ObservableObject {
                 
 
                 if name.lowercased().hasPrefix(searchTextLowercased) && username != currentUserName {
-                    return User(id: doc.documentID, name: name, username: username, journalShelves: [], scrapbookShelves: [], friends: friends, lastUsedShelfID: UUID(), isJournalLastUsed: true)
+                    return User(id: doc.documentID, name: name, username: username, journalShelves: [], scrapbookShelves: [], friends: friends, lastUsedJShelfID: UUID(), lastUsedSShelfID: UUID(), isJournalLastUsed: true)
                 }
                 return nil
             }

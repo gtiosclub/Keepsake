@@ -15,15 +15,17 @@ class User: Identifiable, ObservableObject {
     @Published var journalShelves: [JournalShelf]
     @Published var scrapbookShelves: [ScrapbookShelf]
     @Published var savedTemplates: [Template]
-    var lastUsedShelfID: UUID
+    var lastUsedJShelfID: UUID
+    var lastUsedSShelfID: UUID
     var isJournalLastUsed: Bool
-    @Published var shelfIndex: Int = 0
+    @Published var journalShelfIndex: Int = 0
+    @Published var scrapbookShelfIndex: Int = 0
     @Published var friends: [String]
     @Published var images: [String:UIImage] = [:]
     @Published var streaks: Int = 0
     @Published var lastJournaled: Date?
     
-    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String], lastUsedShelfID: UUID, isJournalLastUsed: Bool, images: [String: UIImage] = [:]) {
+    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String], lastUsedJShelfID: UUID, lastUsedSShelfID: UUID, isJournalLastUsed: Bool, images: [String: UIImage] = [:]) {
         self.id = id
         self.name = name
         self.username = username
@@ -32,7 +34,8 @@ class User: Identifiable, ObservableObject {
         self.savedTemplates = savedTemplates
         self.isJournalLastUsed = true
         self.friends = friends
-        self.lastUsedShelfID = lastUsedShelfID
+        self.lastUsedJShelfID = lastUsedJShelfID
+        self.lastUsedSShelfID = lastUsedSShelfID
         self.isJournalLastUsed = isJournalLastUsed
         self.images = images
     }
@@ -45,7 +48,8 @@ class User: Identifiable, ObservableObject {
         self.savedTemplates = savedTemplates
         self.isJournalLastUsed = true
         self.friends = friends
-        self.lastUsedShelfID = UUID()
+        self.lastUsedJShelfID = UUID()
+        self.lastUsedSShelfID = UUID()
         self.isJournalLastUsed = true
     }
     init(id: String, name: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = []) {
@@ -56,7 +60,8 @@ class User: Identifiable, ObservableObject {
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = savedTemplates
         self.friends = []
-        self.lastUsedShelfID = UUID()
+        self.lastUsedJShelfID = UUID()
+        self.lastUsedSShelfID = UUID()
         self.isJournalLastUsed = true
     }
     
@@ -68,7 +73,8 @@ class User: Identifiable, ObservableObject {
         self.journalShelves = journalShelves
         self.scrapbookShelves = scrapbookShelves
         self.savedTemplates = []
-        self.lastUsedShelfID = UUID()
+        self.lastUsedJShelfID = UUID()
+        self.lastUsedSShelfID = UUID()
         self.isJournalLastUsed = true
         self.friends = []
 
