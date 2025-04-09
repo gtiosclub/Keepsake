@@ -328,7 +328,7 @@ class AIViewModel: ObservableObject {
         return nil
     }
     
-    func stickers(entry: JournalEntry) async -> String? {
+    func getStickers(entry: JournalEntry) async -> String? {
         let inputText = entry.entryContents
         if inputText.isEmpty {
             return nil
@@ -467,6 +467,10 @@ class AIViewModel: ObservableObject {
     func fetchImages(for category: String) -> [UIImage]? {
         return categorizedImages[category]
     }
+    
+    
+    
+    
     
     struct OpenAIResponse: Codable {
         struct Choice: Codable {
