@@ -120,16 +120,6 @@ struct ShelfView: View {
     
     private var topVStack: some View {
         VStack(alignment: .leading, spacing: 5) {
-//            Button {
-//                selectedOption = .library
-//            } label: {
-//                HStack(spacing: 0) {
-//                    Image(systemName: "chevron.left")
-//                        .foregroundStyle(.black)
-//                    Text("Library")
-//                        .foregroundStyle(.black)
-//                }.padding(.leading, 5)
-//            }
             HStack {
                 Text("Welcome back, \(userVM.user.name)")
                     .font(.title2)
@@ -183,6 +173,7 @@ struct ShelfView: View {
             .buttonStyle(PlainButtonStyle())
 
             Button(action: {
+                // Add selectedOption = .arScrapbook after adding enum in HomeView
                 print("AR Scrapbook clicked")
             }) {
                 Text("AR Scrapbook")
