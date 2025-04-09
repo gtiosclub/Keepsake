@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+
+
 struct OpenJournal: View {
     @Namespace private var openJournalNamespace
 //    @State var book: any Book
@@ -35,8 +37,16 @@ struct OpenJournal: View {
     @State private var showSearch = false
     var body: some View {
         VStack(spacing: 10) {
+            HStack{
+                JournalReturnButton(circleStart: $circleStart, circleEnd: $circleEnd, frontDegrees: $frontDegrees, degrees: $degrees, isHidden: $isHidden, coverZ: $coverZ, scaleFactor: $scaleFactor, show: $show)
+                Spacer()
+            }
+
+            Spacer()
+                .frame(height: 0.1)
             HStack(alignment: .top, spacing: 15) {
                 VStack(alignment: .leading) {
+                    
                     Text(journal.name).font(.system(size: 40))
                     Text(journal.createdDate).font(.system(size: 20))
                     Text("created by...").font(.system(size: 15))
@@ -64,16 +74,7 @@ struct OpenJournal: View {
                         .padding(.top, 8)
                         .foregroundColor(.black)
                 }
-                Button {
-                    
-                } label: {
-                    Image(systemName: "square.and.arrow.up")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 24, height: 24)
-                        .padding(.top, 8)
-                        .foregroundColor(.black)
-                }
+                
             }.padding(.horizontal, 30)
                 .opacity(degrees == -180 ? 1 : 0)
 
@@ -108,13 +109,14 @@ struct OpenJournal: View {
                 }
             }
             HStack {
-                JournalReturnButton(circleStart: $circleStart, circleEnd: $circleEnd, frontDegrees: $frontDegrees, degrees: $degrees, isHidden: $isHidden, coverZ: $coverZ, scaleFactor: $scaleFactor, show: $show)
+                
                 Spacer()
                 AddEntryButtonView(journal: journal, inTextEntry: $inTextEntry, userVM: userVM, fbVM: fbVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry)
             }.padding(.horizontal, 30)
                 .opacity(degrees == -180 ? 1 : 0)
         }
     }
+    
 }
 
 
@@ -360,37 +362,42 @@ struct JournalReturnButton: View {
     @Binding var show: Bool
     var body: some View {
         VStack {
-            Button(action: {
-                circleStart = 0.5
-                circleEnd = 1
-                withAnimation(.linear(duration: 1).delay(0.5)) {
-                    circleStart += 0.25
-                    degrees += 90
-                    frontDegrees += 90
-                } completion: {
-                    coverZ = 0
-                    isHidden = false
-                    withAnimation {
+            if degrees == -180 {
+                Button(action: {
+                    circleStart = 0.5
+                    circleEnd = 1
+                    withAnimation(.linear(duration: 1).delay(0.5)) {
                         circleStart += 0.25
                         degrees += 90
                         frontDegrees += 90
                     } completion: {
-                        withAnimation(.linear(duration: 0.7)) {
-                            scaleFactor = 0.6
+                        coverZ = 0
+                        isHidden = false
+                        withAnimation {
+                            circleStart += 0.25
+                            degrees += 90
+                            frontDegrees += 90
                         } completion: {
-                            withAnimation {
-                                show.toggle()
+                            withAnimation(.linear(duration: 0.7)) {
+                                scaleFactor = 0.6
+                            } completion: {
+                                withAnimation {
+                                    show.toggle()
+                                }
                             }
                         }
                     }
-                }
-            }, label: {
-                Image(systemName: "return")
-                    .resizable()
-                    .foregroundStyle(.black)
-                    .frame(width: UIScreen.main.bounds.width * 0.07, height: UIScreen.main.bounds.width * 0.07)
-            }).frame(width: UIScreen.main.bounds.width * 0.1)
-            
+                }, label: {
+                    Image(systemName: "chevron.backward")
+                        .resizable()
+                        .foregroundStyle(.black)
+                        .frame(width: UIScreen.main.bounds.width * 0.023, height: UIScreen.main.bounds.width * 0.04)
+                    Text("Back")
+                        .font(.title2)
+                        .foregroundStyle(.black)
+                }).frame(width: UIScreen.main.bounds.width * 0.25, height: UIScreen.main.bounds.width * 0.05)
+                
+            }
         }
     }
 }
