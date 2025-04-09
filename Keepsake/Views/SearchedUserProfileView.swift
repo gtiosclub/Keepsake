@@ -9,6 +9,7 @@ struct SearchedUserProfileView: View {
     @State private var isFriend: Bool = false
     @StateObject var firebaseViewModel = FirebaseViewModel()
     @StateObject private var viewModel = UserLookupViewModel()
+    @Binding var friends: [String]
 
     var body: some View {
         VStack {
@@ -16,6 +17,8 @@ struct SearchedUserProfileView: View {
                 List {
                     Section {
                         VStack {
+                            
+                            
                             HStack {
                                 Image(systemName: "person.crop.circle.fill")
                                     .resizable()
@@ -37,40 +40,44 @@ struct SearchedUserProfileView: View {
                             }
                         }
                     }
+                    
+//                    Button(action: {
+//                        if (currentUserID.friends.contains(user.id)) {
+//                            currentUserID.friends.remove(at: currentUserID.friends.firstIndex(of: user.id)!)
+//                            viewModel.removeFriend(currentUserID: currentUserID.id, friendUserID: user.id)
+//                            isFriend = false
+//                        } else {
+//                            currentUserID.friends.append(user.id)
+//                            viewModel.addFriend(currentUserID: currentUserID.id, friendUserID: user.id)
+//                            isFriend = true
+//                        }
+//                    }
+//                    ) {
+//                        
+//                        Text(currentUserID.friends.contains(user.id) ? "Remove Friend" : "Add Friend")
+//                            .foregroundColor(.pink)
+//                            
+//                    }
                     Button(action: {
-
-                        if currentUserID.friends.contains(selectedUserID) {
-                            // Remove friend locally
-                            if let index = viewModel.users.firstIndex(where: {
-                                $0.id == currentUserID.id
-                            }) {
-                                viewModel.users[index].friends.removeAll {
-                                    $0 == selectedUserID
-                                }
+                        if friends.contains(user.id) {
+                            if let index = friends.firstIndex(of: user.id) {
+                                friends.remove(at: index)
                             }
-                            viewModel.removeFriend(
-                                currentUserID: currentUserID.id,
-                                friendUserID: user.id)
+                            viewModel.removeFriend(currentUserID: currentUserID.id, friendUserID: user.id)
+                            isFriend = false
                         } else {
-                            // Add friend locally
-                            if let index = viewModel.users.firstIndex(where: {
-                                $0.id == currentUserID.id
-                            }) {
-                                viewModel.users[index].friends.append(
-                                    selectedUserID)
-                            }
-                            viewModel.addFriend(
-                                currentUserID: currentUserID.id,
-                                friendUserID: user.id)
+                            friends.append(user.id)
+                            viewModel.addFriend(currentUserID: currentUserID.id, friendUserID: user.id)
+                            isFriend = true
                         }
                     }) {
-                        Text(
-                            currentUserID.friends.contains(selectedUserID)
-                                ? "Remove Friend" : "Add Friend"
-                        )
-                        .foregroundColor(.pink)
+                        Text(friends.contains(user.id) ? "Remove Friend" : "Add Friend")
+                            .foregroundColor(.pink)
                     }
 
+                }
+                .onAppear {
+                    isFriend = friends.contains(user.id)
                 }
 
             } else {

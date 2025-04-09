@@ -14,6 +14,8 @@ struct UserSearchView: View {
     @State private var searchText = ""
     @StateObject var firebaseViewModel = FirebaseViewModel()
     @StateObject private var viewModel = UserLookupViewModel()
+    @State private var currentUserFriends: [String] = []
+    
     var body: some View {
         NavigationStack {
             let newUser = firebaseViewModel.currentUser
@@ -72,31 +74,46 @@ struct UserSearchView: View {
                         .buttonStyle(PlainButtonStyle())
 
                         Spacer()
-                        
                         Button(action: {
                             guard let currentUserID = newUser?.id else { return }
 
-                            if user.friends.contains(currentUserID) {
-                                // Remove friend locally
-                                if let index = viewModel.users.firstIndex(where: { $0.id == user.id }) {
-                                    viewModel.users[index].friends.removeAll { $0 == currentUserID }
-                                }
+                            if currentUserFriends.contains(user.id) {
+                                currentUserFriends.removeAll { $0 == user.id }
                                 viewModel.removeFriend(currentUserID: currentUserID, friendUserID: user.id)
                             } else {
-                                // Add friend locally
-                                if let index = viewModel.users.firstIndex(where: { $0.id == user.id }) {
-                                    viewModel.users[index].friends.append(currentUserID)
-                                }
+                                currentUserFriends.append(user.id)
                                 viewModel.addFriend(currentUserID: currentUserID, friendUserID: user.id)
                             }
                         }) {
-                            Text(user.friends.contains(newUser?.id ?? "") ? "Remove Friend" : "Add Friend")
+                            Text(currentUserFriends.contains(user.id) ? "Remove Friend" : "Add Friend")
                                 .foregroundColor(.pink)
                         }
+                        
+//                        Button(action: {
+//                            guard let currentUserID = newUser?.id else { return }
+//
+//                            if currentUserFriends.contains(user.id) {
+//                                // Remove friend locally
+//                                if let index = viewModel.users.firstIndex(where: { $0.id == currentUserID }) {
+//                                    viewModel.users[index].friends.removeAll { $0 == user.id }
+//                                }
+//                                viewModel.removeFriend(currentUserID: currentUserID, friendUserID: user.id)
+//                            } else {
+//                                // Add friend locally
+//                                if let index = viewModel.users.firstIndex(where: { $0.id == currentUserID }) {
+//                                    viewModel.users[index].friends.append(user.id)
+//                                }
+//                                viewModel.addFriend(currentUserID: currentUserID, friendUserID: user.id)
+//                            }
+//                        }) {
+//                            Text(newUser!.friends.contains(user.id) ? "Remove Friend" : "Add Friend")
+//                                .foregroundColor(.pink)
+//                        }
                     }
                     .background(
                         NavigationLink(
-                            destination: SearchedUserProfileView(currentUserID: newUser!, selectedUserID: user.id),
+                            destination: SearchedUserProfileView(currentUserID: newUser!, selectedUserID: user.id,
+                                    friends: $currentUserFriends),
                             tag: user.id,
                             selection: $selectedUserID
                         ) {
@@ -113,6 +130,9 @@ struct UserSearchView: View {
             
         }
         .onAppear {
+            if let currentUser = firebaseViewModel.currentUser {
+                            currentUserFriends = currentUser.friends
+                        }
             isTextFieldFocused = true
         }
         .navigationBarBackButtonHidden(true)

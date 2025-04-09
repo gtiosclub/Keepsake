@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
 class User: Identifiable, ObservableObject {
     var id: String
@@ -66,8 +67,10 @@ class User: Identifiable, ObservableObject {
         self.lastUsedShelfID = UUID()
         self.isJournalLastUsed = true
         self.friends = []
-
+        
     }
+
+
     
     func updateJournalEntry(shelfNum: Int, bookNum: Int, pageNum: Int, entryNum: Int, newEntry: JournalEntry) {
         var journal = (journalShelves[shelfNum].journals[bookNum])
