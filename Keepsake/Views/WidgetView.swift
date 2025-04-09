@@ -40,7 +40,12 @@ struct WidgetView: View {
                                 isWiggling = false
                             } else {
                                 selectedEntry = index
-                                inEntry = widget.type
+                                // Disable animations for this specific state change
+                                var transaction = Transaction()
+                                transaction.disablesAnimations = true
+                                withTransaction(transaction) {
+                                    inEntry = widget.type
+                                }
                             }
                         }
                         .onLongPressGesture {

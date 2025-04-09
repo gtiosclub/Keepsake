@@ -34,6 +34,7 @@ struct ScrapbookShelfView: View {
     @State var deleteJournalID: String = ""
     @State var hideToolBar: Bool = false
     @State var dailyPrompt: String? = nil
+    @State var onlyShowCover: Bool = false
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 10) {
@@ -100,7 +101,7 @@ struct ScrapbookShelfView: View {
                                     NavigationLink {
                                         CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
                                     } label: {
-                                        JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name)
+                                        JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $onlyShowCover)
                                             .scaleEffect(scaleEffect)
                                             .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                                             .transition(.identity)
