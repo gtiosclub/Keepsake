@@ -23,12 +23,14 @@ struct LibraryView: View {
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding()
-
+                
                 if showBookshelfView {
                     LibraryBookshelfView(userVM: userVM, user: userVM.user, aiVM: aiVM, fbVM: fbVM, selectedOption: $selectedOption)
                 } else {
-                    LibraryScrapbookView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, user: userVM.user, selectedOption: $selectedOption) // Add Scrapbook View
+                    LibraryScrapbookView(userVM: userVM, user: userVM.user, aiVM: aiVM, fbVM: fbVM, selectedOption: $selectedOption) // Add Scrapbook View
                 }
+            }.onAppear() {
+                showBookshelfView = userVM.getLastUsed()
             }
         }.navigationBarBackButtonHidden(true)
     }
@@ -51,9 +53,9 @@ struct LibraryBookshelfView: View {
                         BookshelfView(shelf: user.journalShelves[index], isEven: index.isMultiple(of: 2), fbVM: fbVM)
                             .onTapGesture {
                                 if longPressedShelfIndex == nil {
-                                    userVM.setShelfIndex(index: index, shelfID: user.journalShelves[index].id, isJournal: true)
+                                    userVM.setJournalShelfIndex(index: index, shelfID: user.journalShelves[index].id)
                                     Task {
-                                        await fbVM.updateUserLastUsedShelf(user: user)
+                                        await fbVM.updateUserLastUsedJShelf(user: user)
                                     }
                                     selectedOption = .journal_shelf
                                 } else {
@@ -69,7 +71,7 @@ struct LibraryBookshelfView: View {
                                 Task {
                                     await fbVM.deleteShelf(shelfID: shelfID, userID: user.id)
                                 }
-                                userVM.removeJournaShelf(index: index)
+                                userVM.removeJournalShelf(index: index)
                                 longPressedShelfIndex = nil
                             } label: {
                                 Image(systemName: "minus.circle.fill")
@@ -106,30 +108,77 @@ struct LibraryBookshelfView: View {
 
 struct LibraryScrapbookView: View {
     @ObservedObject var userVM: UserViewModel
+    @ObservedObject var user: User
     @ObservedObject var aiVM: AIViewModel
     @ObservedObject var fbVM: FirebaseViewModel
-    @ObservedObject var user: User
     @Binding var selectedOption: ViewOption
+
+    @State private var longPressedShelfIndex: Int? = nil
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(user.scrapbookShelves.indices, id: \.self) { index in
-                    BookshelfForScrapbookView(shelf: user.scrapbookShelves[index])
+                    ZStack(alignment: index.isMultiple(of: 2) ? .topTrailing : .topLeading) {
+                        BookshelfForScrapbookView(
+                            shelf: user.scrapbookShelves[index],
+                            isEven: index.isMultiple(of: 2),
+                            fbVM: fbVM
+                        )
                         .onTapGesture {
-                            userVM.setShelfIndex(index: index, shelfID: user.scrapbookShelves[index].id, isJournal: false)
-                            selectedOption = .journal_shelf
+                            if longPressedShelfIndex == nil {
+                                userVM.setScrapbookShelfIndex(
+                                    index: index,
+                                    shelfID: user.scrapbookShelves[index].id
+                                )
+                                Task {
+                                    await fbVM.updateUserLastUsedSShelf(user: user)
+                                }
+                                selectedOption = .scrapbook_shelf
+                            } else {
+                                longPressedShelfIndex = nil
+                            }
                         }
+                        .onLongPressGesture {
+                            longPressedShelfIndex = index
+                        }
+
+                        if longPressedShelfIndex == index {
+                            Button {
+                                let shelfID = user.scrapbookShelves[index].id
+                                //Add firebase deletion later
+                                userVM.removeScrapbookShelf(index: index)
+                                longPressedShelfIndex = nil
+                            } label: {
+                                Image(systemName: "minus.circle.fill")
+                                    .foregroundColor(.red)
+                                    .background(Circle().fill(Color.white))
+                            }
+                            .offset(x: index.isMultiple(of: 2) ? -10 : 10, y: 10)
+                        }
+                    }
                 }
             }
             .padding()
             .frame(maxWidth: .infinity)
+        }
+        .onTapGesture {
+            longPressedShelfIndex = nil
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Your Scrapbooks")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
-                    userVM.addScrapbookShelfToUser(ScrapbookShelf(name: "new", id: UUID(), scrapbooks: []))
+                    userVM.addScrapbookShelfToUser(
+                        ScrapbookShelf(name: "new", scrapbooks: [])
+                    )
+                    Task {
+                        await fbVM.addScrapbookShelf(
+                            scrapbookShelf: userVM.getScrapbookShelves().last!,
+                            userID: user.id
+                        )
+                    }
                 } label: {
                     Image(systemName: "plus.circle")
                 }
