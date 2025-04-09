@@ -39,9 +39,14 @@ struct WidgetView: View {
                                 if showDeleteButton != -1 {
                                     showDeleteButton = -1
                                     isWiggling = false
-                                } else {
+                                }  else {
                                     selectedEntry = index
-                                    inEntry = widget.type
+                                    // Disable animations for this specific state change
+                                    var transaction = Transaction()
+                                    transaction.disablesAnimations = true
+                                    withTransaction(transaction) {
+                                        inEntry = widget.type
+                                    }
                                 }
                             }
                             .onLongPressGesture {
