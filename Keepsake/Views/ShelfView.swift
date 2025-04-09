@@ -74,6 +74,8 @@ struct ShelfView: View {
                     .opacity
                         .animation(.easeIn(duration: 0.5)) // Fast appear
                 )
+            buttonNavigationView
+                .transition(.opacity.animation(.easeIn(duration: 0.5)))
             scrollView
                 .transition(
                     .opacity
@@ -118,16 +120,16 @@ struct ShelfView: View {
     
     private var topVStack: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Button {
-                selectedOption = .library
-            } label: {
-                HStack(spacing: 0) {
-                    Image(systemName: "chevron.left")
-                        .foregroundStyle(.black)
-                    Text("Library")
-                        .foregroundStyle(.black)
-                }.padding(.leading, 5)
-            }
+//            Button {
+//                selectedOption = .library
+//            } label: {
+//                HStack(spacing: 0) {
+//                    Image(systemName: "chevron.left")
+//                        .foregroundStyle(.black)
+//                    Text("Library")
+//                        .foregroundStyle(.black)
+//                }.padding(.leading, 5)
+//            }
             HStack {
                 Text("Welcome back, \(userVM.user.name)")
                     .font(.title2)
@@ -153,7 +155,7 @@ struct ShelfView: View {
                     }
                     
                 } label: {
-                    Image(systemName: "plus.circle")
+                    Image(systemName: "plus")
                         .font(.system(size: 30))
                         .foregroundColor(.gray)
                 }
@@ -161,6 +163,57 @@ struct ShelfView: View {
                 .padding(.trailing, 30)
             }
         }
+    }
+    
+    private var buttonNavigationView: some View {
+        HStack(spacing: 26) { // Reduced spacing
+            Spacer()
+            
+            Button(action: {
+                print("Journal clicked")
+            }) {
+                Text("Journal")
+                    .font(.system(size: 14, weight: .semibold)) // Smaller font
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.blue.opacity(0.7))
+                    .cornerRadius(12) // Smaller corner radius
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Button(action: {
+                print("AR Scrapbook clicked")
+            }) {
+                Text("AR Scrapbook")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.gray.opacity(1))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Button(action: {
+                selectedOption = .library
+                print("Library clicked")
+            }) {
+                Text("Library")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.gray.opacity(1))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Spacer()
+        }
+        .padding(.vertical, 1)
+        .frame(maxWidth: .infinity)
+        .zIndex(1)
     }
     
     private var scrollView: some View {
