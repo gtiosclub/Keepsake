@@ -42,29 +42,38 @@ struct CreateScrapbookView: View {
     @State var images: [UIImage] = []
     
     // for editing text and text font options
-        @State private var textInput: String = "[Enter text]"
-        @State var isEditing: Bool = false
-        @State private var selectedFont: String = "Helvetica"
-        @State private var fontSize: CGFloat = 200
-        @State private var backgroundColor: Color = .white
-        @State private var textColor: Color = .black
-        @State private var textAlignment: NSTextAlignment = .center
-        let fontSizes: [CGFloat] = Array(stride(from: 100, to: 300, by: 10))
-        @State private var isBold: Bool = false
-        @State private var isItalic: Bool = false
-        @State private var isUnderlined: Bool = false
-        @State private var showTextColorPicker: Bool = false
-        @State private var showBackgroundColorPicker: Bool = false
-        let fontOptions = [
-            "Helvetica",
-            "Times New Roman",
-            "Courier",
-            "Comic Sans",
-            "Arial",
-            "Impact",
-            "Lato",
-            "Oswald",
-        ]
+    @State private var textInput: String = "[Enter text]"
+    @State var isEditing: Bool = false
+    @State private var selectedFont: String = "Helvetica"
+    @State private var fontSize: CGFloat = 200
+    @State private var backgroundColor: Color = .white
+    @State private var textColor: Color = .black
+    @State private var textAlignment: NSTextAlignment = .center
+    let fontSizes: [CGFloat] = Array(stride(from: 100, to: 300, by: 10))
+    @State private var isBold: Bool = false
+    @State private var isItalic: Bool = false
+    @State private var isUnderlined: Bool = false
+    @State private var showTextColorPicker: Bool = false
+    @State private var showBackgroundColorPicker: Bool = false
+    
+    let fontOptions = [
+        "Helvetica",
+        "Times New Roman",
+        "Courier",
+        "Comic Sans",
+        "Arial",
+        "Impact",
+        "Lato",
+        "Oswald",
+    ]
+    
+    @State private var isExpanded = false
+    @State private var animationInProgress = false
+    
+    // Colors and sizing constants
+    let toolbarColor = Color(red: 0.15, green: 0.15, blue: 0.15)
+    let buttonSize: CGFloat = 50
+    let spacing: CGFloat = 12
 
     var body: some View {
         ZStack {
@@ -145,7 +154,7 @@ struct CreateScrapbookView: View {
                         }
                     }
                 }
-            }
+            }.ignoresSafeArea()
             // Tap gesture that changes the selectedEntity to the entity you click on
             .gesture(SpatialTapGesture(coordinateSpace: .local).targetedToAnyEntity()
                 .onEnded{ value in
@@ -209,64 +218,8 @@ struct CreateScrapbookView: View {
                     TextEditView
                     Spacer()
                 }
-                
-                HStack {
-                    PhotosPicker (selection: $selectedItem, matching: .images){
-                        Image(systemName: "photo")
-                            .font(.title)
-                            .padding()
-                            .background(Color.white)
-                            .clipShape(Circle())
-                    }.onChange(of: selectedItem) { _, _ in
-                        // this is what makes the ImageEntity created in the update closure of RealityView
-                        isImageClicked = true
-                    }
-                    Spacer()
-                    Button {
-                        // this is what makes the TextBoxEntity created in the update closure of RealityView
-                        isTextClicked = true
-                        
-                        // essentially toggles isTextClicked very fast, theres probably a more elegent way to do this
-                        Task {
-                            try await Task.sleep(nanoseconds: 10_000)
-                            isTextClicked = false
-                        }
-                    } label: {
-                        Image(systemName: "note.text.badge.plus")
-                            .font(.title)
-                            .padding()
-                            .background(Color.white)
-                            .clipShape(Circle())
-                    }
-                    Spacer()
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10.0)
-                            .frame(width: 80, height: 40)
-                        Button {
-                            isEditing = true
-                            print("pressed")
-                        } label : {
-                            Text("Edit \(selectedEntity?.name ?? "")")
-                                .foregroundStyle(.black)
-                        }.disabled(selectedEntity == nil)
-                    }
-                    Spacer()
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10.0)
-                            .frame(width: 80, height: 40)
-                        Button {
-                            //                        vm.saveScrapbook(scrapbook: scrapbook)
-                        } label: {
-                            Text("Save")
-                                .foregroundStyle(.black)
-                        }
-                    }
-                }
-                .padding()
-                .frame(width: 350, height: 100)
-                .background(Color.white.opacity(0.5)) // Semi-transparent background
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .padding(.bottom, 20) // Lifted up slightly
+                ToolBarView
+                    .padding()
             }
         }
         .onDisappear {
@@ -311,7 +264,131 @@ struct CreateScrapbookView: View {
             }
         }
     
-    var TextEditView: some View {
+    private var ToolBarView: some View {
+        HStack {
+            Spacer()
+            
+            HStack(spacing: spacing) {
+                // Only show these buttons when expanded
+                if isExpanded {
+                    PhotosPicker (selection: $selectedItem, matching: .images){
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: buttonSize, height: buttonSize)
+                            
+                            Image(systemName: "photo")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.black)
+                        }
+                    }.onChange(of: selectedItem) { _, _ in
+                        isImageClicked = true
+                    }
+        
+                    Button {
+                        isTextClicked = true
+                        Task {
+                            try await Task.sleep(nanoseconds: 10_000)
+                            isTextClicked = false
+                        }
+                    } label: {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: buttonSize, height: buttonSize)
+                            
+                            Image(systemName: "textformat")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.black)
+                        }
+                        
+                    }
+                    
+                    Button {
+                        isEditing = true
+                        print("edit button pressed")
+                    } label : {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: buttonSize, height: buttonSize)
+                            
+                            Image(systemName: "pencil")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.black)
+                        }
+                    }.disabled(selectedEntity == nil)
+                    
+                    Button {
+
+                    } label : {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: buttonSize, height: buttonSize)
+                            
+                            Image(systemName: "trash")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.black)
+                        }
+                    }.disabled(selectedEntity == nil)
+                    
+                    Button {
+
+                    } label : {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: buttonSize, height: buttonSize)
+                            
+                            Image(systemName: "person.badge.plus")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.black)
+                        }
+                    }
+                }
+                    toggleButton
+            }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, isExpanded ? 10 : 0)
+                    .frame(width: isExpanded ? nil : buttonSize, height: isExpanded ? buttonSize + 16 : buttonSize)
+                    .background(
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(.ultraThinMaterial)
+                    )
+                    .animation(.spring(response: 0.35, dampingFraction: 0.7), value: isExpanded)
+        }
+    }
+    
+    private var toggleButton: some View {
+        Button(action: {
+            if !animationInProgress {
+                withAnimation {
+                    animationInProgress = true
+                    isExpanded.toggle()
+                }
+                
+                // Reset animation flag after animation completes
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    animationInProgress = false
+                }
+            }
+        }) {
+            ZStack {
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: buttonSize, height: buttonSize)
+                
+                Image(systemName: isExpanded ? "xmark" : "plus")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.black)
+                    .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                    .animation(.spring(response: 0.4), value: isExpanded)
+            }
+        }
+    }
+    
+    private var TextEditView: some View {
         VStack (spacing: 12) {
             // Place to input new/updated text
                 TextField("Edit Text", text: $textInput)
@@ -400,7 +477,6 @@ struct CreateScrapbookView: View {
               // Text Color & Background Buttons
               HStack {
                   Button {
-//                      showTextColorPicker.toggle()
                       UIColorWellHelper.helper.execute?()
                   } label: {
                       Text("text color")
