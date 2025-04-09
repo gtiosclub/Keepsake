@@ -54,11 +54,17 @@ struct SplashView: View {
                     .background(Color.white)
                 }
             }
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            .onChange(of: viewModel.initializedUser) { newValue in
+                if newValue {
                     withAnimation {
                         isActive = true
                     }
+                }
+            }
+            .onAppear {
+                // If initializedUser is already true (from previous runs)
+                if viewModel.initializedUser {
+                    isActive = true
                 }
             }
         }
