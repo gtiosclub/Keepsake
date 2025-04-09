@@ -8,6 +8,7 @@
 import SwiftUI
 import RealityKit
 import PhotosUI
+import UIKit
 
 struct CreateScrapbookView: View {
     @ObservedObject var fbVM: FirebaseViewModel
@@ -40,9 +41,30 @@ struct CreateScrapbookView: View {
     @State var currImage: UIImage?
     @State var images: [UIImage] = []
     
-    // for editing text
-    @State private var textInput: String = "[Enter text]"
-    @State var isEditing: Bool = false
+    // for editing text and text font options
+        @State private var textInput: String = "[Enter text]"
+        @State var isEditing: Bool = false
+        @State private var selectedFont: String = "Helvetica"
+        @State private var fontSize: CGFloat = 200
+        @State private var backgroundColor: Color = .white
+        @State private var textColor: Color = .black
+        @State private var textAlignment: NSTextAlignment = .center
+        let fontSizes: [CGFloat] = Array(stride(from: 100, to: 300, by: 10))
+        @State private var isBold: Bool = false
+        @State private var isItalic: Bool = false
+        @State private var isUnderlined: Bool = false
+        @State private var showTextColorPicker: Bool = false
+        @State private var showBackgroundColorPicker: Bool = false
+        let fontOptions = [
+            "Helvetica",
+            "Times New Roman",
+            "Courier",
+            "Comic Sans",
+            "Arial",
+            "Impact",
+            "Lato",
+            "Oswald",
+        ]
 
     var body: some View {
         ZStack {
@@ -184,32 +206,8 @@ struct CreateScrapbookView: View {
             VStack {
                 Spacer()
                 if isEditing {
-                    VStack {
-                        TextField("Edit Text", text: $textInput)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding()
-                            .background(Color.white.opacity(0.8))
-                            .cornerRadius(10)
-                            .onSubmit {
-                                updateTextBox()
-                                isEditing = false
-                                textInput = "[Enter text]"
-                            }
-                        
-                        Button("Done") {
-                            updateTextBox()
-                            isEditing = false
-                            textInput = "[Enter text]"
-                        }
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                    }
-                    .frame(maxWidth: 250)
-                    .background(Color.black.opacity(0.6))
-                    .cornerRadius(15)
-                    .padding()
+                    TextEditView
+                    Spacer()
                 }
                 
                 HStack {
@@ -307,8 +305,167 @@ struct CreateScrapbookView: View {
     
     
     private func updateTextBox() {
-        if let editingTextEntity = selectedEntity as? TextBoxEntity {
-            editingTextEntity.updateText(textInput)
+            if let editingTextEntity = selectedEntity as? TextBoxEntity {
+                //editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, bgColor: backgroundColor, textColor: textColor)
+                editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, isBold: isBold, isItalic: isItalic, isUnderlined: isUnderlined, textColor: textColor, backgroundColor: backgroundColor)
+            }
         }
+    
+    var TextEditView: some View {
+        VStack (spacing: 12) {
+            // Place to input new/updated text
+                TextField("Edit Text", text: $textInput)
+                  .padding()
+                  .background(Color.pink.opacity(0.2))
+                  .cornerRadius(10)
+                  .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.5)))
+                  .padding(.horizontal, 30)
+
+              HStack {
+                  // Menu for updating font family
+                  Menu {
+                      ForEach(fontOptions, id: \.self) { font in
+                          Button(font) {
+                              selectedFont = font
+                          }
+                      }
+                  } label: {
+                      HStack {
+                          Text(selectedFont)
+                              .foregroundStyle(.black)
+                              .frame(width: 150, height: 30)
+                              .background(Color.white.opacity(0.4))
+                              .cornerRadius(12)
+                      }
+                  }
+                  Spacer()
+
+                  // Menu for updating font size
+                  Menu {
+                      ForEach(fontSizes, id: \.self) { size in
+                          Button("\(Int(size))") {
+                              fontSize = size
+                          }
+                      }
+                  } label: {
+                      Text("\(Int(fontSize))")
+                          .foregroundStyle(.black)
+                          .frame(width: 120, height: 30)
+                          .background(Color.white.opacity(0.4))
+                          .cornerRadius(12)
+                  }
+              }.padding(.horizontal, 30)
+              
+              // Font Styling Buttons
+            HStack {
+                HStack(spacing: 20) {
+                    Toggle(isOn: $isBold) {
+                        Text("B").bold()
+                            .foregroundStyle(.black)
+                    }
+                    .toggleStyle(.button)
+                    
+                    Toggle(isOn: $isItalic) {
+                        Text("I").italic()
+                            .font(Font.custom("Times New Roman", size: 18))
+                            .foregroundStyle(.black)
+                        
+                    }
+                    .toggleStyle(.button)
+                    
+                    Toggle(isOn: $isUnderlined) {
+                        Text("U").underline()
+                            .foregroundStyle(.black)
+                    }
+                    .toggleStyle(.button)
+                }
+                Spacer()
+                
+                // Text Alignment
+                HStack(spacing: 20) {
+                    Button(action: { textAlignment = .left }) {
+                        Image(systemName: "text.alignleft")
+                    }
+                    Button(action: { textAlignment = .center }) {
+                        Image(systemName: "text.aligncenter")
+                    }
+                    Button(action: { textAlignment = .right }) {
+                        Image(systemName: "text.alignright")
+                    }
+                }
+                .font(.system(size: 18))
+                .foregroundColor(.primary)
+            }.padding(.horizontal, 30)
+              
+              // Text Color & Background Buttons
+              HStack {
+                  Button {
+//                      showTextColorPicker.toggle()
+                      UIColorWellHelper.helper.execute?()
+                  } label: {
+                      Text("text color")
+                          .frame(width: 150, height: 30)
+                          .background(Color.black.opacity(0.6))
+                          .foregroundColor(.white)
+                          .cornerRadius(12)
+                          .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.8)))
+                  }
+                  .background(
+                    ColorPicker("", selection: $textColor, supportsOpacity: false)
+                          .labelsHidden().opacity(0)
+                  )
+                  Spacer()
+                  Button {
+                      UIColorWellHelper.helper.execute?()
+                  } label: {
+                      Text("background")
+                          .frame(width: 120, height: 30)
+                          .background(Color.pink.opacity(0.2))
+                          .foregroundColor(.white)
+                          .cornerRadius(12)
+                          .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.8)))
+                  }
+                  .background(
+                    ColorPicker("", selection: $backgroundColor, supportsOpacity: true)
+                          .labelsHidden().opacity(0)
+                  )
+              }.padding(.horizontal, 30)
+            
+            Button {
+                updateTextBox()
+                isEditing = false
+                textInput = "[Enter text]"
+            } label: {
+                Text("Done")
+                    .frame(width: 290, height: 30)
+                    .background(Color.white.opacity(0.6))
+                    .foregroundColor(.black)
+                    .cornerRadius(12)
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.8)))
+            }
+        }
+        .frame(width: 350, height: 260)
+        .background(.ultraThinMaterial)
+        .cornerRadius(15)
+        .padding()
+    }
+}
+
+// This is to make the color picker appear more seamlessly when you change text or background color in a textbox
+extension UIColorWell {
+    override open func didMoveToSuperview() {
+        if let uiButton = self.subviews.first?.subviews.last as? UIButton {
+            UIColorWellHelper.helper.execute = {
+                uiButton.sendActions(for: .touchUpInside)
+            }
+        }
+    }
+}
+
+class UIColorWellHelper: NSObject {
+    static let helper = UIColorWellHelper()
+    var execute: (() -> ())?
+    @objc func handler(_ sender: Any) {
+        execute?()
     }
 }
