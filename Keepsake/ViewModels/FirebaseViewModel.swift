@@ -31,6 +31,8 @@ class FirebaseViewModel: ObservableObject {
         self.onSetupCompleted?(self)
     }
     
+    @Published var initializedUser: Bool = false
+    
     private struct QueryRequest: Codable {
       var query: String
       var limit: Int?
@@ -51,21 +53,16 @@ class FirebaseViewModel: ObservableObject {
     
     private lazy var vectorSearchQueryCallable: Callable<QueryRequest, QueryResponse> = functions.httpsCallable("ext-firestore-vector-search-queryCallable")
     
-//    init() {
-//        auth.signIn(withEmail: "royankit11@gmail.com", password: "test123") { [weak self] authResult, error in
-//            guard let self = self else { return }
-//            
-//            if let error = error {
-//                return
-//            }
-//        }
-//    }
-    
     init() {
         self.userSession = auth.currentUser
         
         Task {
             await fetchUser()
+            await MainActor.run {
+                self.initializedUser = true
+                self.objectWillChange.send()
+            }
+            
         }
     }
     func storeProfilePic(image: UIImage) {
@@ -146,6 +143,7 @@ class FirebaseViewModel: ObservableObject {
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
             await self.addJournalShelf(journalShelf: initialShelf, userID: user.id)
+            await self.addScrapbookShelf(scrapbookShelf: initialScrapbookShelf, userID: user.id)
             await fetchUser()
             
         } catch {
@@ -225,6 +223,7 @@ class FirebaseViewModel: ObservableObject {
                 
                 var scrapbookShelves: [ScrapbookShelf] = []
                 for scrapbookShelfId in scrapbookShelfIds {
+                    print(scrapbookShelfId)
                     let shelf = await getScrapbookShelfFromID(id: scrapbookShelfId)!
                     scrapbookShelves.append(shelf)
 
@@ -754,6 +753,14 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func convertImageToURL(image: UIImage) async -> String {
+        await withCheckedContinuation { continuation in
+            storeImage(image: image) { urlString in
+                continuation.resume(returning: urlString ?? "")
+            }
+        }
+    }
+    
     func getImageFromURL(urlString: String) async -> UIImage? {
         guard let url = URL(string: urlString) else {
             print("Invalid URL string: \(urlString)")
@@ -905,6 +912,23 @@ class FirebaseViewModel: ObservableObject {
     }
     
     // SCRAPBOOKS
+    
+    func addScrapbookShelf(scrapbookShelf: ScrapbookShelf, userID: String) async -> Bool {
+        let scrapbookShelfReference = db.collection("SCRAPBOOK_SHELVES").document(scrapbookShelf.id.uuidString)
+        do {
+            // Chains together each Model's "toDictionary()" method for simplicity in code and scalability in editing each Model
+            let scrapbookShelfData = scrapbookShelf.toDictionary()
+            try await scrapbookShelfReference.setData(scrapbookShelfData)
+            
+            try await db.collection("USERS").document(userID).updateData([
+                "scrapbookShelves": FieldValue.arrayUnion([scrapbookShelf.id.uuidString])
+            ])
+            return true
+        } catch {
+            print("Error adding Journal Shelf: \(error.localizedDescription)")
+            return false
+        }
+    }
     
     func getScrapbookShelfFromID(id: String) async -> ScrapbookShelf? {
         let journalShelfReference = db.collection("SCRAPBOOK_SHELVES").document(id)

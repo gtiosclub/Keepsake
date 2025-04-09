@@ -83,14 +83,15 @@ struct CreateScrapbookView: View {
                     
                     // Create the rotation using the clamped value:
                     
-                    let userRotationAngle = entry.rotation * (.pi / 180) // degrees to radians
-                    let userRotation = simd_quatf(angle: userRotationAngle, axis: SIMD3<Float>(0, 1, 0))
+//                    let userRotationAngle = entry.rotation * (.pi / 180) // degrees to radians
+//                    let userRotation = simd_quatf(angle: userRotationAngle, axis: SIMD3<Float>(0, 1, 0))
                     
                     //                    let horizontalRotation = simd_quatf(angle: -clampedDX, axis: SIMD3<Float>(0, 1, 0))
                     //                    let verticalRotation = simd_quatf(angle: -clampedDY, axis: SIMD3<Float>(1, 0, 0))
                     
                     // Combine rotations (order matters)
-                    entity.transform.rotation = userRotation
+                    let rotation = simd_quatf(ix: entry.rotation[0], iy: entry.rotation[1], iz: entry.rotation[2], r: entry.rotation[3])
+                    entity.transform.rotation = rotation
                     
                     self.anchor?.addChild(entity)
                 }
@@ -272,17 +273,19 @@ struct CreateScrapbookView: View {
             }
         }
         .onDisappear {
-            print(scrapbook.id)
             Task {
                 userVM.clearScrapbookPage(scrapbook: scrapbook, pageNum: 0)
                 if let anchor = anchor {  // Replace `self.anchor` with your actual anchor
                     for entity in anchor.children {
                         if let textEntity = entity as? TextBoxEntity {
-                            var entry = ScrapbookEntry(id: UUID(), type: "text", position: [textEntity.position.x, textEntity.position.y, textEntity.position.z], scale: simd_length(textEntity.scale), rotation: 2 * acos(textEntity.transform.rotation.imag.x), text: textEntity.getText(), imageURL: "nil")
+                            let entry = ScrapbookEntry(id: UUID(), type: "text", position: [textEntity.position.x, textEntity.position.y, textEntity.position.z], scale: textEntity.scale.x, rotation: [textEntity.transform.rotation.vector.x, textEntity.transform.rotation.vector.y, textEntity.transform.rotation.vector.z, textEntity.transform.rotation.vector.w], text: textEntity.getText(), imageURL: "nil")
                             
                             userVM.updateScrapbookEntry(scrapbook: scrapbook, pageNum: 0, newEntry: entry)
                         } else if let imageEntity = entity as? ImageEntity {
-                            var entry = ScrapbookEntry(id: UUID(), type: "image", position: [imageEntity.position.x, imageEntity.position.y, imageEntity.position.z], scale: simd_length(imageEntity.scale), rotation: 2 * acos(imageEntity.transform.rotation.imag.x), text: "", imageURL: "nil")
+                            let url = await fbVM.convertImageToURL(image: imageEntity.image)
+                        
+                            
+                            let entry = ScrapbookEntry(id: UUID(), type: "image", position: [imageEntity.position.x, imageEntity.position.y, imageEntity.position.z], scale: imageEntity.scale.x, rotation: [imageEntity.transform.rotation.vector.x, imageEntity.transform.rotation.vector.y, imageEntity.transform.rotation.vector.z, imageEntity.transform.rotation.vector.w], text: "", imageURL: url)
                             
                             userVM.updateScrapbookEntry(scrapbook: scrapbook, pageNum: 0, newEntry: entry)
                         }
