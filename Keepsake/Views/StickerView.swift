@@ -8,13 +8,27 @@
 import SwiftUI
 
 struct StickerView: View {
-    let url: String
+    @ObservedObject var sticker: Sticker
+    @GestureState private var dragOffset = CGSize.zero
     
     var body: some View {
-        if let url = URL(string: url) {
+        if let url = URL(string: sticker.url) {
             AsyncImage(url: url) { image in
                 image.resizable()
                     .scaledToFit()
+                    .frame(width: 100, height: 100)
+                    .position(sticker.position)
+                    .offset(dragOffset)
+                    .gesture(
+                        DragGesture()
+                            .updating($dragOffset) { value, state, _ in
+                                state = value.translation
+                            }
+                            .onEnded { value in
+                                sticker.position.x += value.translation.width
+                                sticker.position.y += value.translation.height
+                            }
+                    )
             } placeholder: {
                 ProgressView()
             }
@@ -24,5 +38,5 @@ struct StickerView: View {
 
 
 #Preview {
-    StickerView(url: "")
+    StickerView(sticker: Sticker(url: ""))
 }

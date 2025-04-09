@@ -29,66 +29,72 @@ struct WidgetView: View {
     var body: some View {
         let gridItems = [GridItem(.fixed(width), spacing: 10, alignment: .leading),
                          GridItem(.fixed(width), spacing: UIScreen.main.bounds.width * 0.02, alignment: .leading),]
-
-        LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
-            ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
-                ZStack(alignment: .topLeading) {
-                    createView(for: widget, width: width, height: height, padding: 0.02, isDisplay: isDisplay, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: index, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling, fontSize: 17)
-                        .onTapGesture {
-                            if showDeleteButton != -1 {
-                                showDeleteButton = -1
-                                isWiggling = false
-                            } else {
-                                selectedEntry = index
-                                inEntry = widget.type
-                            }
-                        }
-                        .onLongPressGesture {
-                            if isWiggling == true {
-                                isWiggling = false
-                                showDeleteButton = -1
-                            } else {
-                                withAnimation {
-                                    showDeleteButton = index
-                                    isWiggling = true
+        
+        ZStack {
+            LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
+                ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
+                    ZStack(alignment: .topLeading) {
+                        createView(for: widget, width: width, height: height, padding: 0.02, isDisplay: isDisplay, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: index, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling, fontSize: 17)
+                            .onTapGesture {
+                                if showDeleteButton != -1 {
+                                    showDeleteButton = -1
+                                    isWiggling = false
+                                } else {
+                                    selectedEntry = index
+                                    inEntry = widget.type
                                 }
                             }
-                        }
+                            .onLongPressGesture {
+                                if isWiggling == true {
+                                    isWiggling = false
+                                    showDeleteButton = -1
+                                } else {
+                                    withAnimation {
+                                        showDeleteButton = index
+                                        isWiggling = true
+                                    }
+                                }
+                            }
 
-                    // Always keep the button in the view, but control visibility with opacity
-                    Button {
-                        let entryID = page.entries[index].id
-                        userVM.removeJournalEntry(page: page, index: index)
-                        Task {
-                            await fbVM.removeJournalEntry(entryID: entryID)
-                            await fbVM.updateJournalPage(entries: page.entries, journalID: journal.id, pageNumber: pageNum)
+                        // Always keep the button in the view, but control visibility with opacity
+                        Button {
+                            let entryID = page.entries[index].id
+                            userVM.removeJournalEntry(page: page, index: index)
+                            Task {
+                                await fbVM.removeJournalEntry(entryID: entryID)
+                                await fbVM.updateJournalPage(entries: page.entries, journalID: journal.id, pageNumber: pageNum)
+                            }
+                            withAnimation {
+                                showDeleteButton = -1
+                                isWiggling = false
+                            }
+                        } label: {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.gray)
+                                    .frame(width: 25, height: 25)
+                                Image(systemName: "minus")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 14, weight: .bold))
+                            }
                         }
-                        withAnimation {
-                            showDeleteButton = -1
-                            isWiggling = false
-                        }
-                    } label: {
-                        ZStack {
-                            Circle()
-                                .fill(Color.gray)
-                                .frame(width: 25, height: 25)
-                            Image(systemName: "minus")
-                                .foregroundColor(.white)
-                                .font(.system(size: 14, weight: .bold))
-                        }
+                        .opacity(showDeleteButton == index ? 1 : 0) // Instead of removing the button, fade it in/out
+                        .animation(.easeInOut(duration: 0.2), value: showDeleteButton) // Smooth fade effect
+                        .offset(x: -10, y: -10)
+
                     }
-                    .opacity(showDeleteButton == index ? 1 : 0) // Instead of removing the button, fade it in/out
-                    .animation(.easeInOut(duration: 0.2), value: showDeleteButton) // Smooth fade effect
-                    .offset(x: -10, y: -10)
-
+                    .rotationEffect(.degrees(isWiggling && showDeleteButton == index ? 2 : 0)) // Wiggle effect
+                    .animation(isWiggling && showDeleteButton == index ?
+                               Animation.easeInOut(duration: 0.1).repeatForever(autoreverses: true)
+                               : .default, value: isWiggling)
                 }
-                .rotationEffect(.degrees(isWiggling && showDeleteButton == index ? 2 : 0)) // Wiggle effect
-                .animation(isWiggling && showDeleteButton == index ?
-                           Animation.easeInOut(duration: 0.1).repeatForever(autoreverses: true)
-                           : .default, value: isWiggling)
+            }
+            .frame(width: 470)
+            
+            ForEach(page.placedStickers) { sticker in
+                StickerView(sticker: sticker)
             }
         }
-        .frame(width: 470)
     }
 }
 

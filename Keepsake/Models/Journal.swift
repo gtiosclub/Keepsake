@@ -24,9 +24,10 @@ class Journal: Book, ObservableObject, Identifiable {
     @Published var pages: [JournalPage]
     var currentPage: Int
     @Published var favoritePages: [Int]
+    @Published var stickers: [Sticker]
     
     //Full Constructor
-    init(name: String, id: UUID, createdDate: String, category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage], currentPage: Int, favoritePages: [Int] = []) {
+    init(name: String, id: UUID, createdDate: String, category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage], currentPage: Int, favoritePages: [Int] = [], stickers: [Sticker] = []) {
         self.name = name
         self.id = id
         self.createdDate = createdDate
@@ -37,6 +38,7 @@ class Journal: Book, ObservableObject, Identifiable {
         self.pages = pages
         self.currentPage = currentPage
         self.favoritePages = favoritePages
+        self.stickers = stickers
     }
     
     convenience init(name: String, id: UUID, createdDate: String, entries: [JournalEntry], category: String, isSaved: Bool, isShared: Bool, template: Template, pages: [JournalPage], currentPage: Int) {

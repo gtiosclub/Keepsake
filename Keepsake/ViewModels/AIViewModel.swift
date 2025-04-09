@@ -16,6 +16,7 @@ class AIViewModel: ObservableObject {
     @Published var uiImage: UIImage? = nil
     @Published var isLoading = false
     @Published var generatedPrompts: [String] = []
+    @Published var stickersFound: [String] = []
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
     
     let FirebaseVM: FirebaseViewModel = FirebaseViewModel.vm
@@ -328,10 +329,10 @@ class AIViewModel: ObservableObject {
         return nil
     }
     
-    func getStickers(entry: JournalEntry) async -> String? {
+    func getStickers(entry: JournalEntry) async {
         let inputText = entry.entryContents
         if inputText.isEmpty {
-            return nil
+            return
         }
 
         let prompt = "Give one word to describe this entry so I can find a sticker associated with it. Here is text: \(inputText)"
@@ -343,14 +344,15 @@ class AIViewModel: ObservableObject {
             )
             let description = response.trimmingCharacters(in: .whitespacesAndNewlines)
             if !description.isEmpty {
-                return await fetchStickerFromGiphy(query: description)
+                let url = await fetchStickerFromGiphy(query: description) ?? ""
+                await MainActor.run {
+                    stickersFound.append(url)
+                }
             }
             
         } catch {
             print("Error fetching description from OpenAI: \(error.localizedDescription)")
         }
-        
-        return nil
     }
 
     func fetchStickerFromGiphy(query: String) async -> String? {
