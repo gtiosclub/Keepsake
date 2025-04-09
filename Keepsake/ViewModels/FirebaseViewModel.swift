@@ -31,6 +31,8 @@ class FirebaseViewModel: ObservableObject {
         self.onSetupCompleted?(self)
     }
     
+    @Published var initializedUser: Bool = false
+    
     private struct QueryRequest: Codable {
       var query: String
       var limit: Int?
@@ -51,21 +53,16 @@ class FirebaseViewModel: ObservableObject {
     
     private lazy var vectorSearchQueryCallable: Callable<QueryRequest, QueryResponse> = functions.httpsCallable("ext-firestore-vector-search-queryCallable")
     
-//    init() {
-//        auth.signIn(withEmail: "royankit11@gmail.com", password: "test123") { [weak self] authResult, error in
-//            guard let self = self else { return }
-//            
-//            if let error = error {
-//                return
-//            }
-//        }
-//    }
-    
     init() {
         self.userSession = auth.currentUser
         
         Task {
             await fetchUser()
+            await MainActor.run {
+                self.initializedUser = true
+                self.objectWillChange.send()
+            }
+            
         }
     }
     func storeProfilePic(image: UIImage) {

@@ -34,6 +34,7 @@ struct ScrapbookShelfView: View {
     @State var deleteJournalID: String = ""
     @State var hideToolBar: Bool = false
     @State var dailyPrompt: String? = nil
+    @State var onlyShowCover: Bool = false
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 10) {
@@ -100,7 +101,7 @@ struct ScrapbookShelfView: View {
                                     NavigationLink {
                                         CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
                                     } label: {
-                                        JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name)
+                                        JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $onlyShowCover)
                                             .scaleEffect(scaleEffect)
                                             .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                                             .transition(.identity)
@@ -206,7 +207,7 @@ struct ScrapbookShelfView: View {
                 Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), WrittenEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
                 Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .snoopy), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .flower3), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
-            ])], scrapbookShelves: [])), shelf: ScrapbookShelf(name: "Scrapshelf", scrapbooks: [Scrapbook(name: "Scrapbook1", id: UUID(), createdDate: "5/6/2026", category: "", isSaved: true, isShared: false, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [ScrapbookPage(number: 1, entries: [ScrapbookEntry(id: UUID(), type: "text", position: [0, 0, -2], scale: 1.0, rotation: 0.0, text: "Hello", imageURL: nil)], entryCount: 2)], currentPage: 0)]), aiVM: AIViewModel(), fbVM: FirebaseViewModel(), shelfIndex: 0, selectedOption: $selectedOption)
+            ])], scrapbookShelves: [])), shelf: ScrapbookShelf(name: "Scrapshelf", scrapbooks: [Scrapbook(name: "Scrapbook1", id: UUID(), createdDate: "5/6/2026", category: "", isSaved: true, isShared: false, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [ScrapbookPage(number: 1, entries: [ScrapbookEntry(id: UUID(), type: "text", position: [0, 0, -2], scale: 1.0, rotation: [0.0, 0.0, 0.0, 0.0], text: "Hello", imageURL: nil)], entryCount: 2)], currentPage: 0)]), aiVM: AIViewModel(), fbVM: FirebaseViewModel(), shelfIndex: 0, selectedOption: $selectedOption)
         }
     }
 
