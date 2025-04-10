@@ -74,11 +74,15 @@ struct ShelfView: View {
                     .opacity
                         .animation(.easeIn(duration: 0.5)) // Fast appear
                 )
+                .padding(.bottom, 30)
+            buttonNavigationView
+                .transition(.opacity.animation(.easeIn(duration: 0.5)))
+                .padding(.bottom, 10)
             scrollView
                 .transition(
                     .opacity
                         .animation(.easeIn(duration: 0.01)) // Fast appear
-                )
+                ).padding(.top, UIScreen.main.bounds.height * -0.05)
         }
         .toolbar(hideToolBar ? .hidden : .visible, for: .tabBar)
         .onTapGesture(perform: {
@@ -118,16 +122,6 @@ struct ShelfView: View {
     
     private var topVStack: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Button {
-                selectedOption = .library
-            } label: {
-                HStack(spacing: 0) {
-                    Image(systemName: "chevron.left")
-                        .foregroundStyle(.black)
-                    Text("Library")
-                        .foregroundStyle(.black)
-                }.padding(.leading, 5)
-            }
             HStack {
                 Text("Welcome back, \(userVM.user.name)")
                     .font(.title2)
@@ -153,7 +147,7 @@ struct ShelfView: View {
                     }
                     
                 } label: {
-                    Image(systemName: "plus.circle")
+                    Image(systemName: "plus")
                         .font(.system(size: 30))
                         .foregroundColor(.gray)
                 }
@@ -161,6 +155,60 @@ struct ShelfView: View {
                 .padding(.trailing, 30)
             }
         }
+    }
+    
+    private var buttonNavigationView: some View {
+        HStack(spacing: 26) { // Reduced spacing
+            Spacer()
+            
+            Button(action: {
+            }) {
+                Text("Journal")
+                    .font(.system(size: 14, weight: .semibold)) // Smaller font
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.blue.opacity(0.7))
+                    .cornerRadius(12) // Smaller corner radius
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Button(action: {
+                userVM.setLastUsed(isJournal: false)
+                Task {
+                    await fbVM.updateUserLastUsedSShelf(user: userVM.user)
+                }
+                selectedOption = .scrapbook_shelf
+            }) {
+                Text("AR Scrapbook")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.gray.opacity(1))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Button(action: {
+                selectedOption = .library
+                print("Library clicked")
+            }) {
+                Text("Library")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.gray.opacity(1))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Spacer()
+        }
+        .padding(.vertical, 1)
+        .frame(maxWidth: .infinity)
+        .zIndex(1)
     }
     
     private var scrollView: some View {
@@ -265,7 +313,7 @@ struct ShelfView: View {
                                         .font(.footnote)
                                         .foregroundColor(.gray)
                                 }
-                            }
+                            }.padding(.top, 20)
                             .frame(width: 200)
                         }
                         .frame(width: 240, height: 700)

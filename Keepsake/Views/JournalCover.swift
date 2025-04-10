@@ -51,7 +51,7 @@ struct JournalCover: View {
                     .foregroundStyle(template.titleColor)
             }
             .rotation3DEffect(.degrees(0), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint.leading, anchorZ: 0, perspective: 0.2)
-        }
+        }.offset(y: UIScreen.main.bounds.height * 0.05)
         
     }
 }

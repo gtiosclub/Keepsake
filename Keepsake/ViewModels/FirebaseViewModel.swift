@@ -97,8 +97,8 @@ class FirebaseViewModel: ObservableObject {
                 "scrapbookShelves": ["\(initialScrapbookShelf.id)"],
                 "templates": [],
                 "friends": [],
-                "lastUsedJShelfId": "\(initialShelf.id)",
-                "lastUsedSShelfId": "\(initialScrapbookShelf.id)",
+                "lastUsedJShelfID": "\(initialShelf.id)",
+                "lastUsedSShelfID": "\(initialScrapbookShelf.id)",
                 "isJournalLastUsed": true
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
@@ -137,8 +137,8 @@ class FirebaseViewModel: ObservableObject {
                    let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
                    let templates = snapshot.get("templates") as? [String],
                    let friends = snapshot.get("friends") as? [String],
-                   let lastUsedJ = snapshot.get("lastUsedJShelfId") as? String,
-                   let lastUsedS = snapshot.get("lastUsedSShelfId") as? String,
+                   let lastUsedJ = snapshot.get("lastUsedJShelfID") as? String,
+                   let lastUsedS = snapshot.get("lastUsedSShelfID") as? String,
                    let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
                 {
                     var journalShelves: [JournalShelf] = []
@@ -521,7 +521,7 @@ class FirebaseViewModel: ObservableObject {
         let userRef = db.collection("USERS").document(user.id)
         do {
             try await userRef.updateData([
-                "lastUsedJShelfId": user.lastUsedJShelfID.uuidString,
+                "lastUsedJShelfID": user.lastUsedJShelfID.uuidString,
                 "isJournalLastUsed": user.isJournalLastUsed
             ])
         } catch {
@@ -533,7 +533,7 @@ class FirebaseViewModel: ObservableObject {
         let userRef = db.collection("USERS").document(user.id)
         do {
             try await userRef.updateData([
-                "lastUsedSShelfId": user.lastUsedJShelfID.uuidString,
+                "lastUsedSShelfID": user.lastUsedJShelfID.uuidString,
                 "isJournalLastUsed": user.isJournalLastUsed
             ])
         } catch {
