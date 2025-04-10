@@ -45,55 +45,55 @@ class AIViewModel: ObservableObject {
         self.generatedPrompts = prompts
     }
     
-    func getRelevantScrapbookEntries(scrapbook: Scrapbook, query: String, numHighlights: Int) async -> [ScrapbookEntry] {
-        let errorResponse: [ScrapbookEntry] = []
-        
-        // Get all captions in scrapbook
-        let captions: [String: String] = scrapbook.entries.reduce(into: [:]) { dict, entry in
-            dict[entry.id] = entry.caption
-        }
-        if captions.isEmpty {
-            // No captions in the scrapbook
-            return []
-        }
-        var numHighlights: Int = numHighlights
-        if numHighlights <= 0 {
-            numHighlights = 1
-        }
-        if numHighlights > captions.count {
-            numHighlights = captions.count
-        }
-        
-        // ChatGPT Prompt
-        let prompt: String = """
-            You will be given a dictionary mapping IDs to image captions. You will also be given a user query. Read the user query and find \(numHighlights) image captions that best match this query. Respond with a list of IDs corresponding to the relevant image captions. Respond with only these IDs separated by commas. Do not hallucinate non-existing IDs.
-            Here is the dictionary of IDs to image captions:
-            \(captions)
-            Here is the user query:
-            \(query)
-            """
-        
-        // Query ChatGPT
-        var response: String = ""
-        do {
-            response = try await openAIAPIKey.sendMessage(
-                text: prompt,
-                model: gptModel!)
-            
-            print(response)
-        } catch {
-            print("Send OpenAI Query Error: \(error.localizedDescription)")
-            return errorResponse
-        }
-        
-        // Parse IDs
-        let ids: [String] = response
-            .split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-        let relevantEntries: [ScrapbookEntry] = scrapbook.entries.filter { ids.contains($0.id) }
-        return relevantEntries
-
-    }
+//    func getRelevantScrapbookEntries(scrapbook: Scrapbook, query: String, numHighlights: Int) async -> [ScrapbookEntry] {
+//        let errorResponse: [ScrapbookEntry] = []
+//        
+//        // Get all captions in scrapbook
+//        let captions: [String: String] = scrapbook.entries.reduce(into: [:]) { dict, entry in
+//            dict[entry.id] = entry.caption
+//        }
+//        if captions.isEmpty {
+//            // No captions in the scrapbook
+//            return []
+//        }
+//        var numHighlights: Int = numHighlights
+//        if numHighlights <= 0 {
+//            numHighlights = 1
+//        }
+//        if numHighlights > captions.count {
+//            numHighlights = captions.count
+//        }
+//        
+//        // ChatGPT Prompt
+//        let prompt: String = """
+//            You will be given a dictionary mapping IDs to image captions. You will also be given a user query. Read the user query and find \(numHighlights) image captions that best match this query. Respond with a list of IDs corresponding to the relevant image captions. Respond with only these IDs separated by commas. Do not hallucinate non-existing IDs.
+//            Here is the dictionary of IDs to image captions:
+//            \(captions)
+//            Here is the user query:
+//            \(query)
+//            """
+//        
+//        // Query ChatGPT
+//        var response: String = ""
+//        do {
+//            response = try await openAIAPIKey.sendMessage(
+//                text: prompt,
+//                model: gptModel!)
+//            
+//            print(response)
+//        } catch {
+//            print("Send OpenAI Query Error: \(error.localizedDescription)")
+//            return errorResponse
+//        }
+//        
+//        // Parse IDs
+//        let ids: [String] = response
+//            .split(separator: ",")
+//            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+//        let relevantEntries: [ScrapbookEntry] = scrapbook.entries.filter { ids.contains($0.id) }
+//        return relevantEntries
+//
+//    }
     
     // FUTURE: Can change to accept URL instead of UIImage if needed, just change "url" field and do not convert to base64 string
     func generateCaptionForImage(image: UIImage) async -> String? {
@@ -175,7 +175,7 @@ class AIViewModel: ObservableObject {
         defer{ isLoading = false }
         
         do {
-            let examplePrompt = entry.title + "\n" + entry.text
+            let examplePrompt = entry.title + "\n" + entry.entryContents
             let response = try await openAIAPIKey.generateDallE3Image(prompt: examplePrompt)
             if let urlString = response.url {
                 self.uiImage = fetchUIImage(from: urlString)
@@ -194,6 +194,20 @@ class AIViewModel: ObservableObject {
        return UIImage(data: data)
     }
   
+    func getPromptOfTheDay() async -> String {
+        let errorResponse: String = "Error fetching prompt of the day."
+        let prompt = "A user of a journal app wants to write a new journal entry. Suggest a one-line 'prompt of the day' for the user to journal about. Respond with only the one-line prompt, no additional text or quotation marks."
+        do {
+            let response: String = try await openAIAPIKey.sendMessage(
+                text: prompt,
+                model: gptModel!)
+            let trimmedResponse: String = response.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmedResponse
+        } catch {
+            print("Error with prompt: \(error)")
+            return errorResponse
+        }
+    }
   
     func getSmartPrompts(journal: Journal, count: Int) async -> [String]? {
         // Get all entries in journal
@@ -296,11 +310,11 @@ class AIViewModel: ObservableObject {
     }
     
     func summarize(entry: JournalEntry) async -> String? {
-        let inputText = entry.text
+        let inputText = entry.entryContents
             if inputText.isEmpty {
                 return nil
             }
-        let prompt = "Summarize the entry in one to two lines. Don't mention the writer or the user and make it sound personable. Here is text: \(entry.text)"
+        let prompt = "Summarize the entry in one to two lines. Don't mention the writer or the user and make it sound personable. Here is text: \(entry.entryContents)"
         
         do {
             let response = try await openAIAPIKey.sendMessage(
@@ -315,7 +329,7 @@ class AIViewModel: ObservableObject {
     }
     
     func stickers(entry: JournalEntry) async -> String? {
-        let inputText = entry.text
+        let inputText = entry.entryContents
         if inputText.isEmpty {
             return nil
         }
@@ -468,11 +482,15 @@ class AIViewModel: ObservableObject {
     @Published var conversationHistory: [String] = []
     @Published var userInput: String = ""
     func startConversation(entry: JournalEntry) async {
-        var entryLog = entry.conversationLog
+        await MainActor.run {
+                self.conversationHistory = []
+            }
+        
+        
         let startPrompt = """
         You will be holding a back and forth conversation with a user in their conversation entry.
         
-        Start off the conversation by asking "What do you want to talk about today?" or maybe a question related to their title to kick things off. Try not to make it too long
+        Start off the conversation by asking "What do you want to talk about today?" Try not to make it too long
         
         """
         
@@ -480,7 +498,8 @@ class AIViewModel: ObservableObject {
         do {
             let firstResponse = try await openAIAPIKey.sendMessage(text: startPrompt, model: gptModel!)
             conversationHistory.append("GPT: \(firstResponse)")
-            entryLog.append("GPT: \(firstResponse)")
+            
+            await FirebaseVM.addConversationLog(text: conversationHistory, journalEntry: entry.id)
             
         } catch {
             print("Error: \(error.localizedDescription)")
@@ -489,13 +508,11 @@ class AIViewModel: ObservableObject {
     }
     
     func sendMessage(entry: JournalEntry) async {
-        var entryLog = entry.conversationLog
         guard (!userInput.isEmpty) else {
             return
         }
         let userMsg = "User: \(userInput)"
         conversationHistory.append(userMsg)
-        entryLog.append(userMsg)
         let conversation = conversationHistory.joined(separator: "\n")
         let chatPrompt = """
             
@@ -513,7 +530,8 @@ class AIViewModel: ObservableObject {
         do {
             let gptResponse = try await openAIAPIKey.sendMessage(text: chatPrompt, model: gptModel!)
             conversationHistory.append("GPT: \(gptResponse)")
-            entryLog.append("GPT: \(gptResponse)")
+            
+            await FirebaseVM.addConversationLog(text: conversationHistory, journalEntry: entry.id)
         } catch {
             print("Error: \(error.localizedDescription)")
         }

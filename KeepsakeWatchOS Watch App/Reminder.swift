@@ -7,14 +7,22 @@
 
 import Foundation
 import SwiftUI
+#if os(iOS)
+import FirebaseFirestore
+#endif
 //
 // Reminder Model
+
 struct Reminder: Identifiable, Codable {
-    let id = UUID()
-    var title: String
+    #if os(iOS)
+    @DocumentID var id: String?
+    #endif
+    #if os(watchOS)
+    var id: String
+    #endif
+    var prompt: String
     var date: Date
-    var body: String
-    var audioFileURL: String?
+//    var body: String
 }
 extension Color {
     init(hex: String) {
@@ -31,24 +39,22 @@ extension Color {
         self.init(red: red, green: green, blue: blue)
     }
 }
-struct RemindersListView: View {
-    @EnvironmentObject private var viewModel: RemindersViewModel
 
+struct RemindersListView: View {
+    @State private var navigateToRecording = false
+    @EnvironmentObject private var viewModel: RemindersViewModel
+    var audioRecording = AudioRecording()
     var body: some View {
         NavigationStack {
             VStack {
                 ForEach(viewModel.reminders) { reminder in
                     VStack(alignment: .leading) {
-                        Text(reminder.title)
-                            .font(.headline)
                         Text(reminder.date, style: .date)
                             .font(.subheadline)
-                        Text(reminder.body)
-                            .font(.body)
                     }
                     .padding(.vertical, 5)
                 }
-                
+                #if os(watchOS)
                 NavigationLink(
                     destination: AudioFilesView(),
                     label: {
@@ -63,12 +69,13 @@ struct RemindersListView: View {
                         .shadow(radius: 5)
                     }
                 )
-                .padding(.vertical)
                 
-                #if os(iOS)
+                .padding(.vertical)
+                #endif
+                
+                #if os(watchOS)
                 NavigationLink(
-                    destination: TextReminder()
-                        .environmentObject(viewModel),
+                    destination: VoiceRecordingView(onRecordingComplete: { _ in }),
                     label: {
                         Image(systemName: "plus.circle.fill")
                             .foregroundColor(Color(hex: "FFADF4"))
@@ -81,6 +88,15 @@ struct RemindersListView: View {
                 .buttonStyle(PlainButtonStyle())
                 #endif
             }
+#if os(watchOS)
+            .navigationDestination(isPresented: $navigateToRecording) {
+                VoiceRecordingView(onRecordingComplete: { _ in })
+                   }
+            
+                   .onReceive(NotificationCenter.default.publisher(for: .navigateToVoiceRecording)) { _ in
+                       navigateToRecording = true
+                   }
+            #endif
         }
     }
 }

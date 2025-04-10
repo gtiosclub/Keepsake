@@ -10,7 +10,10 @@ import RealityKit
 
 class ImageEntity: Entity {
     
+    var image: UIImage
+    
     init(image: UIImage) async {
+        self.image = image
         super.init()
         // determines scaling of image
         let width: Float = 0.6

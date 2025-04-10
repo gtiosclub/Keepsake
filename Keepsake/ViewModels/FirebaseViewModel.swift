@@ -24,12 +24,14 @@ class FirebaseViewModel: ObservableObject {
     @Published var searchedEntries: [JournalEntry] = []
     @Published var userSession: FirebaseAuth.User?
     @Published var currentUser: User?
-    
+    @Published var retrievedImage: UIImage?
     let auth = Auth.auth()
     static let vm = FirebaseViewModel()
     func configure() {
         self.onSetupCompleted?(self)
     }
+    
+    @Published var initializedUser: Bool = false
     
     private struct QueryRequest: Codable {
       var query: String
@@ -47,26 +49,66 @@ class FirebaseViewModel: ObservableObject {
     private struct QueryResponse: Codable {
       var ids: [String]
     }
-    
+     
     
     private lazy var vectorSearchQueryCallable: Callable<QueryRequest, QueryResponse> = functions.httpsCallable("ext-firestore-vector-search-queryCallable")
-    
-//    init() {
-//        auth.signIn(withEmail: "royankit11@gmail.com", password: "test123") { [weak self] authResult, error in
-//            guard let self = self else { return }
-//            
-//            if let error = error {
-//                return
-//            }
-//        }
-//    }
     
     init() {
         self.userSession = auth.currentUser
         
         Task {
             await fetchUser()
+            await MainActor.run {
+                self.initializedUser = true
+                self.objectWillChange.send()
+            }
+            
         }
+    }
+    func storeProfilePic(image: UIImage) {
+            guard let uid = currentUser?.id else { return }
+            let file = "\(uid).jpg"
+            let storageRef = Storage.storage().reference(withPath: "profile pic/\(file)")
+            
+            if let imageData = image.jpegData(compressionQuality: 0.8) {
+                let metadata = StorageMetadata()
+                metadata.contentType = "image/jpeg"
+                
+                storageRef.putData(imageData, metadata: metadata) { [weak self] metadata, error in
+                    if let error = error {
+                        print("Error uploading the image: \(error.localizedDescription)")
+                        return
+                    }
+                    print("Image uploaded successfully!")
+                    
+                }
+            }
+        }
+    
+    func getProfilePic() -> UIImage? {
+        let uid = currentUser?.id
+        
+        let storageRef = Storage.storage().reference().child("profile pic").child("\(uid!).jpg")
+                storageRef.getData(maxSize: 3 * 2048 * 2048) { data, error in
+                    if let error = error {
+                        print("Error fetching image data: \(error)")
+                        return
+                    }
+                    guard let data = data else {
+                                            print("No data returned")
+                                            return
+                                        }
+                    if let image = UIImage(data: data) {
+                        DispatchQueue.main.async {
+                            self.retrievedImage = image
+                            print("Image successfully retrieved and set")
+                        }
+                    } else {
+                        print("Error creating image from data")
+                    }
+                }
+        return retrievedImage
+        
     }
     
     func signIn(withEmail email: String, password: String) async throws {
@@ -79,25 +121,30 @@ class FirebaseViewModel: ObservableObject {
             await fetchUser()
     }
     
+
+    
     func createUser(withEmail email: String, password: String, fullname: String) async throws {
         do {
             let result = try await auth.createUser(withEmail: email, password: password)
             let initialShelf = JournalShelf(name: "Initial Shelf", id: UUID(), journals: [])
+            let initialScrapbookShelf = ScrapbookShelf(name: "Initial Shelf", id: UUID(), scrapbooks: [])
             self.userSession = result.user
-            let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedShelfID: initialShelf.id, isJournalLastUsed: true)
+            let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedJShelfID: initialShelf.id, lastUsedSShelfID: initialScrapbookShelf.id, isJournalLastUsed: true)
             let userData: [String: Any] = [
                 "uid": user.id,
                 "name": user.name,
                 "username": user.username,
                 "journalShelves": ["\(initialShelf.id)"],
-                "scrapbookShelves": [],
+                "scrapbookShelves": ["\(initialScrapbookShelf.id)"],
                 "templates": [],
                 "friends": [],
-                "lastUsedShelfId": "\(initialShelf.id)",
+                "lastUsedJShelfID": "\(initialShelf.id)",
+                "lastUsedSShelfID": "\(initialScrapbookShelf.id)",
                 "isJournalLastUsed": true
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
             await self.addJournalShelf(journalShelf: initialShelf, userID: user.id)
+            await self.addScrapbookShelf(scrapbookShelf: initialScrapbookShelf, userID: user.id)
             await fetchUser()
             
         } catch {
@@ -118,11 +165,62 @@ class FirebaseViewModel: ObservableObject {
         
     }
     
+    func fetchOtherUser(newUserID: String) async -> User? {
+        
+        do {
+            guard let snapshot = try? await Firestore.firestore().collection("USERS").document(newUserID).getDocument() else { return nil}
+            if snapshot.exists {
+                // Manually extract data from the snapshot
+                if let uid = snapshot.get("uid") as? String,
+                   let name = snapshot.get("name") as? String,
+                   let username = snapshot.get("username") as? String,
+                   let journalShelfIds = snapshot.get("journalShelves") as? [String],
+                   let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
+                   let templates = snapshot.get("templates") as? [String],
+                   let friends = snapshot.get("friends") as? [String],
+                   let lastUsedJ = snapshot.get("lastUsedJShelfID") as? String,
+                   let lastUsedS = snapshot.get("lastUsedSShelfID") as? String,
+                   let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
+                {
+                    var journalShelves: [JournalShelf] = []
+                    for astr in journalShelfIds {
+                        let shelf = await getJournalShelfFromID(id: astr)!
+                        journalShelves.append(shelf)
+                    }
+                    let lastUsedJID: UUID
+                    if let temp = UUID(uuidString: lastUsedJ) {
+                        lastUsedJID = temp
+                    } else {
+                        print("Error getting last used journal ID")
+                        lastUsedJID = UUID()
+                    }
+                    
+                    let lastUsedSID: UUID
+                    if let temp = UUID(uuidString: lastUsedS) {
+                        lastUsedSID = temp
+                    } else {
+                        print("Error getting last used scrapbook shelf ID")
+                        lastUsedSID = UUID()
+                    }
+                    let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed)
+                    
+                    return user
+                    
+                }
+            }
+        }
+        
+        return nil
+        
+    }
+    
     func fetchUser() async {
         guard let uid = auth.currentUser?.uid else {return}
-        
+        print("Fetch User Started")
         guard let snapshot = try? await Firestore.firestore().collection("USERS").document(uid).getDocument() else { return }
+        print("Hello darkness")
         if snapshot.exists {
+            print("It exits")
             // Manually extract data from the snapshot
             if let uid = snapshot.get("uid") as? String,
                let name = snapshot.get("name") as? String,
@@ -131,26 +229,59 @@ class FirebaseViewModel: ObservableObject {
                let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
                let templates = snapshot.get("templates") as? [String],
                let friends = snapshot.get("friends") as? [String],
-               let lastUsed = snapshot.get("lastUsedShelfId") as? String,
+               let lastUsedJ = snapshot.get("lastUsedJShelfID") as? String,
+               let lastUsedS = snapshot.get("lastUsedSShelfID") as? String,
                let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
             {
+                var scrapbookShelves: [ScrapbookShelf] = []
+                for scrapbookShelfId in scrapbookShelfIds {
+                    print(scrapbookShelfId)
+                    let shelf = await getScrapbookShelfFromID(id: scrapbookShelfId)!
+                    scrapbookShelves.append(shelf)
+
+                }
                 var journalShelves: [JournalShelf] = []
-                for astr in journalShelfIds {
-                    let shelf = await getJournalShelfFromID(id: astr)!
+                for journalShelfID in journalShelfIds {
+                    let shelf = await getJournalShelfFromID(id: journalShelfID)!
                     journalShelves.append(shelf)
                 }
-                let lastUsedID: UUID
-                if let temp = UUID(uuidString: lastUsed) {
-                    lastUsedID = temp
+                let lastUsedJID: UUID
+                if let temp = UUID(uuidString: lastUsedJ) {
+                    lastUsedJID = temp
                 } else {
-                    print("Error getting last used ID")
-                    lastUsedID = UUID()
+                    print("Error getting last used journal ID")
+                    lastUsedJID = UUID()
                 }
-                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed)
+                print("Halloween")
+                let lastUsedSID: UUID
+                if let temp = UUID(uuidString: lastUsedS) {
+                    lastUsedSID = temp
+                } else {
+                    print("Error getting last used scrapbook shelf ID")
+                    lastUsedSID = UUID()
+                }
+                var imageDict: [String: UIImage] = [:]
+                for shelf in journalShelves {
+                    for journal in shelf.journals {
+                        for page in journal.pages {
+                            for entry in page.entries {
+                                if let entry = entry as? PictureEntry {
+                                    for url in entry.images {
+                                        if let image = await getImageFromURL(urlString: url) {
+                                            imageDict[url] = image
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                print("is journal: \(isJournalLastUsed)")
+                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed, images: imageDict)
                 
                 // Assign the user object to currentUser
                 await MainActor.run {
-                                self.currentUser = user
+                    self.currentUser = user
                 }
                 
             }
@@ -259,6 +390,7 @@ class FirebaseViewModel: ObservableObject {
                 let template = Template.fromDictionary(templateDict) ?? Template()
                 let pagesArray = dict["pages"] as? [String: [String]] ?? [:]
                 let currentPage = dict["currentPage"] as? Int ?? 0
+                let favoritePages = dict["favoritePages"] as? [Int] ?? []
                 
                 var journalPages: [JournalPage] = []
                 
@@ -287,7 +419,8 @@ class FirebaseViewModel: ObservableObject {
                     
                     journalPages.append(JournalPage(number: Int(num) ?? 0, entries: journalEntries, realEntryCount: entryCount))
                 }
-                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: journalPages, currentPage: currentPage)
+                let sortedPages = journalPages.sorted { $0.number < $1.number }
+                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: sortedPages, currentPage: currentPage, favoritePages: favoritePages)
                 
             } else {
                 print("No document found")
@@ -298,6 +431,29 @@ class FirebaseViewModel: ObservableObject {
             return nil
         }
     }
+    
+    func updateFavoritePages(journalID: UUID, newPages: [Int]) async {
+        let journal_reference = db.collection("JOURNALS").document(journalID.uuidString)
+        do {
+            try await journal_reference.updateData([
+                "favoritePages": newPages
+            ])
+        } catch {
+            print("Error updating pages: \(error.localizedDescription)")
+        }
+    }
+    
+    func updateCurrentPage(journalID: UUID, currentPage: Int) async {
+        let journal_reference = db.collection("JOURNALS").document(journalID.uuidString)
+        do {
+            try await journal_reference.updateData([
+                "currentPage": currentPage
+            ])
+        } catch {
+            print("Error updating currentPage: \(error.localizedDescription)")
+        }
+    }
+    
     //#########################################################################################
     
     /****######################################################################################
@@ -352,11 +508,23 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    func updateUserLastUsedShelf(user: User) async {
+    func updateUserLastUsedJShelf(user: User) async {
         let userRef = db.collection("USERS").document(user.id)
         do {
             try await userRef.updateData([
-                "lastUsedShelfId": user.lastUsedShelfID.uuidString,
+                "lastUsedJShelfID": user.lastUsedJShelfID.uuidString,
+                "isJournalLastUsed": user.isJournalLastUsed
+            ])
+        } catch {
+            print("error setting last used shelf")
+        }
+    }
+    
+    func updateUserLastUsedSShelf(user: User) async {
+        let userRef = db.collection("USERS").document(user.id)
+        do {
+            try await userRef.updateData([
+                "lastUsedSShelfID": user.lastUsedJShelfID.uuidString,
                 "isJournalLastUsed": user.isJournalLastUsed
             ])
         } catch {
@@ -416,7 +584,10 @@ class FirebaseViewModel: ObservableObject {
     func addJournalEntry(journalEntry: JournalEntry, journalID: UUID, pageNumber: Int) async -> Bool {
         let journal_entry_reference = db.collection("JOURNAL_ENTRIES").document(journalEntry.id.uuidString)
         do {
-            let journalEntryData = journalEntry.toDictionary(journalID: journalID)
+            var journalEntryData = journalEntry.toDictionary(journalID: journalID)
+            
+            print(journalEntryData["audioURL"])
+            
             try await journal_entry_reference.setData(journalEntryData)
             
             try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
@@ -443,6 +614,9 @@ class FirebaseViewModel: ObservableObject {
             try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
                 "pages.\(pageNumber + 1)": []
             ])
+            try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
+                "currentPage": pageNumber
+            ])
         } catch {
             print("error reseting page entries")
             return
@@ -451,9 +625,23 @@ class FirebaseViewModel: ObservableObject {
             if (entry.isFake == true) {
                 continue
             }
+            
             let entry_ref = db.collection("JOURNAL_ENTRIES").document(entry.id.uuidString)
+            var journalEntryData = entry.toDictionary(journalID: journalID)
+            
             do {
-                let journalEntryData = entry.toDictionary(journalID: journalID)
+                if let voiceEntry = entry as? VoiceEntry, let audioData = voiceEntry.audio {
+                    var result = await uploadAudio(audioData, fileName: UUID().uuidString)
+                    
+                    switch result {
+                    case .success(let url):
+                        voiceEntry.audioURL = url.absoluteString
+                        journalEntryData["audioURL"] = url.absoluteString
+                    case .failure(let error):
+                        print("Failed to upload audio:", error.localizedDescription)
+                    }
+                }
+                
                 try await entry_ref.updateData(journalEntryData)
                 
                 try await db.collection("JOURNALS").document(journalID.uuidString).updateData([
@@ -466,12 +654,66 @@ class FirebaseViewModel: ObservableObject {
                 await addJournalEntry(journalEntry: entry, journalID: journalID, pageNumber: pageNumber)
             }
         }
-        for entry in previousEntryIds {
-            if let uuid = UUID(uuidString: entry) {
+        for oldEntryID in previousEntryIds {
+            for entry in entries {
+                if entry.id.uuidString == oldEntryID {
+                    continue
+                }
+            }
+            if let uuid = UUID(uuidString: oldEntryID) {
                 await removeJournalEntry(entryID: uuid)
             } else {
-                print("Invalid UUID string: \(entry)")
+                print("Invalid UUID string: \(oldEntryID)")
             }
+        }
+    }
+    
+    func deletePage(journalID: UUID, pageNumber: Int) async {
+        do {
+            let docRef = db.collection("JOURNALS").document(journalID.uuidString)
+            let document = try await docRef.getDocument()
+            
+            guard var data = document.data(),
+                  var pages = data["pages"] as? [String: [String]] else {
+                print("Couldn't get page entries")
+                return
+            }
+            
+            // 1. Delete entries for this page
+            let entryIDs = pages["\(pageNumber)"] ?? []
+            for entry in entryIDs {
+                if let entryID = UUID(uuidString: entry) {
+                    await removeJournalEntry(entryID: entryID)
+                }
+            }
+            
+            // 2. Remove the page
+            pages.removeValue(forKey: "\(pageNumber)")
+            
+            // 3. Decrement higher-numbered pages
+            var updatedPages = [String: [String]]()
+            
+            // Sort the remaining pages by their number
+            let sortedKeys = pages.keys.compactMap { Int($0) }.sorted()
+            
+            for oldPageNum in sortedKeys {
+                if oldPageNum < pageNumber {
+                    // Keep pages before the deleted one as-is
+                    updatedPages["\(oldPageNum)"] = pages["\(oldPageNum)"]
+                } else if oldPageNum > pageNumber {
+                    // Decrement pages after the deleted one
+                    updatedPages["\(oldPageNum - 1)"] = pages["\(oldPageNum)"]
+                }
+                // Skip the deleted page (oldPageNum == pageNumber)
+            }
+            
+            // 4. Update Firestore
+            try await docRef.updateData(["pages": updatedPages])
+            
+            print("Successfully deleted page \(pageNumber) and updated subsequent pages")
+            
+        } catch {
+            print("Error deleting page: \(error)")
         }
     }
     
@@ -494,9 +736,9 @@ class FirebaseViewModel: ObservableObject {
                 print(x)
                 return JournalEntry.fromDictionary(dict)
             } else {
+                print("fake entry improperly returned")
                 return JournalEntry()
                 //return nil
-                print("fake entry improperly returned")
             }
         } catch {
             print("Error fetching Journal Shelf: \(error.localizedDescription)")
@@ -541,6 +783,14 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func convertImageToURL(image: UIImage) async -> String {
+        await withCheckedContinuation { continuation in
+            storeImage(image: image) { urlString in
+                continuation.resume(returning: urlString ?? "")
+            }
+        }
+    }
+    
     func getImageFromURL(urlString: String) async -> UIImage? {
         guard let url = URL(string: urlString) else {
             print("Invalid URL string: \(urlString)")
@@ -555,7 +805,6 @@ class FirebaseViewModel: ObservableObject {
             return nil
         }
     }
-    
     
     //#########################################################################################
     
@@ -588,7 +837,7 @@ class FirebaseViewModel: ObservableObject {
             await fetchEntries(ids: result.ids)
             
         } catch {
-            print(error.localizedDescription)
+            print("vector search error: \(error.localizedDescription)")
         }
     }
     
@@ -608,25 +857,25 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func createConversationEntry(entry: JournalEntry, journalID: String) async -> Bool {
-            let journalEntry = db.collection("JOURNAL_ENTRIES")
-            var conversationEntryData: [String: Any]  = [
-                "date": "",
-                "entryContents": "",
-                "conversationLog": [],
-                "id": "\(entry.id)",
-                "journal_id": journalID,
-                "summary": "",
-                "title": ""
-            ]
-            do {
-                try await journalEntry.document("\(entry.id.uuidString)").setData(conversationEntryData)
-                return true
-                
-            } catch {
-                print("Error making document: \(error.localizedDescription)")
-                return false
-            }
+        let journalEntry = db.collection("JOURNAL_ENTRIES")
+        var conversationEntryData: [String: Any]  = [
+            "date": "",
+            "entryContents": "",
+            "conversationLog": [],
+            "id": entry.id.uuidString,
+            "journal_id": journalID,
+            "summary": "",
+            "title": ""
+        ]
+        do {
+            try await journalEntry.document(entry.id.uuidString).setData(conversationEntryData)
+            return true
+            
+        } catch {
+            print("Error making document: \(error.localizedDescription)")
+            return false
         }
+    }
     func updateEntryWithConversationLog(id: UUID) async {
         let journalDoc = db.collection("JOURNAL_ENTRIES").document(id.uuidString)
         
@@ -641,53 +890,309 @@ class FirebaseViewModel: ObservableObject {
         
     }
         
-        func addConversationLog(text: [String], journalEntry: UUID) async -> Bool {
-            let conversationEntry = db.collection("JOURNAL_ENTRIES").document("\(journalEntry.uuidString)")
-            
-            do {
-                try await conversationEntry.updateData([
-                    "conversationLog": text
-                ])
-                return true
-                
-            } catch {
-                print("Error making document: \(error.localizedDescription)")
-                return false
-            }
-        }
-    
-    func conversationEntryCheck(journalEntryID: UUID) async -> Bool {
-        let entryDoc = db.collection("JOURNAL_ENTRIES").document("\(journalEntryID.uuidString)")
+    func addConversationLog(text: [String], journalEntry: UUID) async -> Bool {
+        let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntry.uuidString)
+        
         do {
-            let doc = try await entryDoc.getDocument()
-            if doc.exists {
-                return true
-            } else {
-                return false
-            }
+            try await docRef.updateData([
+                "conversationLog": text,
+            ])
+            return true
         } catch {
-            print("Error making document: \(error.localizedDescription)")
+            print("Error updating document: \(error.localizedDescription)")
             return false
         }
     }
     
-    func loadConversationLog(for journalEntryID: String, viewModel: AIViewModel) async {
-            let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntryID)
-
-            do {
-                let document = try await docRef.getDocument()
-                if let data = document.data(),
-                   let conversationLog = data["conversationLog"] as? [String], !conversationLog.isEmpty {
-
-                    await MainActor.run {
-                        if viewModel.conversationHistory.isEmpty {
-                            viewModel.conversationHistory = conversationLog
-                        }
-                    }
-                }
-            } catch {
-                print("Error loading conversationLog: \(error.localizedDescription)")
+    func conversationEntryCheck(journalEntryID: UUID) async -> (exists: Bool, hasContent: Bool) {
+        let entryDoc = db.collection("JOURNAL_ENTRIES").document(journalEntryID.uuidString)
+        do {
+            let doc = try await entryDoc.getDocument()
+            guard doc.exists,
+                  let data = doc.data(),
+                  let logs = data["conversationLog"] as? [String] else {
+                return (false, false)
             }
+            return (true, !logs.isEmpty)
+        } catch {
+            print("Error checking document: \(error.localizedDescription)")
+            return (false, false)
+        }
     }
     
+    func loadConversationLog(for journalEntryID: String, aiVM: AIViewModel) async -> Bool {
+        let docRef = db.collection("JOURNAL_ENTRIES").document(journalEntryID)
+        
+        do {
+            let document = try await docRef.getDocument()
+            guard document.exists,
+                  let data = document.data(),
+                  let logs = data["conversationLog"] as? [String] else {
+                return false
+            }
+            
+            await MainActor.run {
+                aiVM.conversationHistory = logs
+            }
+            return true
+        } catch {
+            print("Error loading conversationLog: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    // SCRAPBOOKS
+    
+    func addScrapbookShelf(scrapbookShelf: ScrapbookShelf, userID: String) async -> Bool {
+        let scrapbookShelfReference = db.collection("SCRAPBOOK_SHELVES").document(scrapbookShelf.id.uuidString)
+        do {
+            // Chains together each Model's "toDictionary()" method for simplicity in code and scalability in editing each Model
+            let scrapbookShelfData = scrapbookShelf.toDictionary()
+            try await scrapbookShelfReference.setData(scrapbookShelfData)
+            
+            try await db.collection("USERS").document(userID).updateData([
+                "scrapbookShelves": FieldValue.arrayUnion([scrapbookShelf.id.uuidString])
+            ])
+            return true
+        } catch {
+            print("Error adding Journal Shelf: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    func getScrapbookShelfFromID(id: String) async -> ScrapbookShelf? {
+        let journalShelfReference = db.collection("SCRAPBOOK_SHELVES").document(id)
+        do {
+            let document = try await journalShelfReference.getDocument()
+            if let data = document.data() {
+                let name = data["name"] as? String ?? ""
+                let idString = data["id"] as? String ?? ""
+                let id = UUID(uuidString: idString) ?? UUID()
+                let scrapbookIDs = data["scrapbooks"] as? [String] ?? []
+                
+                var arrScrapbooks: [Scrapbook] = []
+                
+                for scrapbookID in scrapbookIDs {
+                    let scrapbook = await loadScrapbook(scrapbookID: scrapbookID)
+                    if let scrapbook = scrapbook {
+                        arrScrapbooks.append(scrapbook)
+                    }
+                }
+                return ScrapbookShelf(name: name, id: id, scrapbooks: arrScrapbooks)
+                
+            } else {
+                print("No document found")
+                return nil
+            }
+        } catch {
+            print("Error fetching Journal Shelf: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    
+    func saveScrapbook(scrapbook: Scrapbook) async -> Bool {
+        // Reference to the scrapbook document in Firestore.
+        let scrapbookRef = db.collection("SCRAPBOOKS").document(scrapbook.id.uuidString)
+        
+        // Prepare the pages dictionary.
+        var pagesDict: [String: [String]] = [:]
+        
+        // Iterate over each page.
+        for page in scrapbook.pages {
+            pagesDict[String(page.number)] = []
+            // For each entry in the page, save it in the SCRAPBOOK_ENTRIES collection.
+            for entry in page.entries {
+                let entryRef = db.collection("SCRAPBOOK_ENTRIES").document(entry.id.uuidString)
+                let entryData = entry.toDictionary(scrapbookID: scrapbook.id)
+                do {
+                    try await entryRef.setData(entryData)
+                    // Add this entry's id to the page dictionary.
+                    pagesDict[String(page.number)]?.append(entry.id.uuidString)
+                } catch {
+                    print("Error saving scrapbook entry \(entry.id): \(error.localizedDescription)")
+                }
+            }
+        }
+        
+        // Create the scrapbook data using its toDictionary method and update the pages field.
+        var scrapbookData = scrapbook.toDictionary()
+        scrapbookData["pages"] = pagesDict
+        
+        // Save the scrapbook document.
+        do {
+            try await scrapbookRef.setData(scrapbookData)
+            return true
+        } catch {
+            print("Error saving scrapbook: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    func loadScrapbook(scrapbookID: String) async -> Scrapbook? {
+        let scrapbookReference = db.collection("SCRAPBOOKS").document(scrapbookID)
+        
+        do {
+            let document = try await scrapbookReference.getDocument()
+            if let dict = document.data() {
+                let name = dict["name"] as? String ?? ""
+                let idString = dict["id"] as? String ?? ""
+                let id = UUID(uuidString: idString) ?? UUID()
+                let createdDate = dict["createdDate"] as? String ?? ""
+                let category = dict["category"] as? String ?? ""
+                let isSaved = dict["isSaved"] as? Bool ?? true
+                let isShared = dict["isShared"] as? Bool ?? false
+                let templateDict = dict["template"] as? [String: Any] ?? [:]
+                let template = Template.fromDictionary(templateDict) ?? Template()
+                let pagesArray = dict["pages"] as? [String: [String]] ?? [:]
+                let currentPage = dict["currentPage"] as? Int ?? 0
+                
+                var scrapbookPages: [ScrapbookPage] = []
+                
+                for (page, entryIDs) in pagesArray {
+                    print("scrapbook page; \(page)")
+                    let num = page
+                    let entryCount = entryIDs.count
+                    print("scrapbook entries; \(entryIDs)")
+                    var scrapbookEntries: [ScrapbookEntry] = []
+                    
+                    for entryID in entryIDs {
+                        let entry = await getScrapbookEntryFromID(id: entryID)
+                        if let entry = entry {
+                            scrapbookEntries.append(entry)
+                            
+                        }
+                        
+                        
+                    }
+                    scrapbookPages.append(ScrapbookPage(number: Int(num) ?? 0, entries: scrapbookEntries, entryCount: entryCount))
+                }
+                let sortedPages = scrapbookPages.sorted { $0.number < $1.number }
+                return Scrapbook(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: sortedPages, currentPage: currentPage)
+                
+            } else {
+                print("No document found")
+                return nil
+            }
+        } catch {
+            print("Error fetching Journal Shelf: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    // Add a single ScrapbookEntry to a specified page in a Scrapbook.
+    func addScrapbookEntry(scrapbookEntry: ScrapbookEntry, scrapbookID: UUID, pageNumber: Int) async -> Bool {
+        let entryRef = db.collection("SCRAPBOOK_ENTRIES").document(scrapbookEntry.id.uuidString)
+        do {
+            let entryData = scrapbookEntry.toDictionary(scrapbookID: scrapbookID)
+            try await entryRef.setData(entryData)
+            
+            // Update the SCRAPBOOKS document to add the entry's ID to the corresponding page array.
+            try await db.collection("SCRAPBOOKS").document(scrapbookID.uuidString).updateData([
+                "pages.\(pageNumber)": FieldValue.arrayUnion([scrapbookEntry.id.uuidString])
+            ])
+            return true
+        } catch {
+            print("Error adding scrapbook entry \(scrapbookEntry.id): \(error.localizedDescription)")
+            return false
+        }
+    }
+
+    // Update all ScrapbookEntries on a specific page of a Scrapbook.
+    // This function resets the page and then adds or updates entries. Any previous entries not in the new list are removed.
+    func updateScrapbookPage(entries: [ScrapbookEntry], scrapbookID: UUID, pageNumber: Int) async {
+        var previousEntryIds: [String] = []
+        do {
+            let document = try await db.collection("SCRAPBOOKS").document(scrapbookID.uuidString).getDocument()
+            if let data = document.data(),
+               let pages = data["pages"] as? [String: [String]] {
+                previousEntryIds = pages["\(pageNumber)"] ?? []
+            } else {
+                print("Couldn't get page entries for Scrapbook page \(pageNumber)")
+            }
+            // Reset the page entries.
+            try await db.collection("SCRAPBOOKS").document(scrapbookID.uuidString).updateData([
+                "pages.\(pageNumber)": []
+            ])
+        } catch {
+            print("Error resetting page entries for Scrapbook: \(error.localizedDescription)")
+            return
+        }
+        
+        for entry in entries {
+            let entryRef = db.collection("SCRAPBOOK_ENTRIES").document(entry.id.uuidString)
+            do {
+                let entryData = entry.toDictionary(scrapbookID: scrapbookID)
+                try await entryRef.setData(entryData)
+                try await db.collection("SCRAPBOOKS").document(scrapbookID.uuidString).updateData([
+                    "pages.\(pageNumber)": FieldValue.arrayUnion([entry.id.uuidString])
+                ])
+                if let removalIndex = previousEntryIds.firstIndex(of: entry.id.uuidString) {
+                    previousEntryIds.remove(at: removalIndex)
+                }
+            } catch {
+                // If updating fails, attempt to add the entry.
+                await addScrapbookEntry(scrapbookEntry: entry, scrapbookID: scrapbookID, pageNumber: pageNumber)
+            }
+        }
+        
+        // Remove any previous entries that were not updated.
+        for entryId in previousEntryIds {
+            if let uuid = UUID(uuidString: entryId) {
+                await removeScrapbookEntry(entryID: uuid)
+            } else {
+                print("Invalid UUID string for scrapbook entry: \(entryId)")
+            }
+        }
+    }
+
+    // Remove a ScrapbookEntry from Firestore.
+    func removeScrapbookEntry(entryID: UUID) async {
+        do {
+            try await db.collection("SCRAPBOOK_ENTRIES").document(entryID.uuidString).delete()
+        } catch {
+            print("Error removing scrapbook entry \(entryID): \(error.localizedDescription)")
+        }
+    }
+
+    // Fetch a ScrapbookEntry from Firestore using its document ID.
+    func getScrapbookEntryFromID(id: String) async -> ScrapbookEntry? {
+        let entryRef = db.collection("SCRAPBOOK_ENTRIES").document(id)
+        do {
+            let document = try await entryRef.getDocument()
+            if let data = document.data() {
+                if let entry = ScrapbookEntry.fromDictionary(data) {
+                    return entry
+                } else {
+                    print("From dictionary doesn't work \(id)")
+                    return nil
+                }
+            } else {
+                print("No data found for scrapbook entry \(id)")
+                return nil
+            }
+        } catch {
+            print("Error fetching scrapbook entry \(id): \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    
+    func uploadAudio(_ audioData: Data, fileName: String) async -> Result<URL, Error> {
+        let storageRef = Storage.storage().reference().child("audio/\(fileName).m4a")
+
+        let metadata = StorageMetadata()
+        metadata.contentType = "audio/m4a"
+
+        do {
+            // Upload the audio data
+            let _ = try await storageRef.putDataAsync(audioData, metadata: metadata)
+            
+            // Download the URL after upload
+            let url = try await storageRef.downloadURL()
+            return .success(url)
+        } catch {
+            return .failure(error)
+        }
+    }
 }

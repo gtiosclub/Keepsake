@@ -65,11 +65,11 @@ struct TextReminder: View {
             }
 
             TextField("Enter Reminder Text", text: $reminderText)
-            Button("Confirm") {
-                let finalDate = combineDateAndTime()
-                let reminder = Reminder(title: reminderText, date: finalDate, body: reminderText)
-                viewModel.addReminder(reminder)
-            }
+//            Button("Confirm") {
+//                let finalDate = combineDateAndTime()
+//                let reminder = Reminder(title: reminderText, date: finalDate, body: reminderText)
+//                viewModel.addReminder(reminder)
+//            }
         }
         .padding()
     }

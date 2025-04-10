@@ -88,13 +88,14 @@ struct JournalItemView: View {
     let scaleEffect: CGFloat
     let screenWidth: CGFloat
     let screenHeight: CGFloat
+    @State var dummyVar: Bool = false
 
     var body: some View {
         let adjustedWidth = screenWidth * 0.92 * scaleEffect
         let adjustedHeight = screenHeight * 0.56 * scaleEffect
 
         VStack(alignment: .leading) {
-            JournalCover(template: template, degrees: 0, title: template.name)
+            JournalCover(template: template, degrees: 0, title: template.name, showOnlyCover: $dummyVar)
                 .scaleEffect(scaleEffect)
                 .frame(width: adjustedWidth, height: adjustedHeight)
 
@@ -122,6 +123,7 @@ struct JournalDetailView: View {
     @Environment(\.dismiss) var dismiss
     let screenWidth = UIScreen.main.bounds.width
     let screenHeight = UIScreen.main.bounds.height
+    @State var dummyVar: Bool = false
 
     var body: some View {
         VStack(spacing: 15) {
@@ -146,7 +148,7 @@ struct JournalDetailView: View {
             }
                     .frame(maxWidth: .infinity, alignment: .center)
             
-            JournalCover(template: template, degrees: 0, title: template.name)
+            JournalCover(template: template, degrees: 0, title: template.name, showOnlyCover: $dummyVar)
                 .scaleEffect(0.8)
                 .frame(width: screenWidth * 0.8, height: screenHeight * 0.5)
 
