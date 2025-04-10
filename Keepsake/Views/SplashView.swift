@@ -25,15 +25,16 @@ struct SplashView: View {
                                     fbVM: viewModel
                                 )
                             } else {
+                                let aiVM = AIViewModel()
                                 ZStack {
                                     ContentView(
                                         userVM: UserViewModel(user: user),
-                                        aiVM: AIViewModel(),
+                                        aiVM: aiVM,
                                         fbVM: viewModel
                                     )
                                     .environmentObject(reminderViewModel)
 
-                                    ViewControllerWrapper()
+                                    ViewControllerWrapper(aiViewModel: aiVM)
                                         .frame(width: 0, height: 0)
                                         .hidden()
                                 }
