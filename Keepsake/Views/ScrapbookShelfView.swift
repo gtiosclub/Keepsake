@@ -38,7 +38,7 @@ struct ScrapbookShelfView: View {
                     .opacity
                         .animation(.easeIn(duration: 0.5)) // Fast appear
                 )
-                .padding(.bottom, 30)
+                .padding(.bottom, 10)
             buttonNavigationView
                 .transition(.opacity.animation(.easeIn(duration: 0.5)))
                 .padding(.bottom, 10)
