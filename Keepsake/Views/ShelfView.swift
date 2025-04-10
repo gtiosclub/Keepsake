@@ -36,6 +36,7 @@ struct ShelfView: View {
     @State var dailyPrompt: String? = nil
     @State var showOnlyCover: Bool = true
     @State var isAnimating: Bool = false
+    @State var currentScrollIndex = 0
     var body: some View {
         ZStack {
             if !show {
@@ -67,7 +68,7 @@ struct ShelfView: View {
                         .frame(width: 700)
                         .shadow(color: Color.black.opacity(0.3), radius: 50, x: 0, y: 20)
                         .blur(radius: 1)
-                        .offset(y: 400)
+                        .offset(y: 350)
                         .allowsHitTesting(false)
                         .zIndex(-1)
                         .transition(.opacity)
@@ -228,122 +229,138 @@ struct ShelfView: View {
     }
     
     private var scrollView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 45) {
-                ForEach(userVM.user.journalShelves[shelfIndex].journals) { journal in
-                    GeometryReader { geometry in
-                        let verticalOffset = calculateVerticalOffset(proxy: geometry)
-                        VStack(spacing: 35) {
-                            ZStack {
-                                JournalCover(template: journal.template, degrees: 0, title: journal.name, showOnlyCover: $showOnlyCover)
-                                    .scaleEffect(scaleEffect)
-                                    .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect,
-                                           height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
-                                    .matchedGeometryEffect(
-                                        id: "journal_\(journal.id)",
-                                        in: shelfNamespace,
-                                        properties: [.position],
-                                        anchor: .center
-                                    )
-                                
-                            }
-                            .onTapGesture {
-                                if showDeleteButton {
-                                    showDeleteButton.toggle()
-                                } else if !isAnimating {
-                                    selectedJournal = userVM.getJournalIndex(journal: journal, shelfIndex: shelfIndex)
-                                    displayPage = journal.currentPage
-                                    isAnimating.toggle()
-                                    Task {
-                                        await aiVM.fetchSmartPrompts(for: journal, count: 5)
-                                    }
-                                    hideToolBar.toggle()
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                        withAnimation(.linear(duration: 0.5)) {
-                                            show.toggle()
-                                        } completion: {
-                                            showOnlyCover.toggle()
-                                            withAnimation(.linear(duration: 0.7).delay(0.0)) {
-                                                scaleEffect = 1
-                                            }
-                                            circleStart = 1
-                                            circleEnd = 1
-                                            withAnimation(.linear(duration: 0.7).delay(0.0)) {
-                                                circleStart -= 0.25
-                                                degrees -= 90
-                                                frontDegrees -= 90
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 45) {
+                    ForEach(Array(userVM.user.journalShelves[shelfIndex].journals.enumerated()), id: \.element.id) { index, journal in
+                        GeometryReader { geometry in
+                            let verticalOffset = calculateVerticalOffset(proxy: geometry)
+                            VStack(spacing: 35) {
+                                ZStack {
+                                    JournalCover(template: journal.template, degrees: 0, title: journal.name, showOnlyCover: $showOnlyCover)
+                                        .scaleEffect(scaleEffect)
+                                        .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect,
+                                               height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                                        .matchedGeometryEffect(
+                                            id: "journal_\(journal.id)",
+                                            in: shelfNamespace,
+                                            properties: [.position],
+                                            anchor: .center
+                                        )
+                                }
+                                .onTapGesture {
+                                    if showDeleteButton {
+                                        showDeleteButton.toggle()
+                                    } else if !isAnimating {
+                                        selectedJournal = userVM.getJournalIndex(journal: journal, shelfIndex: shelfIndex)
+                                        displayPage = journal.currentPage
+                                        isAnimating.toggle()
+                                        Task {
+                                            await aiVM.fetchSmartPrompts(for: journal, count: 5)
+                                        }
+                                        hideToolBar.toggle()
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                            withAnimation(.linear(duration: 0.5)) {
+                                                show.toggle()
                                             } completion: {
-                                                coverZ = -1
-                                                isHidden = true
-                                                withAnimation(.linear(duration: 0.7).delay(0)) {
+                                                showOnlyCover.toggle()
+                                                withAnimation(.linear(duration: 0.7).delay(0.0)) {
+                                                    scaleEffect = 1
+                                                }
+                                                circleStart = 1
+                                                circleEnd = 1
+                                                withAnimation(.linear(duration: 0.7).delay(0.0)) {
                                                     circleStart -= 0.25
                                                     degrees -= 90
                                                     frontDegrees -= 90
-                                                    isAnimating.toggle()
+                                                } completion: {
+                                                    coverZ = -1
+                                                    isHidden = true
+                                                    withAnimation(.linear(duration: 0.7).delay(0)) {
+                                                        circleStart -= 0.25
+                                                        degrees -= 90
+                                                        frontDegrees -= 90
+                                                        isAnimating.toggle()
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
-                                //print(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: index))
-                            }
-                            .onLongPressGesture(minimumDuration: 0.5) {
-                                withAnimation(.spring()) {
-                                    showDeleteButton.toggle()
-                                    deleteJournalID = journal.id.uuidString
-                                }
-                            }
-                            if showDeleteButton && deleteJournalID == journal.id.uuidString {
-                                Button {
-                                    userVM.removeJournalFromShelf(shelfIndex: shelfIndex, journalID: journal.id)
-                                    Task {
-                                        await fbVM.deleteJournal(journalID: journal.id.uuidString, journalShelfID: userVM.getJournalShelves()[shelfIndex].id)
+                                .onLongPressGesture(minimumDuration: 0.5) {
+                                    withAnimation(.spring()) {
+                                        showDeleteButton.toggle()
+                                        deleteJournalID = journal.id.uuidString
                                     }
-                                    showDeleteButton.toggle()
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .font(.system(size: 28))
-                                        .foregroundColor(.red)
-                                        .background(Circle().fill(Color.white))
-                                        .padding(8)
                                 }
-                                .transition(.scale.combined(with: .opacity))
-                                .zIndex(1)
-                            }
-                            VStack(spacing: 10) {
-                                //Journal name, date, created by you
-                                Text(journal.name)
-                                    .font(.title2)
-                                    .foregroundColor(.primary)
-                                
-                                Text(journal.createdDate)
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
-                                
-                                HStack(spacing: 5) {
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.5))
-                                        .frame(width: 15, height: 15)
-                                    
-                                    Text("created by You")
-                                        .font(.footnote)
+                                if showDeleteButton && deleteJournalID == journal.id.uuidString {
+                                    Button {
+                                        userVM.removeJournalFromShelf(shelfIndex: shelfIndex, journalID: journal.id)
+                                        Task {
+                                            await fbVM.deleteJournal(journalID: journal.id.uuidString, journalShelfID: userVM.getJournalShelves()[shelfIndex].id)
+                                        }
+                                        showDeleteButton.toggle()
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .font(.system(size: 28))
+                                            .foregroundColor(.red)
+                                            .background(Circle().fill(Color.white))
+                                            .padding(8)
+                                    }
+                                    .transition(.scale.combined(with: .opacity))
+                                    .zIndex(1)
+                                }
+                                VStack(spacing: 10) {
+                                    Text(journal.name)
+                                        .font(.title2)
+                                        .foregroundColor(.primary)
+                                    Text(journal.createdDate)
+                                        .font(.subheadline)
                                         .foregroundColor(.gray)
+                                    HStack(spacing: 5) {
+                                        Circle()
+                                            .fill(Color.gray.opacity(0.5))
+                                            .frame(width: 15, height: 15)
+                                        Text("created by You")
+                                            .font(.footnote)
+                                            .foregroundColor(.gray)
+                                    }
                                 }
-                            }.padding(.top, 20)
-                            .frame(width: 200)
+                                .padding(.top, 20)
+                                .frame(width: 200)
+                            }
+                            .frame(width: 240, height: 700)
+                            .offset(y: verticalOffset)
+                            .id(index) // Add this to identify each journal
                         }
-                        .frame(width: 240, height: 700)
-                        .offset(y: verticalOffset)
+                        .frame(width: 240, height: 600)
                     }
-                    .frame(width: 240, height: 600)
                 }
+                .padding(.horizontal, 70)
             }
-            .padding(.horizontal, 20)
+            .coordinateSpace(name: "scrollView")
+            .frame(height: 500, alignment: .bottom)
+            .padding(.top, 30)
+            .onAppear {
+                currentScrollIndex = 0
+            }
+            .highPriorityGesture(
+                DragGesture(coordinateSpace: .named("scrollView"))
+                    .onEnded { value in
+                        let threshold: CGFloat = 100
+                        if abs(value.translation.width) > threshold {
+                            let nextJournal = value.translation.width > 0 ? -1 : 1
+                            let newIndex = currentScrollIndex + nextJournal
+                            
+                            withAnimation {
+                                currentScrollIndex = newIndex
+                                proxy.scrollTo(newIndex, anchor: .center)
+                            }
+                        }
+                    }
+            )
         }
-        .frame(height: 500, alignment: .bottom)
-        .padding(.top, 30)
     }
-    
     
     private var openJournalView: some View {
         ZStack {
