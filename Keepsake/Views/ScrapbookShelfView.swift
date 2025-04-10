@@ -13,176 +13,211 @@ struct ScrapbookShelfView: View {
     @ObservedObject var aiVM: AIViewModel
     @ObservedObject var fbVM: FirebaseViewModel
     var shelfIndex: Int
-    @State var degrees: CGFloat = 0
-    @State var frontDegrees: CGFloat = 0
-    @State var show: Bool = false
-    @State var selectedJournal = 0
-    @State var bind: Int?
-    @State var coverZ: Double = 0
-    @State var circleStart: CGFloat = 0.5
-    @State var circleEnd: CGFloat = 0.5
-    @State var ellipseStart: CGFloat = 1
-    @State var ellipseEnd: CGFloat = 1
-    @State var scaleEffect: CGFloat = 0.6
-    @State var isHidden: Bool = false
-    @State var inEntry: EntryType = .openJournal
-    @State var selectedEntry: Int = 0
-    @State var displayPage: Int = 2
     @State private var showJournalForm = false
     @Binding var selectedOption: ViewOption
     @State var showDeleteButton: Bool = false
     @State var deleteJournalID: String = ""
     @State var hideToolBar: Bool = false
-    @State var dailyPrompt: String? = nil
-    @State var onlyShowCover: Bool = false
+    @State var showOnlyCover: Bool = true
+    @State var scaleEffect: CGFloat = 0.6
     var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 10) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Button {
-                        selectedOption = .library
-                    } label: {
-                        HStack(spacing: 0) {
-                            Image(systemName: "chevron.left")
-                                .foregroundStyle(.black)
-                            Text("Library")
-                                .foregroundStyle(.black)
-                        }.padding(.leading, 5)
-                    }
-                    HStack {
-                        Text("Welcome back, \(userVM.user.name)")
-                            .font(.title2)
-                            .foregroundColor(.gray)
-                            .fontWeight(.semibold)
-                            .padding(.top, 20)
-                            .padding(.leading, 30)
-                        
-                        Spacer()
-                        
-                        Menu {
-                            Button(action: {
-                                showJournalForm = true
-                                print("clicked")
-                            }) {
-                                Text("New Journal")
-                            }
-                            
-                            Button(action: {
-                                showJournalForm = true
-                            }) {
-                                Text("New AR Scrapbook")
-                            }
-                            
-                        } label: {
-                            Image(systemName: "plus.circle")
-                                .font(.system(size: 30))
-                                .foregroundColor(.gray)
-                        }
-                        .padding(.top, 20)
-                        .padding(.trailing, 30)
-                    }
-                }
-                
-                Text("Bring your memories to life")
-                    .font(.largeTitle)
-                    .bold()
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(nil) // Allow multiple lines
-                    .fixedSize(horizontal: false, vertical: true)
+        ZStack {
+            shelfParent
+        }
+    }
+    
+    private var shelfParent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            topVStack
+                .transition(
+                    .opacity
+                        .animation(.easeIn(duration: 0.5)) // Fast appear
+                )
+            textView
+                .transition(
+                    .opacity
+                        .animation(.easeIn(duration: 0.5)) // Fast appear
+                )
+                .padding(.bottom, 30)
+            buttonNavigationView
+                .transition(.opacity.animation(.easeIn(duration: 0.5)))
+                .padding(.bottom, 10)
+            scrollView
+                .transition(
+                    .opacity
+                        .animation(.easeIn(duration: 0.01)) // Fast appear
+                ).padding(.top, UIScreen.main.bounds.height * -0.05)
+        }
+        .toolbar(hideToolBar ? .hidden : .visible, for: .tabBar)
+        .onTapGesture(perform: {
+            if showDeleteButton {
+                showDeleteButton.toggle()
+            }
+        })
+        //            .onAppear() {
+        //                print(userVM.user.journalShelves)
+        //            }
+        .frame(maxHeight: .infinity, alignment: .top)
+    }
+    
+    private var textView: some View {
+        Text("What is on your mind today?")
+            .font(.largeTitle)
+            .bold()
+            .multilineTextAlignment(.leading)
+            .lineLimit(nil) // Allow multiple lines
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.leading, 30)
+    }
+    
+    private var topVStack: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Text("Welcome back, \(userVM.user.name)")
+                    .font(.title2)
+                    .foregroundColor(.gray)
+                    .fontWeight(.semibold)
+                    .padding(.top, 20)
                     .padding(.leading, 30)
                 
-                //Scrapbooks
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 45) {
-                        ForEach(userVM.user.scrapbookShelves[shelfIndex].scrapbooks) { scrapbook in
-                            GeometryReader { geometry in
-                                let verticalOffset = calculateVerticalOffset(proxy: geometry)
-                                VStack(spacing: 35) {
-                                    NavigationLink {
-                                        CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
-                                    } label: {
-                                        JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $onlyShowCover)
-                                            .scaleEffect(scaleEffect)
-                                            .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
-                                            .transition(.identity)
-                                            .matchedGeometryEffect(id: "journal_\(scrapbook.id)", in: shelfNamespace, properties: .position, anchor: .center)
-                                    }
-                                    VStack(spacing: 10) {
-                                        //Journal name, date, created by you
-                                        Text(scrapbook.name)
-                                            .font(.title2)
-                                            .foregroundColor(.primary)
-                                        
-                                        Text(scrapbook.createdDate)
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
-                                        
-                                        HStack(spacing: 5) {
-                                            Circle()
-                                                .fill(Color.gray.opacity(0.5))
-                                                .frame(width: 15, height: 15)
-                                            
-                                            Text("created by You")
-                                                .font(.footnote)
-                                                .foregroundColor(.gray)
-                                        }
-                                    }
-                                    .frame(width: 200)
-                                }
-                                .frame(width: 240, height: 700)
-                                .offset(y: verticalOffset)
-                            }
-                            .frame(width: 240, height: 600)
-                        }
+                Spacer()
+                
+                Menu {
+                    Button(action: {
+                        showJournalForm = true
+                        print("clicked")
+                    }) {
+                        Text("New Journal")
                     }
-                    .padding(.horizontal, 20)
+                    
+                    Button(action: {
+                        showJournalForm = true
+                    }) {
+                        Text("New AR Scrapbook")
+                    }
+                    
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 30))
+                        .foregroundColor(.gray)
                 }
-                .frame(height: 500, alignment: .bottom)
-                .padding(.top, 30)
-            }
-            .toolbar(hideToolBar ? .hidden : .visible, for: .tabBar)
-            .onTapGesture(perform: {
-                if showDeleteButton {
-                    showDeleteButton.toggle()
-                }
-            })
-            //            .onAppear() {
-            //                print(userVM.user.journalShelves)
-            //            }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .sheet(isPresented: $showJournalForm) {
-                JournalFormView(
-                    isPresented: $showJournalForm,
-                    onCreate: { title, coverColor, pageColor, titleColor, texture, journalPages in
-                        Task {
-                            await createJournal(
-                                from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: texture, journalPages: journalPages),
-                                shelfIndex: shelfIndex, shelfID: shelf.id
-                            )
-                        }
-                    },
-                    templates: userVM.user.savedTemplates
-                )
+                .padding(.top, 20)
+                .padding(.trailing, 30)
             }
         }
     }
     
-    func createJournal(from template: Template, shelfIndex: Int, shelfID: UUID) async {
-        let newJournal = Journal(
-            name: template.name,
-            id: UUID(),
-            createdDate: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short),
-            category: "General",
-            isSaved: false,
-            isShared: false,
-            template: template,
-            pages: template.journalPages ?? [JournalPage(number: 1)],
-            currentPage: 0
-        )
-//        userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
-        userVM.addJournalToShelfAndAddEntries(journal: newJournal, shelfIndex: shelfIndex)
-        _ = await fbVM.addJournal(journal: newJournal, journalShelfID: shelfID)
+    private var buttonNavigationView: some View {
+        HStack(spacing: 26) { // Reduced spacing
+            Spacer()
+            
+            Button(action: {
+                print("Journal clicked")
+                userVM.setLastUsed(isJournal: true)
+                Task {
+                    await fbVM.updateUserLastUsedJShelf(user: userVM.user)
+                }
+                selectedOption = .journal_shelf
+            }) {
+                Text("Journal")
+                    .font(.system(size: 14, weight: .semibold)) // Smaller font
+                    .foregroundColor(.gray.opacity(1))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12) // Smaller corner radius
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Button(action: {
+                // Add selectedOption = .arScrapbook after adding enum in HomeView
+                print("AR Scrapbook clicked")
+            }) {
+                Text("AR Scrapbook")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.blue.opacity(0.7))
+                    .cornerRadius(12)
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Button(action: {
+                selectedOption = .library
+                print("Library clicked")
+            }) {
+                Text("Library")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.gray.opacity(1))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Spacer()
+        }
+        .padding(.vertical, 1)
+        .frame(maxWidth: .infinity)
+        .zIndex(1)
     }
+    
+    private var scrollView: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 45) {
+                ForEach(userVM.user.scrapbookShelves[shelfIndex].scrapbooks) { scrapbook in
+                    GeometryReader { geometry in
+                        let verticalOffset = calculateVerticalOffset(proxy: geometry)
+                        VStack(spacing: 35) {
+                            NavigationLink {
+                                CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
+                            } label: {
+                                JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $showOnlyCover)
+                                    .scaleEffect(scaleEffect)
+                                    .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                                    .transition(.identity)
+                                    .matchedGeometryEffect(id: "journal_\(scrapbook.id)", in: shelfNamespace, properties: .position, anchor: .center)
+                            }
+                            VStack(spacing: 10) {
+                                //Journal name, date, created by you
+                                Text(scrapbook.name)
+                                    .font(.title2)
+                                    .foregroundColor(.primary)
+                                
+                                Text(scrapbook.createdDate)
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                                
+                                HStack(spacing: 5) {
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.5))
+                                        .frame(width: 15, height: 15)
+                                    
+                                    Text("created by You")
+                                        .font(.footnote)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            .frame(width: 200)
+                        }
+                        .frame(width: 240, height: 700)
+                        .offset(y: verticalOffset)
+                    }
+                    .frame(width: 240, height: 600)
+                }
+            }
+            .padding(.horizontal, 20)
+        }
+        .frame(height: 500, alignment: .bottom)
+        .padding(.top, 30)
+
+    }
+    
+    
+   
+    
     
     private func calculateVerticalOffset(proxy: GeometryProxy) -> CGFloat {
         let midX = proxy.frame(in: .global).midX

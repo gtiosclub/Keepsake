@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+
+
 struct OpenJournal: View {
     @Namespace private var openJournalNamespace
 //    @State var book: any Book
@@ -41,6 +43,7 @@ struct OpenJournal: View {
     @Binding var showOnlyCover: Bool
     @Binding var isAnimating: Bool
     var body: some View {
+
         // This ZStack will define the base frame
         ZStack {
             // Main content that defines the frame
@@ -106,6 +109,11 @@ struct OpenJournal: View {
             // Floating header (positioned absolutely)
             VStack {
                 // Your header content...
+                HStack{
+                    JournalReturnButton(circleStart: $circleStart, circleEnd: $circleEnd, frontDegrees: $frontDegrees, degrees: $degrees, isHidden: $isHidden, coverZ: $coverZ, scaleFactor: $scaleFactor, show: $show, hideToolBar: $hideToolBar, showOnlyCover: $showOnlyCover, isAnimating: $isAnimating)
+                    Spacer()
+                }.opacity(degrees == -180 ? 1 : 0)
+                    .padding(.bottom, 20)
                 HStack(alignment: .top, spacing: 15) {
                     VStack(alignment: .leading) {
                         Text(journal.name).font(.system(size: 40))
@@ -131,14 +139,6 @@ struct OpenJournal: View {
                             .padding(.top, 8)
                             .foregroundColor(.black)
                     }
-                    Button {} label: {
-                        Image(systemName: "square.and.arrow.up")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                            .padding(.top, 8)
-                            .foregroundColor(.black)
-                    }
                 }
                 .padding(.horizontal, 30)
                 .opacity(degrees == -180 ? 1 : 0)
@@ -147,14 +147,13 @@ struct OpenJournal: View {
                 
                 // Floating footer (positioned absolutely)
                 HStack {
-                    JournalReturnButton(circleStart: $circleStart, circleEnd: $circleEnd, frontDegrees: $frontDegrees, degrees: $degrees, isHidden: $isHidden, coverZ: $coverZ, scaleFactor: $scaleFactor, show: $show, hideToolBar: $hideToolBar, showOnlyCover: $showOnlyCover, isAnimating: $isAnimating)
                     Spacer()
                     AddEntryButtonView(journal: journal, inEntry: $inEntry, userVM: userVM, fbVM: fbVM, aiVM: aiVM, displayPage: $displayPageIndex, selectedEntry: $selectedEntry, dailyPrompt: $dailyPrompt)
                 }
                 .padding(.horizontal, 30)
                 .opacity(degrees == -180 ? 1 : 0)
-            }.frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.56 + 155)
-                .offset(y: UIScreen.main.bounds.height * -0.03)
+            }.frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.85)
+                .offset(y: UIScreen.main.bounds.height * -0.05)
             
             if showSearch {
                 SearchOverlayView(isPresented: $showSearch, firebaseVM: FirebaseViewModel.vm, journalID: journal.id.uuidString)
@@ -165,6 +164,7 @@ struct OpenJournal: View {
         .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
         .fixedSize()
         .toolbar(.hidden, for: .tabBar)
+        .offset(y: UIScreen.main.bounds.height * 0.05)
         .sheet(isPresented: $showPagesSheet) {
             if showNewPageSheet {
                 NewPageView(userVM: userVM, fbVM: fbVM, journal: journal, isPresented: $showPagesSheet, showNewPage: $showNewPageSheet, displayPage: $displayPageIndex)
@@ -173,6 +173,7 @@ struct OpenJournal: View {
             }
         }
     }
+    
 }
 
 
@@ -453,16 +454,18 @@ struct JournalReturnButton: View {
                     }
                 }
             }, label: {
-                Image(systemName: "return")
+                Image(systemName: "chevron.backward")
                     .resizable()
                     .foregroundStyle(.black)
-                    .frame(width: UIScreen.main.bounds.width * 0.07, height: UIScreen.main.bounds.width * 0.07)
-            }).frame(width: UIScreen.main.bounds.width * 0.1)
+                    .frame(width: UIScreen.main.bounds.width * 0.023, height: UIScreen.main.bounds.width * 0.04)
+                Text("Back")
+                    .font(.title2)
+                    .foregroundStyle(.black)
+            }).frame(width: UIScreen.main.bounds.width * 0.25, height: UIScreen.main.bounds.width * 0.05)
             
         }
     }
 }
-
 
 #Preview {
     struct Preview: View {

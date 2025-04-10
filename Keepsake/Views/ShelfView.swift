@@ -74,13 +74,15 @@ struct ShelfView: View {
                     .opacity
                         .animation(.easeIn(duration: 0.5)) // Fast appear
                 )
+                .padding(.bottom, 30)
             buttonNavigationView
                 .transition(.opacity.animation(.easeIn(duration: 0.5)))
+                .padding(.bottom, 10)
             scrollView
                 .transition(
                     .opacity
                         .animation(.easeIn(duration: 0.01)) // Fast appear
-                )
+                ).padding(.top, UIScreen.main.bounds.height * -0.05)
         }
         .toolbar(hideToolBar ? .hidden : .visible, for: .tabBar)
         .onTapGesture(perform: {
@@ -160,7 +162,6 @@ struct ShelfView: View {
             Spacer()
             
             Button(action: {
-                print("Journal clicked")
             }) {
                 Text("Journal")
                     .font(.system(size: 14, weight: .semibold)) // Smaller font
@@ -173,8 +174,11 @@ struct ShelfView: View {
             .buttonStyle(PlainButtonStyle())
 
             Button(action: {
-                // Add selectedOption = .arScrapbook after adding enum in HomeView
-                print("AR Scrapbook clicked")
+                userVM.setLastUsed(isJournal: false)
+                Task {
+                    await fbVM.updateUserLastUsedSShelf(user: userVM.user)
+                }
+                selectedOption = .scrapbook_shelf
             }) {
                 Text("AR Scrapbook")
                     .font(.system(size: 14, weight: .semibold))
@@ -309,7 +313,7 @@ struct ShelfView: View {
                                         .font(.footnote)
                                         .foregroundColor(.gray)
                                 }
-                            }
+                            }.padding(.top, 20)
                             .frame(width: 200)
                         }
                         .frame(width: 240, height: 700)
