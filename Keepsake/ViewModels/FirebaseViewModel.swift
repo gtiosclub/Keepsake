@@ -65,51 +65,10 @@ class FirebaseViewModel: ObservableObject {
             
         }
     }
-    func storeProfilePic(image: UIImage) {
-            guard let uid = currentUser?.id else { return }
-            let file = "\(uid).jpg"
-            let storageRef = Storage.storage().reference(withPath: "profile pic/\(file)")
-            
-            if let imageData = image.jpegData(compressionQuality: 0.8) {
-                let metadata = StorageMetadata()
-                metadata.contentType = "image/jpeg"
-                
-                storageRef.putData(imageData, metadata: metadata) { [weak self] metadata, error in
-                    if let error = error {
-                        print("Error uploading the image: \(error.localizedDescription)")
-                        return
-                    }
-                    print("Image uploaded successfully!")
-                    
-                }
-            }
-        }
     
-    func getProfilePic() -> UIImage? {
-        let uid = currentUser?.id
-        
-        let storageRef = Storage.storage().reference().child("profile pic").child("\(uid!).jpg")
-                storageRef.getData(maxSize: 3 * 2048 * 2048) { data, error in
-                    if let error = error {
-                        print("Error fetching image data: \(error)")
-                        return
-                    }
-                    guard let data = data else {
-                                            print("No data returned")
-                                            return
-                                        }
-                    if let image = UIImage(data: data) {
-                        DispatchQueue.main.async {
-                            self.retrievedImage = image
-                            print("Image successfully retrieved and set")
-                        }
-                    } else {
-                        print("Error creating image from data")
-                    }
-                }
-        return retrievedImage
-        
-    }
+    /****######################################################################################
+    USER
+     #########################################################################################**/
     
     func signIn(withEmail email: String, password: String) async throws {
         
@@ -288,6 +247,52 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func storeProfilePic(image: UIImage) {
+            guard let uid = currentUser?.id else { return }
+            let file = "\(uid).jpg"
+            let storageRef = Storage.storage().reference(withPath: "profile pic/\(file)")
+            
+            if let imageData = image.jpegData(compressionQuality: 0.8) {
+                let metadata = StorageMetadata()
+                metadata.contentType = "image/jpeg"
+                
+                storageRef.putData(imageData, metadata: metadata) { [weak self] metadata, error in
+                    if let error = error {
+                        print("Error uploading the image: \(error.localizedDescription)")
+                        return
+                    }
+                    print("Image uploaded successfully!")
+                    
+                }
+            }
+        }
+    
+    func getProfilePic() -> UIImage? {
+        let uid = currentUser?.id
+        
+        let storageRef = Storage.storage().reference().child("profile pic").child("\(uid!).jpg")
+                storageRef.getData(maxSize: 3 * 2048 * 2048) { data, error in
+                    if let error = error {
+                        print("Error fetching image data: \(error)")
+                        return
+                    }
+                    guard let data = data else {
+                                            print("No data returned")
+                                            return
+                                        }
+                    if let image = UIImage(data: data) {
+                        DispatchQueue.main.async {
+                            self.retrievedImage = image
+                            print("Image successfully retrieved and set")
+                        }
+                    } else {
+                        print("Error creating image from data")
+                    }
+                }
+        return retrievedImage
+        
+    }
+    
     func testRead() async -> Int {
         let docRef = db.collection("USERS").document("Test")
         
@@ -309,6 +314,10 @@ class FirebaseViewModel: ObservableObject {
             return -1
         }
     }
+    
+    //#########################################################################################
+    
+
     
     /****######################################################################################
     JOURNALS
@@ -749,7 +758,7 @@ class FirebaseViewModel: ObservableObject {
     //#########################################################################################
     
     /****######################################################################################
-    Images
+    IMAGES
      #########################################################################################**/
     
     func storeImage(image: UIImage, completion: @escaping (String?) -> Void) {
@@ -808,21 +817,10 @@ class FirebaseViewModel: ObservableObject {
     
     //#########################################################################################
     
+    /****######################################################################################
+    VECTOR SEARCH
+     #########################################################################################**/
     
-    // Add an entry into Firebase
-    func getAPIKeys() async throws -> [String: String] {
-        var apimap: [String: String] = [:]
-        
-        let getdocs = try await db.collection("API_KEYS").getDocuments()
-        
-        for doc in getdocs.documents {
-            if let key = doc.data()["key"] as? String {
-                apimap[doc.documentID] = key
-            }
-        }
-        
-        return apimap
-    }
     
     func performVectorSearch(searchTerm: String, journal_id: String) async {
         do {
@@ -855,6 +853,12 @@ class FirebaseViewModel: ObservableObject {
             searchedEntries = entries
         }
     }
+    
+    //#########################################################################################
+    
+    /****######################################################################################
+    CONVERSATION ENTRY
+     #########################################################################################**/
     
     func createConversationEntry(entry: JournalEntry, journalID: String) async -> Bool {
         let journalEntry = db.collection("JOURNAL_ENTRIES")
@@ -941,7 +945,11 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    // SCRAPBOOKS
+    //#########################################################################################
+    
+    /****######################################################################################
+    SCRAPBOOK SHELF
+     #########################################################################################**/
     
     func addScrapbookShelf(scrapbookShelf: ScrapbookShelf, userID: String) async -> Bool {
         let scrapbookShelfReference = db.collection("SCRAPBOOK_SHELVES").document(scrapbookShelf.id.uuidString)
@@ -989,6 +997,12 @@ class FirebaseViewModel: ObservableObject {
             return nil
         }
     }
+    
+    //#########################################################################################
+    
+    /****######################################################################################
+    SCRAPBOOKS
+     #########################################################################################**/
     
     
     func saveScrapbook(scrapbook: Scrapbook) async -> Bool {
@@ -1079,6 +1093,12 @@ class FirebaseViewModel: ObservableObject {
             return nil
         }
     }
+    
+    //#########################################################################################
+    
+    /****######################################################################################
+    SCRAPBOOK ENTRY
+     #########################################################################################**/
     
     // Add a single ScrapbookEntry to a specified page in a Scrapbook.
     func addScrapbookEntry(scrapbookEntry: ScrapbookEntry, scrapbookID: UUID, pageNumber: Int) async -> Bool {
@@ -1177,6 +1197,12 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    //#########################################################################################
+    
+    /****######################################################################################
+    MISCELLANEOUS
+     #########################################################################################**/
+    
     
     func uploadAudio(_ audioData: Data, fileName: String) async -> Result<URL, Error> {
         let storageRef = Storage.storage().reference().child("audio/\(fileName).m4a")
@@ -1195,4 +1221,20 @@ class FirebaseViewModel: ObservableObject {
             return .failure(error)
         }
     }
+    
+    func getAPIKeys() async throws -> [String: String] {
+        var apimap: [String: String] = [:]
+        
+        let getdocs = try await db.collection("API_KEYS").getDocuments()
+        
+        for doc in getdocs.documents {
+            if let key = doc.data()["key"] as? String {
+                apimap[doc.documentID] = key
+            }
+        }
+        
+        return apimap
+    }
+    
+
 }

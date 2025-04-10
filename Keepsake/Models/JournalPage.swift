@@ -11,11 +11,13 @@ class JournalPage: ObservableObject {
     var number: Int
     @Published var entries: [JournalEntry]
     var realEntryCount: Int
+    @Published var placedStickers: [Sticker]
     
-    init(number: Int, entries: [JournalEntry], realEntryCount: Int) {
+    init(number: Int, entries: [JournalEntry], realEntryCount: Int, placedStickers: [Sticker] = []) {
         self.number = number
         self.entries = entries
         self.realEntryCount = realEntryCount
+        self.placedStickers = placedStickers
     }
     
     convenience init(number: Int) {

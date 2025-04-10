@@ -41,6 +41,7 @@ class ViewController: UIViewController {
         let title = "Keep Journaling!"
         var prompt = ""
         Task {
+            try await Task.sleep(for: .seconds(10))
             await prompt = aiViewModel.getPromptOfTheDay()
             let body = "Write down your answer to this prompt: \(prompt)"
             UserDefaults.standard.set(prompt, forKey: "prompt")
@@ -55,7 +56,7 @@ class ViewController: UIViewController {
             let calendar = Calendar.current
             var dateComponents = DateComponents(calendar: calendar, timeZone: TimeZone.current)
             let hour = 20
-            let minute = 8
+            let minute = 57
             dateComponents.hour = hour
             dateComponents.minute = minute
             print("Notification will trigger at: \(calendar.date(from: dateComponents) ?? Date())")

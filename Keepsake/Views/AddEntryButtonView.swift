@@ -247,9 +247,46 @@ struct AddEntryButtonView: View {
                     }
                     .padding()
                 } else {
-                    Text("Sticker Stuff")
+                    let columns = [
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ]
+                        
+                    ScrollView {
+                        LazyVGrid(columns: columns, spacing: 20) {
+                            ForEach(Array(aiVM.stickersFound.enumerated()), id: \.0) { index, stickerURL in
+                                Button {
+                                    let sticker = Sticker(id: UUID(), url: stickerURL, position: CGPoint(x: 150, y: 150), size: 1.0)
+                                    journal.pages[journal.currentPage - 1].placedStickers.append(sticker)
+                                } label: {
+                                    if let url = URL(string: stickerURL) {
+                                        AsyncImage(url: url) { image in
+                                            image.resizable()
+                                                .scaledToFit()
+                                                .frame(width: 100, height: 100)
+                                        } placeholder: {
+                                            ProgressView()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .padding()
+                    }
                 }
                 Spacer()
+            }
+            .onAppear {
+                aiVM.stickersFound = []
+                Task {
+                    for page in journal.pages {
+                        for entry in page.entries {
+                            await aiVM.getStickers(entry: entry)
+                            
+                        }
+                    }
+                }
             }
         }
     }
