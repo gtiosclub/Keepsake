@@ -257,8 +257,9 @@ struct AddEntryButtonView: View {
                         LazyVGrid(columns: columns, spacing: 20) {
                             ForEach(Array(aiVM.stickersFound.enumerated()), id: \.0) { index, stickerURL in
                                 Button {
+                                    print(journal.currentPage)
                                     let sticker = Sticker(id: UUID(), url: stickerURL, position: CGPoint(x: 150, y: 150), size: 1.0)
-                                    journal.pages[journal.currentPage - 1].placedStickers.append(sticker)
+                                    journal.pages[journal.currentPage].placedStickers.append(sticker)
                                 } label: {
                                     if let url = URL(string: stickerURL) {
                                         AsyncImage(url: url) { image in
@@ -280,11 +281,10 @@ struct AddEntryButtonView: View {
             .onAppear {
                 aiVM.stickersFound = []
                 Task {
-                    for page in journal.pages {
-                        for entry in page.entries {
-                            await aiVM.getStickers(entry: entry)
-                            
-                        }
+                    for entry in journal.pages[journal.currentPage].entries {
+                        print("called to get sticker")
+                        await aiVM.getStickers(entry: entry)
+                        
                     }
                 }
             }

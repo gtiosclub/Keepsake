@@ -44,7 +44,7 @@ class JournalEntry: ObservableObject, Identifiable, Hashable, Codable {
         self.id = UUID()
         self.date = "01/01/2000"
         self.title = "Title"
-        self.entryContents = "Text"
+        self.entryContents = "It's a good day"
         self.width = 1
         self.height = 1
         self.isFake = true
