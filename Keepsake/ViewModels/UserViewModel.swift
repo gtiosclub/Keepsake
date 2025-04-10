@@ -168,6 +168,7 @@ class UserViewModel: ObservableObject {
         for index in shelves.indices {
             if shelves[index].id == user.lastUsedJShelfID {
                 user.journalShelfIndex = index
+                print("last used JShelf is index \(index)")
             }
         }
         user.isJournalLastUsed = true
@@ -184,7 +185,6 @@ class UserViewModel: ObservableObject {
     }
     
     func getLastUsed() -> Bool {
-        print(user.isJournalLastUsed)
         return user.isJournalLastUsed
     }
     

@@ -153,6 +153,10 @@ struct JournalPagesView: View {
                                 pageWiggling = false
                             } else {
                                 displayPage = page.number - 1
+                                journal.currentPage = displayPage
+                                Task {
+                                    await fbVM.updateCurrentPage(journalID: journal.id, currentPage: journal.currentPage)
+                                }
                                 isPresented.toggle()
                             }
                         }

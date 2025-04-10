@@ -377,6 +377,10 @@ struct JournalDisplayView: View {
                                 } completion: {
                                     displayDegrees = 0
                                     displayPageIndex += 1
+                                    journal.currentPage = displayPageIndex
+                                    Task {
+                                        await fbVM.updateCurrentPage(journalID: journal.id, currentPage: journal.currentPage)
+                                    }
                                     displayIsHidden = false
                                 }
                             }
@@ -400,6 +404,10 @@ struct JournalDisplayView: View {
                                     circleEnd += 0.25
                                 } completion: {
                                     displayPageIndex -= 1
+                                    journal.currentPage = displayPageIndex
+                                    Task {
+                                        await fbVM.updateCurrentPage(journalID: journal.id, currentPage: journal.currentPage)
+                                    }
                                     frontDegrees = -180
                                     frontIsHidden = true
                                 }
