@@ -87,9 +87,9 @@ struct JournalPagesView: View {
                                     }
                                     deletePage = -1
                                     pageWiggling = false
-                                    if displayPage == page.number {
-                                        displayPage = page.number == 0 ? 0 : page.number - 1
-                                    } else if displayPage > page.number {
+                                    if displayPage + 1 == page.number {
+                                        displayPage = page.number == 1 ? 0 : displayPage - 1
+                                    } else if displayPage + 1 > page.number {
                                         displayPage = displayPage - 1
                                     }
                                     journal.currentPage = displayPage
