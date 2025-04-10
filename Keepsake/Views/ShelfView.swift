@@ -41,6 +41,7 @@ struct ShelfView: View {
         ZStack {
             if !show {
                 shelfParent
+                    .ignoresSafeArea(.container, edges: .top)
             } else {
                 switch(inEntry) {
                 case .written:
@@ -60,20 +61,24 @@ struct ShelfView: View {
                         ))
                 }
             }
-        }.background(
+        }
+        .background(
             Group {
                 if !show {
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: 700)
-                        .shadow(color: Color.black.opacity(0.3), radius: 50, x: 0, y: 20)
-                        .blur(radius: 1)
-                        .offset(y: 400)
-                        .allowsHitTesting(false)
-                        .zIndex(-1)
-                        .transition(.opacity)
-                        .animation(.easeIn(duration: 0.3).delay(0.5), value: show)
-                        .animation(.easeOut(duration: 0.3).delay(0.5), value: show)// <-- delay re-entry
+                    VStack {
+                        Circle()
+                            .fill(Color.white)
+                            .frame(width: 700)
+                            .shadow(color: Color.black.opacity(0.3), radius: 50, x: 0, y: 20)
+                            .blur(radius: 1)
+                            .offset(y: 450)
+                            .allowsHitTesting(false)
+                            .zIndex(-1)
+                            .transition(.opacity)
+                            .animation(.easeIn(duration: 0.3).delay(0.5), value: show)
+                            .animation(.easeOut(duration: 0.3).delay(0.5), value: show)// <-- delay re-entry
+                    }.frame(maxHeight: .infinity, alignment: .top)
+                        .ignoresSafeArea(.container, edges: .top)
                 }
             }
         )
@@ -86,7 +91,7 @@ struct ShelfView: View {
                     .opacity
                         .animation(.easeIn(duration: 0.5)) // Fast appear
                 )
-                .padding(.top, 30)
+                .padding(.top, 70)
             textView
                 .transition(
                     .opacity
@@ -180,6 +185,7 @@ struct ShelfView: View {
             Spacer()
             
             Button(action: {
+                hideToolBar.toggle()
             }) {
                 Text("Journal")
                     .font(.system(size: 14, weight: .semibold)) // Smaller font
