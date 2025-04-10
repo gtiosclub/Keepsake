@@ -40,6 +40,9 @@ struct JournalPagesView: View {
     var body: some View {
         VStack {
             // Picker for toggling between All and Favorites
+            Text("Page Elements")
+                .font(.title)
+                .padding(.vertical, 8)
             Picker("Filter Pages", selection: $selectedOption) {
                 Text("All").tag(0)
                 Text("Favorites").tag(1)
@@ -87,9 +90,9 @@ struct JournalPagesView: View {
                                     }
                                     deletePage = -1
                                     pageWiggling = false
-                                    if displayPage == page.number {
-                                        displayPage = page.number == 0 ? 0 : page.number - 1
-                                    } else if displayPage > page.number {
+                                    if displayPage + 1 == page.number {
+                                        displayPage = page.number == 1 ? 0 : displayPage - 1
+                                    } else if displayPage + 1 > page.number {
                                         displayPage = displayPage - 1
                                     }
                                     journal.currentPage = displayPage
@@ -150,6 +153,10 @@ struct JournalPagesView: View {
                                 pageWiggling = false
                             } else {
                                 displayPage = page.number - 1
+                                journal.currentPage = displayPage
+                                Task {
+                                    await fbVM.updateCurrentPage(journalID: journal.id, currentPage: journal.currentPage)
+                                }
                                 isPresented.toggle()
                             }
                         }

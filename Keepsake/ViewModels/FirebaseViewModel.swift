@@ -533,7 +533,7 @@ class FirebaseViewModel: ObservableObject {
         let userRef = db.collection("USERS").document(user.id)
         do {
             try await userRef.updateData([
-                "lastUsedSShelfID": user.lastUsedJShelfID.uuidString,
+                "lastUsedSShelfID": user.lastUsedSShelfID.uuidString,
                 "isJournalLastUsed": user.isJournalLastUsed
             ])
         } catch {

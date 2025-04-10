@@ -20,10 +20,27 @@ struct ScrapbookShelfView: View {
     @State var hideToolBar: Bool = false
     @State var showOnlyCover: Bool = true
     @State var scaleEffect: CGFloat = 0.6
+    @State var currentScrollIndex: Int = 0
     var body: some View {
         ZStack {
             shelfParent
-        }
+                .ignoresSafeArea(.container, edges: .top)
+        }.background(
+            Group {
+                VStack {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 700)
+                        .shadow(color: Color.black.opacity(0.3), radius: 50, x: 0, y: 20)
+                        .blur(radius: 1)
+                        .offset(y: 450)
+                        .allowsHitTesting(false)
+                        .zIndex(-1)
+                        .transition(.opacity)
+                }.frame(maxHeight: .infinity, alignment: .top)
+                    .ignoresSafeArea(.container, edges: .top)
+            }
+        )
     }
     
     private var shelfParent: some View {
@@ -33,6 +50,7 @@ struct ScrapbookShelfView: View {
                     .opacity
                         .animation(.easeIn(duration: 0.5)) // Fast appear
                 )
+                .padding(.top, 70)
             textView
                 .transition(
                     .opacity
@@ -41,12 +59,18 @@ struct ScrapbookShelfView: View {
                 .padding(.bottom, 10)
             buttonNavigationView
                 .transition(.opacity.animation(.easeIn(duration: 0.5)))
-                .padding(.bottom, 10)
-            scrollView
-                .transition(
-                    .opacity
-                        .animation(.easeIn(duration: 0.01)) // Fast appear
-                ).padding(.top, UIScreen.main.bounds.height * -0.05)
+                .padding(.bottom, 50)
+            if shelf.scrapbooks.count == 0 {
+                defaultScrollView
+                    .padding(.top, UIScreen.main.bounds.height * -0.05)
+                    
+            } else {
+                scrollView
+                    .transition(
+                        .opacity
+                            .animation(.easeIn(duration: 0.01)) // Fast appear
+                    ).padding(.top, UIScreen.main.bounds.height * -0.05)
+            }
         }
         .toolbar(hideToolBar ? .hidden : .visible, for: .tabBar)
         .onTapGesture(perform: {
@@ -165,55 +189,155 @@ struct ScrapbookShelfView: View {
     }
     
     private var scrollView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 45) {
-                ForEach(userVM.user.scrapbookShelves[shelfIndex].scrapbooks) { scrapbook in
-                    GeometryReader { geometry in
-                        let verticalOffset = calculateVerticalOffset(proxy: geometry)
-                        VStack(spacing: 35) {
-                            NavigationLink {
-                                CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
-                            } label: {
-                                JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $showOnlyCover)
-                                    .scaleEffect(scaleEffect)
-                                    .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
-                                    .transition(.identity)
-                                    .matchedGeometryEffect(id: "journal_\(scrapbook.id)", in: shelfNamespace, properties: .position, anchor: .center)
-                            }
-                            VStack(spacing: 10) {
-                                //Journal name, date, created by you
-                                Text(scrapbook.name)
-                                    .font(.title2)
-                                    .foregroundColor(.primary)
-                                
-                                Text(scrapbook.createdDate)
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
-                                
-                                HStack(spacing: 5) {
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.5))
-                                        .frame(width: 15, height: 15)
-                                    
-                                    Text("created by You")
-                                        .font(.footnote)
-                                        .foregroundColor(.gray)
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 45) {
+                    ForEach(Array(userVM.user.scrapbookShelves[shelfIndex].scrapbooks.enumerated()), id: \.element.id) { index, scrapbook in
+                        GeometryReader { geometry in
+                            let verticalOffset = calculateVerticalOffset(proxy: geometry)
+                            VStack(spacing: 35) {
+                                NavigationLink {
+                                    CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
+                                } label: {
+                                    JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $showOnlyCover)
+                                        .scaleEffect(scaleEffect)
+                                        .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                                        .transition(.identity)
+                                        .matchedGeometryEffect(id: "journal_\(scrapbook.id)", in: shelfNamespace, properties: .position, anchor: .center)
                                 }
+                                VStack(spacing: 10) {
+                                    //Journal name, date, created by you
+                                    Text(scrapbook.name)
+                                        .font(.title2)
+                                        .foregroundColor(.primary)
+                                    
+                                    Text(scrapbook.createdDate)
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                    
+                                    HStack(spacing: 5) {
+                                        Circle()
+                                            .fill(Color.gray.opacity(0.5))
+                                            .frame(width: 15, height: 15)
+                                        
+                                        Text("created by You")
+                                            .font(.footnote)
+                                            .foregroundColor(.gray)
+                                    }
+                                }
+                                .padding(.top, 20)
+                                .frame(width: 200)
                             }
-                            .frame(width: 200)
+                            .frame(width: 240, height: 700)
+                            .offset(y: verticalOffset)
+                            .id(index)
                         }
-                        .frame(width: 240, height: 700)
-                        .offset(y: verticalOffset)
+                        .frame(width: 240, height: 600)
                     }
-                    .frame(width: 240, height: 600)
                 }
+                .padding(.horizontal, 70)
             }
-            .padding(.horizontal, 20)
+            .coordinateSpace(name: "scrollView")
+            .frame(height: 500, alignment: .bottom)
+            .padding(.top, 30)
+            .onAppear {
+                currentScrollIndex = 0
+                proxy.scrollTo(currentScrollIndex, anchor: .center)
+            }
+            .highPriorityGesture(
+                DragGesture(coordinateSpace: .named("scrollView"))
+                    .onEnded { value in
+                        let threshold: CGFloat = 100
+                        if abs(value.translation.width) > threshold {
+                            let nextJournal = value.translation.width > 0 ? -1 : 1
+                            let newIndex = currentScrollIndex + nextJournal
+                            
+                            withAnimation {
+                                currentScrollIndex = newIndex
+                                proxy.scrollTo(newIndex, anchor: .center)
+                            }
+                        }
+                    }
+            )
         }
-        .frame(height: 500, alignment: .bottom)
-        .padding(.top, 30)
 
     }
+    
+    private var defaultScrollView: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 45) {
+                    ForEach(0..<1, id: \.self) { index in
+                        GeometryReader { geometry in
+                            let verticalOffset = calculateVerticalOffset(proxy: geometry)
+                            VStack(spacing: 35) {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(.black)
+                                        .fill(.white)
+                                        .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect,
+                                               height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                                        .offset(y: UIScreen.main.bounds.height * 0.05 * scaleEffect)
+                                    Image(systemName: "plus.app")
+                                        .font(.system(size: 30))
+                                        .offset(y: UIScreen.main.bounds.height * 0.05 * scaleEffect)
+                                }
+                                .onTapGesture {
+                                }
+                                VStack(spacing: 10) {
+                                    Text("Create New")
+                                        .font(.title2)
+                                        .foregroundColor(.primary)
+                                    Text("\(todaysdate())")
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                        .opacity(0)
+                                    HStack(spacing: 5) {
+                                        Circle()
+                                            .fill(Color.gray.opacity(0.5))
+                                            .frame(width: 15, height: 15)
+                                        Text("created by You")
+                                            .font(.footnote)
+                                            .foregroundColor(.gray)
+                                    }.opacity(0)
+                                }
+                                .padding(.top, 20)
+                                .frame(width: 200)
+                            }
+                            .frame(width: 240, height: 700)
+                            .offset(y: verticalOffset)
+                            .id(index) // Add this to identify each journal
+                        }
+                        .frame(width: 240, height: 600)
+                    }
+                }
+                .padding(.horizontal, 70)
+            }
+            .coordinateSpace(name: "scrollView")
+            .frame(height: 500, alignment: .bottom)
+            .padding(.top, 30)
+            .onAppear {
+                currentScrollIndex = 0
+                proxy.scrollTo(currentScrollIndex, anchor: .center)
+            }
+            .highPriorityGesture(
+                DragGesture(coordinateSpace: .named("scrollView"))
+                    .onEnded { value in
+                        let threshold: CGFloat = 100
+                        if abs(value.translation.width) > threshold {
+                            let nextJournal = value.translation.width > 0 ? -1 : 1
+                            let newIndex = currentScrollIndex + nextJournal
+                            
+                            withAnimation {
+                                currentScrollIndex = newIndex
+                                proxy.scrollTo(newIndex, anchor: .center)
+                            }
+                        }
+                    }
+            )
+        }
+    }
+
     
     
    
