@@ -68,7 +68,7 @@ struct ShelfView: View {
                         .frame(width: 700)
                         .shadow(color: Color.black.opacity(0.3), radius: 50, x: 0, y: 20)
                         .blur(radius: 1)
-                        .offset(y: 350)
+                        .offset(y: 400)
                         .allowsHitTesting(false)
                         .zIndex(-1)
                         .transition(.opacity)
@@ -86,6 +86,7 @@ struct ShelfView: View {
                     .opacity
                         .animation(.easeIn(duration: 0.5)) // Fast appear
                 )
+                .padding(.top, 30)
             textView
                 .transition(
                     .opacity
@@ -94,7 +95,7 @@ struct ShelfView: View {
                 .padding(.bottom, 10)
             buttonNavigationView
                 .transition(.opacity.animation(.easeIn(duration: 0.5)))
-                .padding(.bottom, 10)
+                .padding(.bottom, 50)
             scrollView
                 .transition(
                     .opacity
@@ -343,6 +344,7 @@ struct ShelfView: View {
             .padding(.top, 30)
             .onAppear {
                 currentScrollIndex = 0
+                proxy.scrollTo(currentScrollIndex, anchor: .center)
             }
             .highPriorityGesture(
                 DragGesture(coordinateSpace: .named("scrollView"))
