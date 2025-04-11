@@ -44,7 +44,8 @@ struct ShelfView: View {
                                 .foregroundStyle(.black)
                             Text("Library")
                                 .foregroundStyle(.black)
-                        }.padding(.leading, 5)
+                                .padding(.leading, 5)
+                        }.padding(.leading, 15)
                     }
                     HStack {
                         Text("Welcome back, \(userVM.user.name)")
@@ -56,28 +57,17 @@ struct ShelfView: View {
                         
                         Spacer()
                         
-                        Menu {
-                            Button(action: {
-                                showJournalForm = true
-                                print("clicked")
-                            }) {
-                                Text("New Journal")
-                            }
-                            
-                            Button(action: {
-                                showJournalForm = true
-                            }) {
-                                Text("New AR Scrapbook")
-                            }
-                            
-                        } label: {
-                            Image(systemName: "plus.circle")
-                                .font(.system(size: 30))
-                                .foregroundColor(.gray)
+                        Button(action: { showJournalForm = true }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 28))
+                                .foregroundColor(Color(hex: "#7FD2E7"))
+                                .padding(.top, 10)
+                                .padding(.trailing, 5)
                         }
-                        .padding(.top, 20)
-                        .padding(.trailing, 30)
                     }
+                    .padding(.top, 15)
+                    .padding(.trailing, 30)
+                    
                 }
                 
                 Text("What is on your mind today?")
@@ -149,7 +139,7 @@ struct ShelfView: View {
                                             Task {
                                                 await fbVM.deleteJournal(journalID: journal.id.uuidString, journalShelfID: userVM.getJournalShelves()[shelfIndex].id)
                                             }
-                                            showDeleteButton.toggle()                                                 
+                                            showDeleteButton.toggle()
                                         } label: {
                                             Image(systemName: "xmark.circle.fill")
                                                 .font(.system(size: 28))
@@ -218,36 +208,36 @@ struct ShelfView: View {
         } else {
             if !inTextEntry {
                 OpenJournal(userVM: userVM, fbVM: fbVM,
-                          journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
-                          shelfIndex: shelfIndex,
-                          bookIndex: selectedJournal,
-                          degrees: $degrees,
-                          isHidden: $isHidden,
-                          show: $show,
-                          frontDegrees: $frontDegrees,
-                          circleStart: $circleStart,
-                          circleEnd: $circleEnd,
-                          displayPageIndex: $displayPage,
-                          coverZ: $coverZ,
-                          scaleFactor: $scaleEffect,
-                          inTextEntry: $inTextEntry,
-                          selectedEntry: $selectedEntry
-                          )
+                            journal: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal),
+                            shelfIndex: shelfIndex,
+                            bookIndex: selectedJournal,
+                            degrees: $degrees,
+                            isHidden: $isHidden,
+                            show: $show,
+                            frontDegrees: $frontDegrees,
+                            circleStart: $circleStart,
+                            circleEnd: $circleEnd,
+                            displayPageIndex: $displayPage,
+                            coverZ: $coverZ,
+                            scaleFactor: $scaleEffect,
+                            inTextEntry: $inTextEntry,
+                            selectedEntry: $selectedEntry
+                )
                 .matchedGeometryEffect(id: "journal_\(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: selectedJournal).id)", in: shelfNamespace, properties: .position, anchor: .center)
-                    .scaleEffect(scaleEffect)
-                    .transition(.slide)
-                    .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
-                    .navigationBarBackButtonHidden(true)
+                .scaleEffect(scaleEffect)
+                .transition(.slide)
+                .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                .navigationBarBackButtonHidden(true)
             } else {
                 JournalTextInputView(userVM: userVM,
                                      aiVM: aiVM, fbVM: fbVM,
-                                   shelfIndex: shelfIndex,
-                                   journalIndex: selectedJournal,
-                                   entryIndex: selectedEntry,
-                                   pageIndex: displayPage,
-                                   inTextEntry: $inTextEntry,
-                                   entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
-                    .navigationBarBackButtonHidden(true)
+                                     shelfIndex: shelfIndex,
+                                     journalIndex: selectedJournal,
+                                     entryIndex: selectedEntry,
+                                     pageIndex: displayPage,
+                                     inTextEntry: $inTextEntry,
+                                     entry: userVM.getJournalEntry(shelfIndex: shelfIndex, bookIndex: selectedJournal, pageNum: displayPage, entryIndex: selectedEntry))
+                .navigationBarBackButtonHidden(true)
             }
         }
     }
@@ -264,7 +254,7 @@ struct ShelfView: View {
             pages: template.journalPages ?? [JournalPage(number: 1)],
             currentPage: 0
         )
-//        userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
+        //        userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
         userVM.addJournalToShelfAndAddEntries(journal: newJournal, shelfIndex: shelfIndex)
         _ = await fbVM.addJournal(journal: newJournal, journalShelfID: shelfID)
     }
@@ -300,6 +290,6 @@ struct ShelfView: View {
             ]), aiVM: AIViewModel(), fbVM: FirebaseViewModel(), shelfIndex: 0, selectedOption: $selectedOption)
         }
     }
-
+    
     return Preview()
 }
