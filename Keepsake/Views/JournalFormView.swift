@@ -225,9 +225,30 @@ struct JournalFormView: View {
             else if selectedTab == "widgets" {
                 Form {
                     Section(header: Text("Color Schemes")) {
-                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 5) {
+                                ForEach(["Red", "Green", "Blue", "Multicolor"], id: \.self) { scheme in
+                                    VStack(spacing: 8) {
+                                        Image("WidgetView")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 130, height: 170)
+                                            .cornerRadius(12)
+
+                                        Text(scheme)
+                                            .font(.caption)
+                                            .foregroundColor(.primary)
+                                    }
+                                    .padding(.vertical, 20)
+                                    .padding(.leading, 15)
+                                    .padding(.trailing, 15)
+                                }
+                            }
+                        }
+                        .listRowInsets(EdgeInsets())
                     }
                 }
+
             }
         }
         
