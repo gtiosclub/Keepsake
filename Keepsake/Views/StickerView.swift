@@ -70,20 +70,32 @@ struct StickerView: View {
             .animation(isWiggling && showDeleteButton == sticker.id ?
                        Animation.easeInOut(duration: 0.1).repeatForever(autoreverses: true)
                        : .default, value: isWiggling)
+            .frame(width: sticker.size, height: sticker.size)
+            .position(sticker.position)
+            .offset(dragOffset)
+            .gesture(
+                DragGesture()
+                    .updating($dragOffset) { value, state, _ in
+                        state = value.translation
+                    }
+                    .onEnded { value in
+                        let newX = sticker.position.x + value.translation.width
+                        let newY = sticker.position.y + value.translation.height
+                        
+                        // Constrain horizontal movement (keep full sticker visible)
+                        let minX = sticker.size/2
+                        let maxX = geometry.size.width - sticker.size/2
+                        
+                        // Allow more vertical movement (let parts go off-screen)
+                        let verticalBuffer = sticker.size * 0.05 // 50% of sticker can go off-screen
+                        let minY = -verticalBuffer
+                        let maxY = geometry.size.height + verticalBuffer
+                        
+                        sticker.position.x = min(max(newX, minX), maxX)
+                        sticker.position.y = min(max(newY, minY), maxY)
+                    }
+            )
         }
-        .frame(width: sticker.size, height: sticker.size)
-        .position(sticker.position)
-        .offset(dragOffset)
-        .gesture(
-            DragGesture()
-                .updating($dragOffset) { value, state, _ in
-                    state = value.translation
-                }
-                .onEnded { value in
-                    sticker.position.x += value.translation.width
-                    sticker.position.y += value.translation.height
-                }
-        )
     }
 }
 
