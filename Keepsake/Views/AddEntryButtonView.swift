@@ -258,7 +258,7 @@ struct AddEntryButtonView: View {
                             ForEach(Array(aiVM.stickersFound.enumerated()), id: \.0) { index, stickerURL in
                                 Button {
                                     print(journal.currentPage)
-                                    let sticker = Sticker(id: UUID(), url: stickerURL, position: CGPoint(x: 150, y: 150), size: 1.0)
+                                    let sticker = Sticker(id: UUID(), url: stickerURL, position: CGPoint(x: 150, y: 150), size: 150)
                                     journal.pages[journal.currentPage].placedStickers.append(sticker)
                                     isExpanded = false
                                 } label: {
