@@ -466,6 +466,85 @@ class FirebaseViewModel: ObservableObject {
     //#########################################################################################
     
     /****######################################################################################
+    STICKERS
+     #########################################################################################**/
+    
+    func clearStickers(journalID: UUID) async {
+        let stickersRef = db.collection("JOURNALS")
+            .document(journalID.uuidString)
+            .collection("STICKERS")
+
+        do {
+            let snapshot = try await stickersRef.getDocuments()
+            
+            // If the collection doesn't exist or is empty
+            guard !snapshot.isEmpty else {
+                print("Collection is empty or does not exist.")
+                return
+            }
+            
+            let batch = db.batch()
+            
+            for doc in snapshot.documents {
+                batch.deleteDocument(doc.reference)
+            }
+            
+            try await batch.commit()
+            print("Collection cleared successfully.")
+            
+        } catch {
+            print("Failed to clear stickers: \(error)")
+        }
+    }
+    
+    func saveStickers(journal: Journal) async {
+        let stickers_reference = db.collection("JOURNALS").document(journal.id.uuidString).collection("STICKERS")
+        
+        for page in journal.pages {
+            for sticker in page.placedStickers {
+                do {
+                    let stickerRef = stickers_reference.document(sticker.id.uuidString)
+                    var stickerData = sticker.toDictionary()
+                    stickerData["pageNum"] = page.number
+                    try await stickerRef.setData(stickerData)
+                } catch {
+                    print("Error adding sticker: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    func retrieveStickers(journal: Journal) async {
+        let stickersRef = db.collection("JOURNALS")
+            .document(journal.id.uuidString)
+            .collection("STICKERS")
+
+        do {
+            let snapshot = try await stickersRef.getDocuments()
+            
+            // If the collection doesn't exist or is empty
+            guard !snapshot.isEmpty else {
+                print("Collection is empty or does not exist.")
+                return
+            }
+            
+            
+            for doc in snapshot.documents {
+                let data = doc.data()
+                if let sticker = Sticker.fromDictionary(data) {
+                    let pageNum = data["pageNum"] as? Int ?? 1
+                    journal.pages[pageNum - 1].placedStickers.append(sticker)
+                }
+            }
+            
+        } catch {
+            print("Failed to clear stickers: \(error)")
+        }
+    }
+    
+    //#########################################################################################
+    
+    /****######################################################################################
     JOURNAL SHELF
      #########################################################################################**/
     
@@ -500,8 +579,9 @@ class FirebaseViewModel: ObservableObject {
                 var arrJournals: [Journal] = []
                 
                 for journalId in journalIDs {
-                    let journal = await getJournalFromID(id: journalId)
+                    let journal = await getJournalFromID(id: journalId) 
                     if let journal = journal {
+                        await retrieveStickers(journal: journal)
                         arrJournals.append(journal)
                     }
                 }

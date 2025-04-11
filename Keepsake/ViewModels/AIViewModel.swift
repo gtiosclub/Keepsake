@@ -354,6 +354,39 @@ class AIViewModel: ObservableObject {
             print("Error fetching description from OpenAI: \(error.localizedDescription)")
         }
     }
+    
+    func getStickersFromMultipleEntries(entries: [JournalEntry]) async {
+        var prompt = """
+        '"I am inputting multiple entries. For each entry, give me one word to describe it so I can find a sticker associated with it. Try to find different words for each entry.
+        Return your words as a comma-separated list.
+        """
+        
+        for entry in entries {
+            if !entry.entryContents.isEmpty {
+                prompt += "Entry: \(entry.entryContents) \n\n"
+            }
+        }
+        
+        do {
+            let response = try await openAIAPIKey.sendMessage(
+                text: prompt,
+                model: .gpt_hyphen_4
+            )
+            let description = response.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !description.isEmpty {
+                let words: [String] = description.split(separator: ",").map { String($0) }
+                for word in words {
+                    let url = await fetchStickerFromGiphy(query: word) ?? ""
+                    await MainActor.run {
+                        stickersFound.append(url)
+                    }
+                }
+            }
+            
+        } catch {
+            print("Error fetching description from OpenAI: \(error.localizedDescription)")
+        }
+    }
 
     func fetchStickerFromGiphy(query: String) async -> String? {
         let urlString = "https://api.giphy.com/v1/stickers/search?api_key=\(giphyKey)&q=\(query)&limit=1"

@@ -22,6 +22,7 @@ struct WidgetView: View {
     @Binding var selectedEntry: Int
     @ObservedObject var userVM: UserViewModel
     @Binding var showDeleteButton: Int
+    @State private var showStickerDeleteButton: UUID? = nil
     @State private var isWiggling = false // Control wiggle animation
     @ObservedObject var journal: Journal
     @ObservedObject var fbVM: FirebaseViewModel
@@ -97,7 +98,16 @@ struct WidgetView: View {
             .frame(width: 470)
             
             ForEach(page.placedStickers) { sticker in
-                StickerView(sticker: sticker)
+                StickerView(
+                    sticker: sticker,
+                    isWiggling: $isWiggling,
+                    showDeleteButton: $showStickerDeleteButton, // This should be a UUID? binding
+                    deleteAction: {
+                        withAnimation {
+                            page.placedStickers.removeAll { $0.id == sticker.id }
+                        }
+                    }
+                )
             }
         }
     }
