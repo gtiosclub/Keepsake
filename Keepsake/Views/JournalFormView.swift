@@ -226,13 +226,13 @@ struct JournalFormView: View {
                 Form {
                     Section(header: Text("Color Schemes")) {
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 5) {
+                            HStack(spacing: 0) {
                                 ForEach(["Red", "Green", "Blue", "Multicolor"], id: \.self) { scheme in
                                     VStack(spacing: 8) {
                                         Image("WidgetView")
                                             .resizable()
                                             .scaledToFit()
-                                            .frame(width: 130, height: 170)
+                                            .frame(width: 120, height: 180)
                                             .cornerRadius(12)
 
                                         Text(scheme)
