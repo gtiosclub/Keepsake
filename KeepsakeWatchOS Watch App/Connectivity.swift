@@ -151,7 +151,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
             
             let db = Firestore.firestore()
             var reminders: [Reminder] = []
-            
+            var tempRemindersWithAudio: [(Reminder, String)] = []
             for item in items {
                 dispatchGroup.enter()
                 item.downloadURL { url, error in
@@ -173,6 +173,10 @@ final class Connectivity: NSObject, WCSessionDelegate {
                                 print("reminder found")
                                 if let reminder = try? document.data(as: Reminder.self) {
                                     self.remindersWithAudio.append((reminder, url.absoluteString))
+
+                                    if let reminder = try? document.data(as: Reminder.self) {
+                                        tempRemindersWithAudio.append((reminder, url.absoluteString))
+                                    }
                                     print("Found reminder for audioUniqueId: \(audioUniqueId)")
                                     //scheduleReminderNotification(for: reminder)
                                 }
@@ -191,7 +195,9 @@ final class Connectivity: NSObject, WCSessionDelegate {
             dispatchGroup.notify(queue: .main) {
                 print("audio processed")
                 self.audioFiles = audioFilesUrl
+                
                 self.remindersWithAudio = self.remindersWithAudio
+                print("in connectivity files doc this is connectviity: \(Connectivity.shared.remindersWithAudio.count)")
                 if WCSession.default.isReachable {
                     WCSession.default.sendMessage(["audio files": audioFilesUrl], replyHandler: nil) { error in
                         print("error: \(error.localizedDescription)")
