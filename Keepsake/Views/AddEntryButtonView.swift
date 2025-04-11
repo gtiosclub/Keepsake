@@ -106,7 +106,7 @@ struct AddEntryButtonView: View {
                                            height: UIScreen.main.bounds.width / 2 - 40)
                                     .foregroundStyle(Color(hex: "#8cc0ff"))
                                 
-                                Text("Blank\nwidget")
+                                Text("Blank\nEntry")
                                     .multilineTextAlignment(.leading)
                                     .font(.title2)
                                     .fontWeight(.bold)
@@ -260,6 +260,7 @@ struct AddEntryButtonView: View {
                                     print(journal.currentPage)
                                     let sticker = Sticker(id: UUID(), url: stickerURL, position: CGPoint(x: 150, y: 150), size: 1.0)
                                     journal.pages[journal.currentPage].placedStickers.append(sticker)
+                                    isExpanded = false
                                 } label: {
                                     if let url = URL(string: stickerURL) {
                                         AsyncImage(url: url) { image in
@@ -281,11 +282,7 @@ struct AddEntryButtonView: View {
             .onAppear {
                 aiVM.stickersFound = []
                 Task {
-                    for entry in journal.pages[journal.currentPage].entries {
-                        print("called to get sticker")
-                        await aiVM.getStickers(entry: entry)
-                        
-                    }
+                    await aiVM.getStickersFromMultipleEntries(entries: journal.pages[journal.currentPage].entries)
                 }
             }
         }

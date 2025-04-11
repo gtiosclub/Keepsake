@@ -32,3 +32,32 @@ class Sticker: ObservableObject, Identifiable, Encodable {
         try container.encode(size, forKey: .size)
     }
 }
+
+extension Sticker: CustomStringConvertible {
+    func toDictionary() -> [String: Any] {
+        return [
+            "id": id.uuidString,
+            "url": url,
+            "x": position.x,
+            "y": position.y,
+            "size": size
+        ]
+    }
+    
+    
+    static func fromDictionary(_ dict: [String: Any]) -> Sticker? {
+        guard let idString = dict["id"] as? String,
+              let id = UUID(uuidString: idString),
+              let url = dict["url"] as? String,
+              let xPos = dict["x"] as? Double,
+              let yPos = dict["y"] as? Double,
+              let size = dict["size"] as? Double else {
+            return nil
+        }
+        return Sticker(id: id, url: url, position: CGPoint(x: xPos, y: yPos), size: size)
+    }
+    
+    var description: String {
+        return ""
+    }
+}

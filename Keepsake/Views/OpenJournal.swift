@@ -110,7 +110,7 @@ struct OpenJournal: View {
             VStack {
                 // Your header content...
                 HStack{
-                    JournalReturnButton(circleStart: $circleStart, circleEnd: $circleEnd, frontDegrees: $frontDegrees, degrees: $degrees, isHidden: $isHidden, coverZ: $coverZ, scaleFactor: $scaleFactor, show: $show, hideToolBar: $hideToolBar, showOnlyCover: $showOnlyCover, isAnimating: $isAnimating)
+                    JournalReturnButton(fbVM: fbVM, journal: journal, circleStart: $circleStart, circleEnd: $circleEnd, frontDegrees: $frontDegrees, degrees: $degrees, isHidden: $isHidden, coverZ: $coverZ, scaleFactor: $scaleFactor, show: $show, hideToolBar: $hideToolBar, showOnlyCover: $showOnlyCover, isAnimating: $isAnimating)
                     Spacer()
                 }.opacity(degrees == -180 ? 1 : 0)
                     .padding(.bottom, 20)
@@ -419,6 +419,8 @@ struct JournalDisplayView: View {
 }
 
 struct JournalReturnButton: View {
+    @ObservedObject var fbVM: FirebaseViewModel
+    @ObservedObject var journal: Journal
     @Binding var circleStart: CGFloat
     @Binding var circleEnd: CGFloat
     @Binding var frontDegrees:CGFloat
@@ -433,6 +435,11 @@ struct JournalReturnButton: View {
     var body: some View {
         VStack {
             Button(action: {
+                Task {
+                    await fbVM.clearStickers(journalID: journal.id)
+                    await fbVM.saveStickers(journal: journal)
+                }
+               
                 isAnimating.toggle()
                 circleStart = 0.5
                 circleEnd = 1
