@@ -26,25 +26,43 @@ class TextBoxEntity: Entity {
         textComponent.backgroundColor = CGColor(gray: 0.5, alpha: 0.8)
 //        textComponent.backgroundColor = UIColor.white.cgColor
         
-        // Separately instatiatied width and height to use in collision box dimensions
-        let componentWidth: Float = 2000
-        let componentHeight: Float = 1000
-        textComponent.size = CGSize(width: Int(componentWidth), height: Int(componentHeight))
-        textComponent.cornerRadius = 100
         
-        // Set insets for now, need to figure out how to center text later
-        textComponent.edgeInsets = UIEdgeInsets(top: 300, left: 500, bottom: 100, right: 200)
+        // Separately instatiatied width and height to use in collision box dimensions
+//        let componentWidth: Float = 2000
+//        let componentHeight: Float = 1000
+//        textComponent.size = CGSize(width: Int(componentWidth), height: Int(componentHeight))
+//        textComponent.cornerRadius = 100
+//        
+//        // Set insets for now, need to figure out how to center text later
+//        textComponent.edgeInsets = UIEdgeInsets(top: 300, left: 500, bottom: 100, right: 200)
         
         // TextComponent takes in a Attributed String instead of a normal string so needs extra work to instantiate
         var attributedtext = AttributedString(text)
         attributedtext.font = .boldSystemFont(ofSize: 200)
         textComponent.text = attributedtext
         
+        let maxSize = CGSize(width: 2000, height: CGFloat.greatestFiniteMagnitude)
+        // Use NSAttributedString for measurement
+        let nsString = NSAttributedString(string: text, attributes: [.font: UIFont.boldSystemFont(ofSize: 200)])
+        let boundingRect = nsString.boundingRect(with: maxSize, options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
+        let textSize = CGSize(width: ceil(boundingRect.width), height: ceil(boundingRect.height))
+        
+        // Option 2: Resize the box to fit text with some padding
+        let horizontalPadding: CGFloat = 40  // Extra space on both sides
+        let verticalPadding: CGFloat = 20    // Extra space on top and bottom
+        let newWidth = textSize.width + 2 * horizontalPadding
+        let newHeight = textSize.height + 2 * verticalPadding
+        textComponent.size = CGSize(width: Int(newWidth), height: Int(newHeight))
+        textComponent.edgeInsets = UIEdgeInsets(top: verticalPadding, left: horizontalPadding,
+                                                bottom: verticalPadding, right: horizontalPadding)
+        textComponent.cornerRadius = Float(min(newWidth, newHeight)) * 0.1
+        
+
 
         // Adds the component to the entity's set of components (each component gives the entity a different behavior)
         textEntity.components.set(textComponent)
         textEntity.components.set([InputTargetComponent(),
-                                   CollisionComponent(shapes: [ShapeResource.generateBox(width: componentWidth, height: componentHeight, depth: 0.05),])])
+                                   CollisionComponent(shapes: [ShapeResource.generateBox(width: Float(newWidth), height: Float(newHeight), depth: 0.05),])])
         
         
         // Adds entity to parent view --> basically the "return" statement if my understanding is correct
@@ -105,6 +123,21 @@ class TextBoxEntity: Entity {
         }
         
         textComponent.text = attributedText
+        
+        let maxSize = CGSize(width: 2000, height: CGFloat.greatestFiniteMagnitude)
+        // Use NSAttributedString for measurement
+        let nsString = NSAttributedString(string: newText, attributes: [.font: UIFont.boldSystemFont(ofSize: 200)])
+        let boundingRect = nsString.boundingRect(with: maxSize, options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
+        let textSize = CGSize(width: ceil(boundingRect.width), height: ceil(boundingRect.height))
+        
+        // Option 2: Resize the box to fit text with some padding
+        let horizontalPadding: CGFloat = 40  // Extra space on both sides
+        let verticalPadding: CGFloat = 20    // Extra space on top and bottom
+        let newWidth = textSize.width + 2 * horizontalPadding
+        let newHeight = textSize.height + 2 * verticalPadding
+        textComponent.size = CGSize(width: Int(newWidth), height: Int(newHeight))
+        textComponent.edgeInsets = UIEdgeInsets(top: verticalPadding, left: horizontalPadding,
+                                                bottom: verticalPadding, right: horizontalPadding)
         
         // Update background color if provided
         if let backgroundColor = backgroundColor {
