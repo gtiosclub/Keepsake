@@ -121,25 +121,26 @@ struct TextEntryView: View {
     var fontSize: CGFloat
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(.black)
+            RoundedRectangle(cornerRadius: 25)
                 .fill(LinearGradient(colors: [
                     Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]).opacity(0.9),
                     Color(red: entry.color[0] * 0.8, green: entry.color[1] * 0.8, blue: entry.color[2] * 0.8)
                 ], startPoint: .topLeading, endPoint: .bottomTrailing))
                 .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
                 .opacity(entry.isFake ? 0 : 1)
+                .shadow(color: .gray, radius: 2, x: 0, y: 2)
             VStack {
                 Text(entry.title)
-                    .font(.system(size: fontSize))
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(.white)
                     .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1) - 10)
                     .scaledToFill()
                     .lineLimit(2)
-                Text(entry.date)
-                    .font(.system(size: fontSize))
-                    .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1) - 10)
-                    .scaledToFill()
-                    .lineLimit(1)
+//                Text(entry.date)
+//                    .font(.system(size: fontSize))
+//                    .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1) - 10)
+//                    .scaledToFill()
+//                    .lineLimit(1)
             }
         }.frame(width: width, height: height, alignment: .topLeading)
     }
@@ -206,7 +207,7 @@ struct PictureEntryView: View {
         ZStack {
             // Background Color
             Color.secondary
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .clipShape(RoundedRectangle(cornerRadius: 25))
                 .ignoresSafeArea()
 
             if uiImages.count != 0 {
@@ -386,10 +387,11 @@ struct VoiceMemoEntryView: View {
     var fontSize: CGFloat
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: 25)
                 .fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]))
                 .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
                 .opacity(entry.isFake ? 0 : 1)
+                .shadow(color: .gray, radius: 2, x: 0, y: 2)
 
             VStack(spacing: 8) {
                 Image(systemName: "waveform.circle.fill")

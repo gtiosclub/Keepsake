@@ -146,7 +146,10 @@ struct LibraryScrapbookView: View {
                         if longPressedShelfIndex == index {
                             Button {
                                 let shelfID = user.scrapbookShelves[index].id
-                                //Add firebase deletion later
+                                
+                                Task {
+                                    await fbVM.deleteScrapbookShelf(shelfID: shelfID, userID: user.id)
+                                }
                                 userVM.removeScrapbookShelf(index: index)
                                 longPressedShelfIndex = nil
                             } label: {
