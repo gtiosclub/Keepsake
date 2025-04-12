@@ -47,9 +47,14 @@ struct SplashView: View {
                         navigateToHomeFromNotification = true
                     }
                 } else {
-                    VStack {
+                    VStack(spacing: 8) {
+                        Image("KeepsakeIcon")
+                            .resizable()
+                            .frame(width: 100, height: 100)
                         Text("Keepsake")
                             .font(.system(size: 60, weight: .semibold))
+                        
+                        Spacer().frame(height: 40)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(Color.white)
