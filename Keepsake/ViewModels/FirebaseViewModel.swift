@@ -25,6 +25,7 @@ class FirebaseViewModel: ObservableObject {
     @Published var userSession: FirebaseAuth.User?
     @Published var currentUser: User?
     
+    
     let auth = Auth.auth()
     static let vm = FirebaseViewModel()
     func configure() {
@@ -189,6 +190,7 @@ class FirebaseViewModel: ObservableObject {
                     lastUsedID = UUID()
                 }
                 let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed)
+                self.currentUser = user
                 
                 // Assign the user object to currentUser
                 await MainActor.run {

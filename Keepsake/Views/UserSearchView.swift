@@ -75,40 +75,24 @@ struct UserSearchView: View {
 
                         Spacer()
                         Button(action: {
-                            guard let currentUserID = newUser?.id else { return }
 
-                            if currentUserFriends.contains(user.id) {
-                                currentUserFriends.removeAll { $0 == user.id }
-                                viewModel.removeFriend(currentUserID: currentUserID, friendUserID: user.id)
-                            } else {
-                                currentUserFriends.append(user.id)
-                                viewModel.addFriend(currentUserID: currentUserID, friendUserID: user.id)
+                            Task {
+                                guard let currentUserID = newUser?.id else { return }
+
+                                if firebaseViewModel.currentUser?.friends.contains(user.id) == true {
+                                    viewModel.removeFriend(currentUserID: currentUserID, friendUserID: user.id)
+                                } else {
+                                    viewModel.addFriend(currentUserID: currentUserID, friendUserID: user.id)
+                                }
+
+                                await firebaseViewModel.fetchUser()
                             }
                         }) {
-                            Text(currentUserFriends.contains(user.id) ? "Remove Friend" : "Add Friend")
+                            Text((firebaseViewModel.currentUser?.friends.contains(user.id) == true) ? "Remove Friend" : "Add Friend")
                                 .foregroundColor(.pink)
                         }
                         
-//                        Button(action: {
-//                            guard let currentUserID = newUser?.id else { return }
-//
-//                            if currentUserFriends.contains(user.id) {
-//                                // Remove friend locally
-//                                if let index = viewModel.users.firstIndex(where: { $0.id == currentUserID }) {
-//                                    viewModel.users[index].friends.removeAll { $0 == user.id }
-//                                }
-//                                viewModel.removeFriend(currentUserID: currentUserID, friendUserID: user.id)
-//                            } else {
-//                                // Add friend locally
-//                                if let index = viewModel.users.firstIndex(where: { $0.id == currentUserID }) {
-//                                    viewModel.users[index].friends.append(user.id)
-//                                }
-//                                viewModel.addFriend(currentUserID: currentUserID, friendUserID: user.id)
-//                            }
-//                        }) {
-//                            Text(newUser!.friends.contains(user.id) ? "Remove Friend" : "Add Friend")
-//                                .foregroundColor(.pink)
-//                        }
+
                     }
                     .background(
                         NavigationLink(
@@ -130,6 +114,9 @@ struct UserSearchView: View {
             
         }
         .onAppear {
+            Task {
+                        await firebaseViewModel.fetchUser()
+                    }
             if let currentUser = firebaseViewModel.currentUser {
                             currentUserFriends = currentUser.friends
                         }

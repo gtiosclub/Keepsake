@@ -40,41 +40,27 @@ struct SearchedUserProfileView: View {
                             }
                         }
                     }
-                    
-//                    Button(action: {
-//                        if (currentUserID.friends.contains(user.id)) {
-//                            currentUserID.friends.remove(at: currentUserID.friends.firstIndex(of: user.id)!)
-//                            viewModel.removeFriend(currentUserID: currentUserID.id, friendUserID: user.id)
-//                            isFriend = false
-//                        } else {
-//                            currentUserID.friends.append(user.id)
-//                            viewModel.addFriend(currentUserID: currentUserID.id, friendUserID: user.id)
-//                            isFriend = true
-//                        }
-//                    }
-//                    ) {
-//                        
-//                        Text(currentUserID.friends.contains(user.id) ? "Remove Friend" : "Add Friend")
-//                            .foregroundColor(.pink)
-//                            
-//                    }
+
                     Button(action: {
-                        if friends.contains(user.id) {
-                            if let index = friends.firstIndex(of: user.id) {
-                                friends.remove(at: index)
+                        Task {
+                            guard let currentUser = firebaseViewModel.currentUser else { return }
+
+                            if currentUser.friends.contains(user.id) {
+                                await viewModel.removeFriend(currentUserID: currentUser.id, friendUserID: user.id)
+                            } else {
+                                await viewModel.addFriend(currentUserID: currentUser.id, friendUserID: user.id)
                             }
-                            viewModel.removeFriend(currentUserID: currentUserID.id, friendUserID: user.id)
-                            isFriend = false
-                        } else {
-                            friends.append(user.id)
-                            viewModel.addFriend(currentUserID: currentUserID.id, friendUserID: user.id)
-                            isFriend = true
+
+                            await firebaseViewModel.fetchUser()
                         }
                     }) {
-                        Text(friends.contains(user.id) ? "Remove Friend" : "Add Friend")
-                            .foregroundColor(.pink)
+                        Text(
+                            (firebaseViewModel.currentUser?.friends.contains(user.id) == true)
+                            ? "Remove Friend"
+                            : "Add Friend"
+                        )
+                        .foregroundColor(.pink)
                     }
-
                 }
                 .onAppear {
                     isFriend = friends.contains(user.id)
