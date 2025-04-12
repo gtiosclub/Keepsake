@@ -13,6 +13,7 @@ struct JournalFormView: View {
     @State private var selectedTexture: Texture = .leather
     @State private var journalPages: [JournalPage]? = nil
     @State private var selectedTab: String = "cover"
+    @State private var showOnlyCover: Bool = false
     
     let journalWidth = UIScreen.main.bounds.width * 0.92 * 0.5
     let journalHeight = UIScreen.main.bounds.height * 0.56 * 0.5
@@ -81,7 +82,7 @@ struct JournalFormView: View {
                                     texture: selectedTexture
                                 ),
                                 degrees: 0,
-                                title: title.isEmpty ? "Untitled Journal" : title
+                                title: title.isEmpty ? "Untitled Journal" : title, showOnlyCover: $showOnlyCover
                             )
                             .scaleEffect(0.5)
                             .frame(width: 120, height: 157)
@@ -185,7 +186,8 @@ struct JournalFormView: View {
                                             JournalCover(
                                                 template: template,
                                                 degrees: 0,
-                                                title: template.name
+                                                title: template.name,
+                                                showOnlyCover: $showOnlyCover
                                             )
                                             .frame(width: 120, height: 157)
                                             .scaleEffect(0.5)
@@ -251,31 +253,6 @@ struct JournalFormView: View {
 
             }
         }
-        
-        
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle("New Journal")
-        .navigationBarItems(
-            leading: Button("Cancel") {
-                isPresented = false
-            },
-            trailing: Button("Create") {
-                if let selected = selectedTemplate {
-                    onCreate(
-                        title.isEmpty ? selected.name : title,
-                        selected.coverColor,
-                        selected.pageColor,
-                        selected.titleColor,
-                        selected.texture,
-                        selected.journalPages
-                    )
-                } else {
-                    onCreate(title, coverColor, pageColor, titleColor, selectedTexture, nil)
-                }
-                isPresented = false
-            }
-                .disabled(title.isEmpty && selectedTemplate == nil)
-        )
     }
     
     private func selectTemplate(_ template: Template) {

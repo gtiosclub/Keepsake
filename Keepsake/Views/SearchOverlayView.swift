@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct SearchOverlayView: View {
+    @State private var isSearching = false
     @Binding var isPresented: Bool // Control visibility from the parent view
     @State private var searchText = ""
     @State private var debounceTask: DispatchWorkItem?
     @ObservedObject var firebaseVM: FirebaseViewModel
+    
     var journalID = ""
 
     var body: some View {
@@ -38,9 +40,14 @@ struct SearchOverlayView: View {
                         .onChange(of: searchText) { newValue in
                             debounceSearch(term: newValue)
                         }
+                    if isSearching {
+                        ProgressView()
+                            .scaleEffect(0.9)
+                            .progressViewStyle(CircularProgressViewStyle(tint: .gray))
+                    }
                 }
                 
-                ForEach(firebaseVM.searchedEntries, id: \.self) { journalEntry in
+                ForEach(firebaseVM.searchedEntries) { journalEntry in
                     Divider()
                         .overlay(Color.gray)
                     JournalTextWidgetView(entry: journalEntry)
@@ -61,9 +68,11 @@ struct SearchOverlayView: View {
 
     private func debounceSearch(term: String) {
         debounceTask?.cancel()
+        isSearching = true
         let task = DispatchWorkItem {
             Task {
                 await FirebaseViewModel.vm.performVectorSearch(searchTerm: term, journal_id: journalID)
+                isSearching = false
             }
         }
         debounceTask = task

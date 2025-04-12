@@ -8,12 +8,12 @@ import SwiftUI
 
 var journals: [any Book] = [
     Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .red, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 2),
-    Scrapbook(name: "Scrapbook 1", createdDate: "5/7/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .cyan, pageColor: .white, titleColor: .black)),
+//    Scrapbook(name: "Scrapbook 1", createdDate: "5/7/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .cyan, pageColor: .white, titleColor: .black)),
     Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .blue, pageColor: .yellow, titleColor: .black), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
-    Scrapbook(name: "Scarpbook 2", createdDate: "5/4/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .orange, pageColor: .white, titleColor: .black)),
+//    Scrapbook(name: "Scarpbook 2", createdDate: "5/4/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .orange, pageColor: .white, titleColor: .black)),
     Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .gray, pageColor: .brown, titleColor: .yellow), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
     Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .green, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
-    Scrapbook(name: "Scarpbook 3", createdDate: "5/9/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .black, pageColor: .white, titleColor: .white))
+//    Scrapbook(name: "Scarpbook 3", createdDate: "5/9/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .black, pageColor: .white, titleColor: .white))
 ]
 
 var sortOptions: [String] = ["↑↓", "Your Friends", "Travel", "Near You"]
@@ -22,8 +22,9 @@ struct CommunityView: View {
     @State var scaleEffect = 0.4
     @State private var searchText = ""
     @StateObject private var viewModel = UserLookupViewModel()
+    @State var dummy: Bool = false
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView (.vertical, showsIndicators: false) {
                 VStack (alignment: .leading) {
                     HStack {
@@ -77,7 +78,7 @@ struct CommunityView: View {
                                         //                                        .fill(Color.gray.opacity(0.5))
                                         //                                        .frame(width: 150, height: 200)
                                         //                                        .cornerRadius(10)
-                                        JournalCover(template: journals[index].template, degrees: 0, title: journals[index].name)
+                                        JournalCover(template: journals[index].template, degrees: 0, title: journals[index].name, showOnlyCover: $dummy)
                                             .scaleEffect(scaleEffect)
                                             .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                                         VStack(alignment: .leading, spacing: 3) {

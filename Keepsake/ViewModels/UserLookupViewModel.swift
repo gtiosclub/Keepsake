@@ -4,7 +4,38 @@ import FirebaseFirestore
 class UserLookupViewModel: ObservableObject {
     @Published var users: [User] = []
 
-    func searchUsers(searchText: String) {
+    func addFriend(currentUserID: String, friendUserID: String) {
+        let db = Firestore.firestore()
+        let userRef = db.collection("USERS").document(currentUserID)
+        
+        userRef.updateData(["friends": FieldValue.arrayUnion([friendUserID])]) { error in
+            if let error = error {
+                print("Error adding friend: \(error)")
+            } else {
+                if let index = self.users.firstIndex(where: { $0.id == friendUserID }) {
+                    self.users[index].friends.append(currentUserID)
+                    self.objectWillChange.send()
+                }
+            }
+        }
+    }
+    func removeFriend(currentUserID: String, friendUserID: String) {
+        let db = Firestore.firestore()
+        let userRef = db.collection("USERS").document(currentUserID)
+        
+        userRef.updateData(["friends": FieldValue.arrayRemove([friendUserID])]) { error in
+            if let error = error {
+                print("Error removing friend: \(error)")
+            } else {
+                if let index = self.users.firstIndex(where: { $0.id == friendUserID }) {
+                    self.users[index].friends.removeAll { $0 == currentUserID }
+                    self.objectWillChange.send()
+                }
+            }
+        }
+    }
+    
+    func searchUsers(searchText: String, currentUserName: String) {
         guard !searchText.isEmpty else {
             self.users = []
             return
@@ -33,8 +64,8 @@ class UserLookupViewModel: ObservableObject {
                       let friends = data["friends"] as? [String] else { return nil }
                 
 
-                if name.lowercased().hasPrefix(searchTextLowercased) || username.lowercased().hasPrefix(searchTextLowercased) {
-                    return User(id: doc.documentID, name: name, username: username, journalShelves: [], scrapbookShelves: [], friends: friends, lastUsedShelfID: UUID(), isJournalLastUsed: true)
+                if name.lowercased().hasPrefix(searchTextLowercased) && username != currentUserName {
+                    return User(id: doc.documentID, name: name, username: username, journalShelves: [], scrapbookShelves: [], friends: friends, lastUsedJShelfID: UUID(), lastUsedSShelfID: UUID(), isJournalLastUsed: true)
                 }
                 return nil
             }
