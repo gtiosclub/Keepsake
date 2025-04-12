@@ -229,10 +229,12 @@ class PictureEntry: JournalEntry {
 class WrittenEntry: JournalEntry {
     var text: String
     var summary: String
+    var selectedPrompt: String
 
-    init(date: String, title: String, text: String, summary: String, width: Int = 1, height: Int = 1, isFake: Bool = false, color: [Double] = [0.5,0.5,0.5]) {
+    init(date: String, title: String, text: String, summary: String, width: Int = 1, height: Int = 1, isFake: Bool = false, color: [Double] = [0.5,0.5,0.5], selectedPrompt: String = "") {
         self.text = text
         self.summary = summary
+        self.selectedPrompt = selectedPrompt
         super.init(date: date, title: title, entryContents: text, width: width, height: height, isFake: isFake, color: color, type: .written)
     }
     
@@ -244,6 +246,7 @@ class WrittenEntry: JournalEntry {
         var dict = super.toDictionary(journalID: journalID)
         dict["text"] = text
         dict["summary"] = summary
+        dict["selectedPrompt"] = selectedPrompt
         return dict
     }
 
@@ -255,10 +258,11 @@ class WrittenEntry: JournalEntry {
               let width = dict["width"] as? Int,
               let height = dict["height"] as? Int,
               let isFake = dict["isFake"] as? Bool,
-              let color = dict["color"] as? [Double]
+              let color = dict["color"] as? [Double],
+              let selectedPrompt = dict["selectedPrompt"] as? String
         else { return nil }
 
-        return WrittenEntry(date: date, title: title, text: text, summary: summary, width: width, height: height, isFake: isFake, color: color)
+        return WrittenEntry(date: date, title: title, text: text, summary: summary, width: width, height: height, isFake: isFake, color: color, selectedPrompt: selectedPrompt)
     }
 }
 

@@ -483,6 +483,7 @@ struct ShelfView: View {
                     pageIndex: displayPage,
                     inEntry: $inEntry,
                     entry: writtenEntry,
+                    selectedPrompt: writtenEntry.selectedPrompt,
                     dailyPrompt: $dailyPrompt
                 )
             } else {
