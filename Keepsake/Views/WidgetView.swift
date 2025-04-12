@@ -128,6 +128,7 @@ struct TextEntryView: View {
                 ], startPoint: .topLeading, endPoint: .bottomTrailing))
                 .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
                 .opacity(entry.isFake ? 0 : 1)
+                .shadow(color: .gray, radius: 2, x: 0, y: 2)
             VStack {
                 Text(entry.title)
                     .font(.title2.weight(.bold))
@@ -390,6 +391,7 @@ struct VoiceMemoEntryView: View {
                 .fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]))
                 .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
                 .opacity(entry.isFake ? 0 : 1)
+                .shadow(color: .gray, radius: 2, x: 0, y: 2)
 
             VStack(spacing: 8) {
                 Image(systemName: "waveform.circle.fill")
