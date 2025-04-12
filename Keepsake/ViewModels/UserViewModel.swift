@@ -55,7 +55,7 @@ class UserViewModel: ObservableObject {
     }
     
     func removeScrapbookShelf(index: Int) {
-        user.journalShelves.remove(at: index)
+        user.scrapbookShelves.remove(at: index)
     }
     
     func addScrapbookShelfToUser(_ shelf: ScrapbookShelf) {
