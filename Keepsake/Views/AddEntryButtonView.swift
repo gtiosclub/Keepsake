@@ -206,6 +206,13 @@ struct AddEntryButtonView: View {
                         }
                         Button {
                             if journal.pages[journal.currentPage].entries.count <= 8 {
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: PictureEntry(date: "", title: "", images: [], width: 1, height: 1, isFake: false, color: randomColorOffset(
+                                    from: journal.template.coverColor.toRGBArray().map(Double.init)
+                                )))
+                                Task {
+                                    await fbVM.updateJournalPage(entries: journal.pages[displayPage].entries, journalID: journal.id, pageNumber: displayPage)
+                                }
+                                
                                 isExpanded.toggle()
                             } else {
                                 //handle too many entries

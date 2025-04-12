@@ -139,7 +139,7 @@ struct JournalFormView: View {
                                 .padding(.top, 10)
                             
                             VStack(spacing: 8) {
-                                let mainWidgetPage = JournalPage.previewTemplate(pageNumber: 0, colorArr: colorArr)
+                                let mainWidgetPage = JournalPage.previewTemplate(pageNumber: 0, color: coverColor)
                                 ZStack(alignment: .topLeading) {
                                     // Rectangle shaped like a paper
                                     RoundedRectangle(cornerRadius: 10)
@@ -266,7 +266,7 @@ struct JournalFormView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 0) {
                                 ForEach(colorOptions, id: \.name) { option in
-                                    let widgetPage = JournalPage.previewTemplate(pageNumber: 0, colorArr: option.colorArr)
+                                    let widgetPage = JournalPage.previewTemplate(pageNumber: 0, color: option.color)
                                     VStack(spacing: 8) {
                                         ZStack(alignment: .topLeading) {
                                             // Rectangle shaped like a paper

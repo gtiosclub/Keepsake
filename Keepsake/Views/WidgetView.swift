@@ -435,7 +435,7 @@ public func todaysdate() -> String {
 #Preview {
     struct Preview: View {
 //        @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [PictureEntry(date: "Date", title: "title", images: [], width: 1, height: 2, isFake: false, color: [0.5, 0.5, 0.5]), WrittenEntry(date: "", title: "", text: "Text", summary: "summary", width: 1, height: 2, isFake: false, color: [0.5, 0.5, 0.5]), JournalEntry(), JournalEntry(), WrittenEntry(date: "", title: "", text: "Text", summary: "summary", width: 2, height: 2, isFake: false, color: [0.5, 0.5, 0.5])], realEntryCount: 3)
-        @ObservedObject var page = JournalPage.dailyReflectionTemplate(pageNumber: 1)
+        @ObservedObject var page = JournalPage.dailyReflectionTemplate(pageNumber: 1, color: .red)
         @State var selectedImageIndex: Int = 0
         @State var inEntry: EntryType = .openJournal
         @State var selectedEntry: Int = 0
