@@ -23,8 +23,8 @@ class TextBoxEntity: Entity {
         textComponent = TextComponent()
         
         super.init()
-//        textComponent.backgroundColor = CGColor(gray: 0.5, alpha: 0.8)
-        textComponent.backgroundColor = UIColor.white.cgColor
+        textComponent.backgroundColor = CGColor(gray: 0.5, alpha: 0.8)
+//        textComponent.backgroundColor = UIColor.white.cgColor
         
         // Separately instatiatied width and height to use in collision box dimensions
         let componentWidth: Float = 2000
@@ -50,15 +50,6 @@ class TextBoxEntity: Entity {
         // Adds entity to parent view --> basically the "return" statement if my understanding is correct
         self.addChild(textEntity)
     }
-    
-//    func updateText(_ newText: String) {
-//        var attributedText = AttributedString(newText)
-//        attributedText.font = .boldSystemFont(ofSize: 200)
-//        textComponent.text = attributedText
-//        
-//        // Update the text entity's component
-//        textEntity.components[TextComponent.self] = textComponent
-//    }
     
     func updateText(_ newText: String, font: String, size: CGFloat, isBold: Bool, isItalic: Bool, isUnderlined: Bool, textColor: Color, backgroundColor: Color?) {
         var attributedText = AttributedString(newText)
@@ -124,6 +115,15 @@ class TextBoxEntity: Entity {
 
         
         // Update the text entity's component
+        textEntity.components[TextComponent.self] = textComponent
+    }
+    
+    func setSelected(_ isSelected: Bool) {
+        if isSelected {
+            textComponent.backgroundColor = CGColor(gray: 0.5, alpha: 1.0)
+        } else {
+            textComponent.backgroundColor = CGColor(gray: 0.5, alpha: 0.8)
+        }
         textEntity.components[TextComponent.self] = textComponent
     }
     
