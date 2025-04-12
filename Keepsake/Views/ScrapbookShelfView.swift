@@ -192,13 +192,7 @@ struct ScrapbookShelfView: View {
                                             .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                                             .transition(.identity)
                                             .matchedGeometryEffect(id: "journal_\(scrapbook.id)", in: scrapbookShelfNamespace, properties: .position, anchor: .center)
-                                            .onTapGesture {
-                                                if showDeleteButton {
-                                                    showDeleteButton.toggle()
-                                                }
-                                            }
-                                            .onLongPressGesture(minimumDuration: 0.5) {
-                                                print("yoooo")
+                                            .onTapGesture(count: 2) { // Detect double tap
                                                 withAnimation(.spring()) {
                                                     showDeleteButton.toggle()
                                                     deleteScrapbookID = scrapbook.id.uuidString
