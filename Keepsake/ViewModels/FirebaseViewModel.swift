@@ -545,31 +545,24 @@ class FirebaseViewModel: ObservableObject {
             ])
             
             //after the user adds an entry, this code checks streak stuff
+            let firestoreTimestamp = Timestamp(date: Date())
+            
             let userRef = db.collection("USERS").document((currentUser?.id)!)
             do {
+                
                 let document = try await userRef.getDocument()
                     let data = document.data()
                     let streaks = data?["streaks"] as? Int ?? 0
-
-                    if streaks == 0 {
-                        let currentTime = Date().timeIntervalSince1970
-                        currentUser?.lastJournaled = currentTime
-                        currentUser?.streaks = 1
+                    let lastJournaledTimestamp = data?["lastJournaled"] as? Timestamp
+                    let lastJournaledDate = lastJournaledTimestamp?.dateValue() ?? Date.distantPast
+                    if streaks == 0 || Date().timeIntervalSince(lastJournaledDate) >= 24 * 60 * 60 {
+                        currentUser?.lastJournaled = Date().timeIntervalSince1970
+                        currentUser?.streaks = streaks + 1
 
                         try await userRef.updateData([
                             "streaks": currentUser?.streaks ?? 1,
-                            "lastJournaled": currentTime
+                            "lastJournaled": firestoreTimestamp
                         ])
-                    } else {
-                        var lastJournaled = Date().timeIntervalSince1970
-                        let userRef = db.collection("USERS").document((currentUser?.id)!)
-                        userRef.getDocument { (document, error) in
-                            if let document = document, document.exists {
-                                let data = document.data()
-                                lastJournaled = TimeInterval(data?["lastJournaled"] as? TimeInterval ?? Date().timeIntervalSince1970)
-                            }
-                            
-                        }
                     }
             }
                     
