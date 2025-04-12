@@ -192,7 +192,7 @@ struct AddEntryButtonView: View {
                         }
                         Button {
                             if journal.pages[journal.currentPage].entries.count <= 8 {
-                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: ConversationEntry(date: todaysdate(), title: "", conversationLog: []))
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: ConversationEntry(date: todaysdate(), title: "Echo 🌐", conversationLog: []))
                                 
                                 aiVM.conversationHistory = []
                                 
