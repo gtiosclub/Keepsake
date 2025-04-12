@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct AudioFilesView: View {
-    @State private var remindersWithAudio: [(reminder: Reminder, audioUrl: String)] = []
+    @State var remindersWithAudio: [(reminder: Reminder, audioUrl: String)]
     @State private var isChecked: Bool = false
     var body: some View {
         VStack {

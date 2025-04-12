@@ -56,7 +56,7 @@ struct RemindersListView: View {
                 }
                 #if os(watchOS)
                 NavigationLink(
-                    destination: AudioFilesView(),
+                    destination: AudioFilesView(remindersWithAudio: Connectivity.shared.remindersWithAudio),
                     label: {
                         HStack {
                             Image(systemName: "headphones")
