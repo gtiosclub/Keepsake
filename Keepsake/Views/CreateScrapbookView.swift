@@ -70,6 +70,8 @@ struct CreateScrapbookView: View {
     @State private var isExpanded = false
     @State private var animationInProgress = false
     
+    @State private var isCustomizingImage: Bool = false
+    
     // Colors and sizing constants
     let toolbarColor = Color(red: 0.15, green: 0.15, blue: 0.15)
     let buttonSize: CGFloat = 50
@@ -78,84 +80,8 @@ struct CreateScrapbookView: View {
     var body: some View {
         ZStack {
             // RealityKit View
-            RealityView { content in
-                content.camera = .spatialTracking
-                
-                // creates new anchor and makes that "global" anchor
-                let newAnchor = AnchorEntity(world: SIMD3<Float>(x: 0, y: 0, z: -2))
-                self.anchor = newAnchor
-                content.add(newAnchor)
-                
-                let scrapbookPage = scrapbook.pages[0]
-                
-                print(scrapbookPage.entries)
-                
-                
-                for entry in scrapbookPage.entries {
-                    var entity = Entity()
-                    if entry.type == "text" {
-                        entity = await TextBoxEntity(text: entry.text ?? "[Blank]")
-                    } else if entry.type == "image" {
-                        entity = await ImageEntity(image: fbVM.getImageFromURL(urlString: entry.imageURL ?? "") ?? UIImage())
-                    }
-                    
-                    entity.name = "\(counter)"
-                    counter += 1
-                    entityPos.append(.zero)
-                    entity.position = SIMD3<Float>(x: entry.position[0], y: entry.position[1], z: entry.position[2])
-                    entity.scale = SIMD3<Float>(repeating: Float(entry.scale))
-                    
-                    let dy = Float(entry.position[1]) * 0.002
-                    let maxAngle: Float = .pi / 2.5  // 45 degrees in radians
-                    let dx = Float(entry.position[0]) * 0.002
-                    
-                    let clampedDX = min(max(dx, -maxAngle), maxAngle)
-                    let clampedDY = min(max(dy, -maxAngle), maxAngle)
-                    
-                    // Create the rotation using the clamped value:
-                    
-//                    let userRotationAngle = entry.rotation * (.pi / 180) // degrees to radians
-//                    let userRotation = simd_quatf(angle: userRotationAngle, axis: SIMD3<Float>(0, 1, 0))
-                    
-                    //                    let horizontalRotation = simd_quatf(angle: -clampedDX, axis: SIMD3<Float>(0, 1, 0))
-                    //                    let verticalRotation = simd_quatf(angle: -clampedDY, axis: SIMD3<Float>(1, 0, 0))
-                    
-                    // Combine rotations (order matters)
-                    let rotation = simd_quatf(ix: entry.rotation[0], iy: entry.rotation[1], iz: entry.rotation[2], r: entry.rotation[3])
-                    entity.transform.rotation = rotation
-                    
-                    self.anchor?.addChild(entity)
-                }
-                
-            } update: { content in
-                // creates a new textbox when the button in toolbar is pressed
-                if isTextClicked {
-                    Task {
-                        let newTextbox = await TextBoxEntity(text: "[Enter text]")
-                        newTextbox.name = "\(counter)"
-                        entityPos.append(.zero)
-                        counter += 1
-                        self.anchor?.addChild(newTextbox)
-                        
-                    }
-                }
-                // creates a new image when the button in toolbar is pressed
-                if isImageClicked {
-                    Task {
-                        await loadImage()
-                        if let validImage = currImage {
-                            let newImage = await ImageEntity(image: validImage)
-                            newImage.name = "\(counter)"
-                            entityPos.append(.zero)
-                            counter += 1
-                            self.anchor?.addChild(newImage)
-                            isImageClicked = false
-                        } else {
-                            print("No image loaded")
-                        }
-                    }
-                }
-            }.ignoresSafeArea()
+            ARView
+                .ignoresSafeArea()
             // Tap gesture that changes the selectedEntity to the entity you click on
             .gesture(SpatialTapGesture(coordinateSpace: .local).targetedToAnyEntity()
                 .onEnded{ value in
@@ -218,10 +144,13 @@ struct CreateScrapbookView: View {
                 if isEditing {
                     TextEditView
                     Spacer()
+                } else if isCustomizingImage {
+                    ImageCustomizationView
+                } else {
+                    ToolBarView
+                        .padding()
                 }
-                ToolBarView
-                    .padding()
-            }
+            }.ignoresSafeArea(edges: .bottom)
         }
         .onDisappear {
             Task {
@@ -259,11 +188,84 @@ struct CreateScrapbookView: View {
     
     
     private func updateTextBox() {
-            if let editingTextEntity = selectedEntity as? TextBoxEntity {
-                //editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, bgColor: backgroundColor, textColor: textColor)
-                editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, isBold: isBold, isItalic: isItalic, isUnderlined: isUnderlined, textColor: textColor, backgroundColor: backgroundColor)
+        if let editingTextEntity = selectedEntity as? TextBoxEntity {
+            editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, isBold: isBold, isItalic: isItalic, isUnderlined: isUnderlined, textColor: textColor, backgroundColor: backgroundColor)
+        }
+    }
+    
+    private var ARView: some View {
+        RealityView { content in
+            content.camera = .spatialTracking
+            
+            // creates new anchor and makes that "global" anchor
+            let newAnchor = AnchorEntity(world: SIMD3<Float>(x: 0, y: 0, z: -2))
+            self.anchor = newAnchor
+            content.add(newAnchor)
+            
+            let scrapbookPage = scrapbook.pages[0]
+            
+            print(scrapbookPage.entries)
+            
+            
+            for entry in scrapbookPage.entries {
+                var entity = Entity()
+                if entry.type == "text" {
+                    entity = await TextBoxEntity(text: entry.text ?? "[Blank]")
+                } else if entry.type == "image" {
+                    entity = await ImageEntity(image: fbVM.getImageFromURL(urlString: entry.imageURL ?? "") ?? UIImage())
+                }
+                
+                entity.name = "\(counter)"
+                counter += 1
+                entityPos.append(.zero)
+                entity.position = SIMD3<Float>(x: entry.position[0], y: entry.position[1], z: entry.position[2])
+                entity.scale = SIMD3<Float>(repeating: Float(entry.scale))
+                
+                let dy = Float(entry.position[1]) * 0.002
+                let maxAngle: Float = .pi / 2.5  // 45 degrees in radians
+                let dx = Float(entry.position[0]) * 0.002
+                
+                let clampedDX = min(max(dx, -maxAngle), maxAngle)
+                let clampedDY = min(max(dy, -maxAngle), maxAngle)
+                
+                
+                // Combine rotations (order matters)
+                let rotation = simd_quatf(ix: entry.rotation[0], iy: entry.rotation[1], iz: entry.rotation[2], r: entry.rotation[3])
+                entity.transform.rotation = rotation
+                
+                self.anchor?.addChild(entity)
+            }
+            
+        } update: { content in
+            // creates a new textbox when the button in toolbar is pressed
+            if isTextClicked {
+                Task {
+                    let newTextbox = await TextBoxEntity(text: "[Enter text]")
+                    newTextbox.name = "\(counter)"
+                    entityPos.append(.zero)
+                    counter += 1
+                    self.anchor?.addChild(newTextbox)
+                    
+                }
+            }
+            // creates a new image when the button in toolbar is pressed
+            if isImageClicked {
+                Task {
+                    if let validImage = currImage {
+//                        let newImage = await FramedImageEntity(image: validImage, frameType: .polaroid)
+                        let newImage = await ImageEntity(image: validImage)
+                        newImage.name = "\(counter)"
+                        entityPos.append(.zero)
+                        counter += 1
+                        self.anchor?.addChild(newImage)
+                        isImageClicked = false
+                    } else {
+                        print("No image loaded")
+                    }
+                }
             }
         }
+    }
     
     private var ToolBarView: some View {
         HStack {
@@ -283,7 +285,11 @@ struct CreateScrapbookView: View {
                                 .foregroundColor(.black)
                         }
                     }.onChange(of: selectedItem) { _, _ in
-                        isImageClicked = true
+                        isCustomizingImage = true
+                        Task {
+                            await loadImage()
+                        }
+//                        isImageClicked = true
                     }
         
                     Button {
@@ -387,6 +393,56 @@ struct CreateScrapbookView: View {
                     .animation(.spring(response: 0.4), value: isExpanded)
             }
         }
+    }
+    
+    private var ImageCustomizationView: some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .opacity(0.95)
+                .cornerRadius(20, corners: [.topLeft, .topRight])
+            VStack {
+                if let validImage = currImage {
+                    Image(uiImage: validImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 200)
+                        .padding(.bottom, 20)
+                } else {
+                    Rectangle()
+                        .frame(width: 250, height: 300)
+                        .foregroundStyle(.white)
+                        .padding(.bottom, 20)
+                }
+                Text("Frames")
+                    .frame(width: 350, height: 25)
+                    .background(.white)
+                    .cornerRadius(10)
+                    .padding(20)
+                
+                HStack {
+                    Image("no_frame")
+                    Image("polaroid_frame")
+                        .offset(x: 13)
+                    Image("flower_frame")
+                }
+            }
+            VStack {
+                HStack {
+                    Spacer()
+                    Button {
+                        isCustomizingImage = false
+                        isImageClicked = true
+                    } label: {
+                        Text("Done")
+                            .font(.title2)
+                            .padding(25)
+                    }
+                }
+                Spacer()
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: 600)
     }
     
     private var TextEditView: some View {
@@ -545,4 +601,73 @@ class UIColorWellHelper: NSObject {
     @objc func handler(_ sender: Any) {
         execute?()
     }
+}
+
+struct ImageCustomization: View {
+    var body: some View {
+        VStack {
+            Spacer()
+            ZStack {
+                Rectangle()
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(20, corners: [.topLeft, .topRight])
+                VStack {
+                    Rectangle()
+                        .frame(width: 250, height: 300)
+                        .foregroundStyle(.white)
+                        .padding(.bottom, 20)
+                    Text("Frames")
+                        .frame(width: 350, height: 25)
+                        .background(.white)
+                        .cornerRadius(10)
+                        .padding(20)
+                    
+                    HStack {
+                        Image("no_frame")
+                        Image("polaroid_frame")
+                            .offset(x: 13)
+                        Image("flower_frame")
+                    }
+                }
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            
+                        } label: {
+                            Text("Done")
+                                .font(.title2)
+                                .padding(25)
+                        }
+                    }
+                    Spacer()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: 700)
+        }.ignoresSafeArea(edges: .bottom)
+    }
+}
+
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}
+
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
+    }
+}
+
+#Preview {
+    ImageCustomization()
 }
