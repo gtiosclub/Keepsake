@@ -101,7 +101,7 @@ class FirebaseViewModel: ObservableObject {
                 "friends": [],
 
                 "streaks": 0,
-                "lastJournaled": Date().timeIntervalSince1970
+                "lastJournaled": Date().timeIntervalSince1970,
 
                 "lastUsedJShelfID": "\(initialShelf.id)",
                 "lastUsedSShelfID": "\(initialScrapbookShelf.id)",
