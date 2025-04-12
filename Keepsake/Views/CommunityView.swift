@@ -22,6 +22,7 @@ struct CommunityView: View {
     @State var scaleEffect = 0.4
     @State private var searchText = ""
     @StateObject private var viewModel = UserLookupViewModel()
+    @State var dummy: Bool = false
     var body: some View {
         NavigationStack {
             ScrollView (.vertical, showsIndicators: false) {
@@ -77,7 +78,7 @@ struct CommunityView: View {
                                         //                                        .fill(Color.gray.opacity(0.5))
                                         //                                        .frame(width: 150, height: 200)
                                         //                                        .cornerRadius(10)
-                                        JournalCover(template: journals[index].template, degrees: 0, title: journals[index].name)
+                                        JournalCover(template: journals[index].template, degrees: 0, title: journals[index].name, showOnlyCover: $dummy, offset: false)
                                             .scaleEffect(scaleEffect)
                                             .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                                         VStack(alignment: .leading, spacing: 3) {

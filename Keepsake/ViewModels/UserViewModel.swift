@@ -50,7 +50,11 @@ class UserViewModel: ObservableObject {
         user.addJournalShelf(shelf: shelf)
     }
     
-    func removeJournaShelf(index: Int) {
+    func removeJournalShelf(index: Int) {
+        user.journalShelves.remove(at: index)
+    }
+    
+    func removeScrapbookShelf(index: Int) {
         user.journalShelves.remove(at: index)
     }
     
@@ -60,6 +64,10 @@ class UserViewModel: ObservableObject {
     
     func getJournalShelves() -> [JournalShelf] {
         return user.journalShelves
+    }
+    
+    func getScrapbookShelves() -> [ScrapbookShelf] {
+        return user.scrapbookShelves
     }
     
     func getJournal(shelfIndex: Int, bookIndex: Int) -> Journal {
@@ -82,6 +90,32 @@ class UserViewModel: ObservableObject {
         return 0
     }
     
+    func deletePage(journal: Journal, pageNumber: Int) {
+        guard let index = journal.pages.firstIndex(where: { $0.number == pageNumber }) else {
+            print("Page \(pageNumber) not found")
+            return
+        }
+        journal.pages.remove(at: index)
+        for page in journal.pages {
+            if page.number > pageNumber {
+                page.number = page.number - 1
+            }
+        }
+        //        let favoritePagesIndex = journal.favoritePages.firstIndex(of: pageNumber) ?? -1
+        //        if favoritePagesIndex >= 0 {
+        //            journal.favoritePages.remove(at: favoritePagesIndex)
+        //        }
+        //        journal.favoritePages = journal.favoritePages.map { num in
+        //            if num > pageNumber {
+        //                return num - 1
+        //            } else {
+        //                return num
+        //            }
+        //        }
+        //        print(journal.favoritePages)
+        
+    }
+    
     func getJournalEntry(shelfIndex: Int, bookIndex: Int, pageNum: Int, entryIndex: Int) -> JournalEntry {
         return user.getJournalShelves()[shelfIndex].journals[bookIndex].pages[pageNum].entries[entryIndex]
     }
@@ -102,8 +136,12 @@ class UserViewModel: ObservableObject {
         scrapbook.pages[pageNum].entries = []
     }
     
-    func getShelfIndex() -> Int {
-        return user.shelfIndex
+    func getJournalShelfIndex() -> Int {
+        return user.journalShelfIndex
+    }
+    
+    func getScrapbookShelfIndex() -> Int {
+        return user.scrapbookShelfIndex
     }
     
     func getImage(url: String) -> UIImage? {
@@ -114,20 +152,46 @@ class UserViewModel: ObservableObject {
         user.images[url] = image
     }
     
-    func setShelfIndex(index: Int, shelfID: UUID, isJournal: Bool) -> Void {
-        user.shelfIndex = index
-        user.lastUsedShelfID = shelfID
-        user.isJournalLastUsed = isJournal
+    func setJournalShelfIndex(index: Int, shelfID: UUID) -> Void {
+        user.journalShelfIndex = index
+        user.lastUsedJShelfID = shelfID
+        user.isJournalLastUsed = true    }
+    
+    func setScrapbookShelfIndex(index: Int, shelfID: UUID) -> Void {
+        user.scrapbookShelfIndex = index
+        user.lastUsedSShelfID = shelfID
+        user.isJournalLastUsed = false
     }
     
     func setShelfToLastUsedJShelf() {
         let shelves = user.getJournalShelves()
         for index in shelves.indices {
-            if shelves[index].id == user.lastUsedShelfID {
-                user.shelfIndex = index
+            if shelves[index].id == user.lastUsedJShelfID {
+                user.journalShelfIndex = index
+                print("last used JShelf is index \(index)")
             }
         }
+        user.isJournalLastUsed = true
     }
+    
+    func setShelfToLastUsedSShelf() {
+        let shelves = user.getScrapbookShelves()
+        for index in shelves.indices {
+            if shelves[index].id == user.lastUsedSShelfID {
+                user.scrapbookShelfIndex = index
+            }
+        }
+        user.isJournalLastUsed = false
+    }
+    
+    func getLastUsed() -> Bool {
+        return user.isJournalLastUsed
+    }
+    
+    func setLastUsed(isJournal: Bool) {
+        user.isJournalLastUsed = isJournal
+    }
+
     
     func newAddJournalEntry(journal: Journal, pageNum: Int, entry: JournalEntry) -> Int {
         let page = journal.pages[pageNum]
@@ -181,6 +245,10 @@ class UserViewModel: ObservableObject {
                 return
             }
         }
+    }
+    
+    func addPage(page: JournalPage, journal: Journal) {
+        journal.pages.append(JournalPage(number: journal.pages.count + 1, page: page))
     }
     
     func addJournalToShelfAndAddEntries(journal: Journal, shelfIndex: Int) {

@@ -106,7 +106,7 @@ struct AddEntryButtonView: View {
                                            height: UIScreen.main.bounds.width / 2 - 40)
                                     .foregroundStyle(Color(hex: "#8cc0ff"))
                                 
-                                Text("Blank\nwidget")
+                                Text("Blank\nEntry")
                                     .multilineTextAlignment(.leading)
                                     .font(.title2)
                                     .fontWeight(.bold)
@@ -247,9 +247,43 @@ struct AddEntryButtonView: View {
                     }
                     .padding()
                 } else {
-                    Text("Sticker Stuff")
+                    let columns = [
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ]
+                        
+                    ScrollView {
+                        LazyVGrid(columns: columns, spacing: 20) {
+                            ForEach(Array(aiVM.stickersFound.enumerated()), id: \.0) { index, stickerURL in
+                                Button {
+                                    print(journal.currentPage)
+                                    let sticker = Sticker(id: UUID(), url: stickerURL, position: CGPoint(x: 150, y: 150), size: 150)
+                                    journal.pages[journal.currentPage].placedStickers.append(sticker)
+                                    isExpanded = false
+                                } label: {
+                                    if let url = URL(string: stickerURL) {
+                                        AsyncImage(url: url) { image in
+                                            image.resizable()
+                                                .scaledToFit()
+                                                .frame(width: 100, height: 100)
+                                        } placeholder: {
+                                            ProgressView()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .padding()
+                    }
                 }
                 Spacer()
+            }
+            .onAppear {
+                aiVM.stickersFound = []
+                Task {
+                    await aiVM.getStickersFromMultipleEntries(entries: journal.pages[journal.currentPage].entries)
+                }
             }
         }
     }

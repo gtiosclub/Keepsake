@@ -23,7 +23,8 @@ class TextBoxEntity: Entity {
         textComponent = TextComponent()
         
         super.init()
-        textComponent.backgroundColor = CGColor(gray: 0.5, alpha: 0.8)
+//        textComponent.backgroundColor = CGColor(gray: 0.5, alpha: 0.8)
+        textComponent.backgroundColor = UIColor.white.cgColor
         
         // Separately instatiatied width and height to use in collision box dimensions
         let componentWidth: Float = 2000
@@ -50,10 +51,77 @@ class TextBoxEntity: Entity {
         self.addChild(textEntity)
     }
     
-    func updateText(_ newText: String) {
+//    func updateText(_ newText: String) {
+//        var attributedText = AttributedString(newText)
+//        attributedText.font = .boldSystemFont(ofSize: 200)
+//        textComponent.text = attributedText
+//        
+//        // Update the text entity's component
+//        textEntity.components[TextComponent.self] = textComponent
+//    }
+    
+    func updateText(_ newText: String, font: String, size: CGFloat, isBold: Bool, isItalic: Bool, isUnderlined: Bool, textColor: Color, backgroundColor: Color?) {
         var attributedText = AttributedString(newText)
-        attributedText.font = .boldSystemFont(ofSize: 200)
+        
+        // Create font descriptor with the specified font family
+        var fontDescriptor: UIFontDescriptor
+        
+        // Try to create font descriptor with the requested font family
+        // Check if the requested font exists
+        if UIFont.fontNames(forFamilyName: font).count > 0 {
+            // Font family exists, try to get the regular font
+            if let font = UIFont(name: font, size: size) {
+                fontDescriptor = font.fontDescriptor
+            } else {
+                // Fall back to system font if exact font name not found
+                fontDescriptor = UIFont.systemFont(ofSize: size).fontDescriptor
+                print("Exact font \(font) not found. Falling back to system font.")
+            }
+        } else {
+            // Font family doesn't exist, use system font
+            fontDescriptor = UIFont.systemFont(ofSize: size).fontDescriptor
+            print("Font family \(font) not found. Falling back to system font.")
+        }
+
+        // Handle font traits
+        var traits = UIFontDescriptor.SymbolicTraits()
+        if isBold {
+            // currentFont = .boldSystemFont(ofSize: size)
+            traits.insert(.traitBold)
+        }
+        if isItalic {
+            // currentFont = .italicSystemFont(ofSize: size)
+            traits.insert(.traitItalic)
+        }
+        
+        // update textColor
+        attributedText.foregroundColor = textColor
+        
+        // attributedText.font = currentFont
+        
+        if !traits.isEmpty {
+            fontDescriptor = fontDescriptor.withSymbolicTraits(traits) ?? fontDescriptor
+        }
+        
+        let font = UIFont(descriptor: fontDescriptor, size: size)
+        attributedText.font = font
+        
+        // Apply underline if needed
+        // ***** Still does not work and needs fixing
+        if isUnderlined {
+            attributedText.underlineStyle = .single
+            attributedText.underlineColor = .blue // Optional: Set a visible color
+        }
+        
         textComponent.text = attributedText
+        
+        // Update background color if provided
+        if let backgroundColor = backgroundColor {
+            textComponent.backgroundColor = backgroundColor.cgColor
+        } else {
+            textComponent.backgroundColor = UIColor.white.cgColor
+        }
+
         
         // Update the text entity's component
         textEntity.components[TextComponent.self] = textComponent

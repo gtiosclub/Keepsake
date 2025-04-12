@@ -80,6 +80,7 @@ extension Texture: CaseIterable, Identifiable {
 }
 
 struct Template {
+    var id: UUID
     var name: String = "Default"
     var coverColor: Color
     var pageColor: Color
@@ -89,6 +90,7 @@ struct Template {
     //insert other TBD variables like color, line type, etc
 //    
     init(name: String, coverColor: Color, pageColor: Color, titleColor: Color, texture: Texture, journalPages: [JournalPage]? = nil) {
+        self.id = UUID()
         self.name = name
         self.coverColor = coverColor
         self.pageColor = pageColor

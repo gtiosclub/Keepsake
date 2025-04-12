@@ -14,11 +14,11 @@ struct ScrapbookEntry: Codable {
     let type: String
     let position: [Float]
     let scale: Float
-    let rotation: Float
+    let rotation: [Float]
     let text: String?
     let imageURL: String?
 
-    init(id: UUID, type: String, position: [Float], scale: Float, rotation: Float, text: String?, imageURL: String?) {
+    init(id: UUID, type: String, position: [Float], scale: Float, rotation: [Float], text: String?, imageURL: String?) {
         self.id = id
         self.type = type
         self.position = position
@@ -93,15 +93,18 @@ extension ScrapbookEntry: CustomStringConvertible {
             return nil
         }
         
-        guard let rotation = (dict["rotation"] as? NSNumber)?.floatValue else {
+        guard let rawRotation = dict["rotation"] as? [Any],
+              let rotation = rawRotation as? [NSNumber] else {
             print("rotation problem")
             return nil
         }
         
+        let floatRotation = rotation.map { $0.floatValue }
+        
         let text = dict["text"] as? String
         let imageURL = dict["imageURL"] as? String
         
-        return ScrapbookEntry(id: id, type: type, position: floatPosition, scale: scale, rotation: rotation, text: text, imageURL: imageURL)
+        return ScrapbookEntry(id: id, type: type, position: floatPosition, scale: scale, rotation: floatRotation, text: text, imageURL: imageURL)
     }
     
     var description: String {

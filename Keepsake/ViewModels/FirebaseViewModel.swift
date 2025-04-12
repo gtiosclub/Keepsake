@@ -31,6 +31,8 @@ class FirebaseViewModel: ObservableObject {
         self.onSetupCompleted?(self)
     }
     
+    @Published var initializedUser: Bool = false
+    
     private struct QueryRequest: Codable {
       var query: String
       var limit: Int?
@@ -51,23 +53,211 @@ class FirebaseViewModel: ObservableObject {
     
     private lazy var vectorSearchQueryCallable: Callable<QueryRequest, QueryResponse> = functions.httpsCallable("ext-firestore-vector-search-queryCallable")
     
-//    init() {
-//        auth.signIn(withEmail: "royankit11@gmail.com", password: "test123") { [weak self] authResult, error in
-//            guard let self = self else { return }
-//            
-//            if let error = error {
-//                return
-//            }
-//        }
-//    }
-    
     init() {
         self.userSession = auth.currentUser
         
         Task {
             await fetchUser()
+            await MainActor.run {
+                self.initializedUser = true
+                self.objectWillChange.send()
+            }
+            
         }
     }
+    
+
+    /****######################################################################################
+    USER
+     #########################################################################################**/
+
+    
+    func signIn(withEmail email: String, password: String) async throws {
+        
+            let result = try await auth.signIn(withEmail: email, password: password)
+            await MainActor.run {
+                self.userSession = result.user
+            }
+               
+            await fetchUser()
+    }
+    
+
+    
+    func createUser(withEmail email: String, password: String, fullname: String) async throws {
+        do {
+            let result = try await auth.createUser(withEmail: email, password: password)
+            let initialShelf = JournalShelf(name: "Initial Shelf", id: UUID(), journals: [])
+            let initialScrapbookShelf = ScrapbookShelf(name: "Initial Shelf", id: UUID(), scrapbooks: [])
+            self.userSession = result.user
+            let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedJShelfID: initialShelf.id, lastUsedSShelfID: initialScrapbookShelf.id, isJournalLastUsed: true)
+            let userData: [String: Any] = [
+                "uid": user.id,
+                "name": user.name,
+                "username": user.username,
+                "journalShelves": ["\(initialShelf.id)"],
+                "scrapbookShelves": ["\(initialScrapbookShelf.id)"],
+                "templates": [],
+                "friends": [],
+
+                "streaks": 0,
+                "lastJournaled": Date().timeIntervalSince1970
+
+                "lastUsedJShelfID": "\(initialShelf.id)",
+                "lastUsedSShelfID": "\(initialScrapbookShelf.id)",
+                "isJournalLastUsed": true
+
+            ]
+            try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
+            await self.addJournalShelf(journalShelf: initialShelf, userID: user.id)
+            await self.addScrapbookShelf(scrapbookShelf: initialScrapbookShelf, userID: user.id)
+            await fetchUser()
+            
+        } catch {
+            print("error :( \(error.localizedDescription)")
+        }
+    }
+    func signOut() {
+        do {
+            try auth.signOut()
+            self.userSession = nil
+            self.currentUser = nil
+        } catch {
+            
+        }
+    }
+    
+    func deleteAccount() {
+        
+    }
+    
+    func fetchOtherUser(newUserID: String) async -> User? {
+        
+        do {
+            guard let snapshot = try? await Firestore.firestore().collection("USERS").document(newUserID).getDocument() else { return nil}
+            if snapshot.exists {
+                // Manually extract data from the snapshot
+                if let uid = snapshot.get("uid") as? String,
+                   let name = snapshot.get("name") as? String,
+                   let username = snapshot.get("username") as? String,
+                   let journalShelfIds = snapshot.get("journalShelves") as? [String],
+                   let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
+                   let templates = snapshot.get("templates") as? [String],
+                   let friends = snapshot.get("friends") as? [String],
+                   let lastUsedJ = snapshot.get("lastUsedJShelfID") as? String,
+                   let lastUsedS = snapshot.get("lastUsedSShelfID") as? String,
+                   let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
+                {
+                    var journalShelves: [JournalShelf] = []
+                    for astr in journalShelfIds {
+                        let shelf = await getJournalShelfFromID(id: astr)!
+                        journalShelves.append(shelf)
+                    }
+                    let lastUsedJID: UUID
+                    if let temp = UUID(uuidString: lastUsedJ) {
+                        lastUsedJID = temp
+                    } else {
+                        print("Error getting last used journal ID")
+                        lastUsedJID = UUID()
+                    }
+                    
+                    let lastUsedSID: UUID
+                    if let temp = UUID(uuidString: lastUsedS) {
+                        lastUsedSID = temp
+                    } else {
+                        print("Error getting last used scrapbook shelf ID")
+                        lastUsedSID = UUID()
+                    }
+                    let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed)
+                    
+                    return user
+                    
+                }
+            }
+        }
+        
+        return nil
+        
+    }
+    
+    func fetchUser() async {
+        guard let uid = auth.currentUser?.uid else {return}
+        print("Fetch User Started")
+        guard let snapshot = try? await Firestore.firestore().collection("USERS").document(uid).getDocument() else { return }
+        print("Hello darkness")
+        if snapshot.exists {
+            print("It exits")
+            // Manually extract data from the snapshot
+            if let uid = snapshot.get("uid") as? String,
+               let name = snapshot.get("name") as? String,
+               let username = snapshot.get("username") as? String,
+               let journalShelfIds = snapshot.get("journalShelves") as? [String],
+               let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
+               let templates = snapshot.get("templates") as? [String],
+               let friends = snapshot.get("friends") as? [String],
+               let lastUsedJ = snapshot.get("lastUsedJShelfID") as? String,
+               let lastUsedS = snapshot.get("lastUsedSShelfID") as? String,
+               let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
+            {
+                var scrapbookShelves: [ScrapbookShelf] = []
+                for scrapbookShelfId in scrapbookShelfIds {
+
+                    //let shelf = await getScrapbookShelfFromID(id: scrapbookShelfId) ?? ScrapbookShelf(name: "New Shelf", id: UUID(), scrapbooks: [])
+
+                    print(scrapbookShelfId)
+                    let shelf = await getScrapbookShelfFromID(id: scrapbookShelfId) ?? ScrapbookShelf(name: "New Shelf", id: UUID(), scrapbooks: [])
+
+                    scrapbookShelves.append(shelf)
+
+                }
+                var journalShelves: [JournalShelf] = []
+                for journalShelfID in journalShelfIds {
+                    let shelf = await getJournalShelfFromID(id: journalShelfID)!
+                    journalShelves.append(shelf)
+                }
+                let lastUsedJID: UUID
+                if let temp = UUID(uuidString: lastUsedJ) {
+                    lastUsedJID = temp
+                } else {
+                    print("Error getting last used journal ID")
+                    lastUsedJID = UUID()
+                }
+                print("Halloween")
+                let lastUsedSID: UUID
+                if let temp = UUID(uuidString: lastUsedS) {
+                    lastUsedSID = temp
+                } else {
+                    print("Error getting last used scrapbook shelf ID")
+                    lastUsedSID = UUID()
+                }
+                var imageDict: [String: UIImage] = [:]
+                for shelf in journalShelves {
+                    for journal in shelf.journals {
+                        for page in journal.pages {
+                            for entry in page.entries {
+                                if let entry = entry as? PictureEntry {
+                                    for url in entry.images {
+                                        if let image = await getImageFromURL(urlString: url) {
+                                            imageDict[url] = image
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                print("is journal: \(isJournalLastUsed)")
+                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed, images: imageDict)
+                
+                // Assign the user object to currentUser
+                await MainActor.run {
+                    self.currentUser = user
+                }
+                
+            }
+        }
+    }
+    
     func storeProfilePic(image: UIImage) {
             guard let uid = currentUser?.id else { return }
             let file = "\(uid).jpg"
@@ -114,166 +304,6 @@ class FirebaseViewModel: ObservableObject {
         
     }
     
-    
-    func signIn(withEmail email: String, password: String) async throws {
-        
-            let result = try await auth.signIn(withEmail: email, password: password)
-            await MainActor.run {
-                self.userSession = result.user
-            }
-               
-            await fetchUser()
-    }
-    
-
-    
-    func createUser(withEmail email: String, password: String, fullname: String) async throws {
-        do {
-            let result = try await auth.createUser(withEmail: email, password: password)
-            let initialShelf = JournalShelf(name: "Initial Shelf", id: UUID(), journals: [])
-            let initialScrapbookShelf = ScrapbookShelf(name: "Initial Shelf", id: UUID(), scrapbooks: [])
-            self.userSession = result.user
-            let user = User(id: result.user.uid, name: fullname, username: email, journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedShelfID: initialShelf.id, isJournalLastUsed: true)
-            let userData: [String: Any] = [
-                "uid": user.id,
-                "name": user.name,
-                "username": user.username,
-                "journalShelves": ["\(initialShelf.id)"],
-                "scrapbookShelves": ["\(initialScrapbookShelf.id)"],
-                "templates": [],
-                "friends": [],
-                "lastUsedShelfId": "\(initialShelf.id)",
-                "isJournalLastUsed": true,
-                "streaks": 0,
-                "lastJournaled": Date().timeIntervalSince1970
-            ]
-            try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
-            await self.addJournalShelf(journalShelf: initialShelf, userID: user.id)
-            await fetchUser()
-            
-        } catch {
-            print("error :( \(error.localizedDescription)")
-        }
-    }
-    func signOut() {
-        do {
-            try auth.signOut()
-            self.userSession = nil
-            self.currentUser = nil
-        } catch {
-            
-        }
-    }
-    
-    func deleteAccount() {
-        
-    }
-    
-    func fetchOtherUser(newUserID: String) async -> User? {
-        
-        do {
-            guard let snapshot = try? await Firestore.firestore().collection("USERS").document(newUserID).getDocument() else { return nil}
-            if snapshot.exists {
-                // Manually extract data from the snapshot
-                if let uid = snapshot.get("uid") as? String,
-                   let name = snapshot.get("name") as? String,
-                   let username = snapshot.get("username") as? String,
-                   let journalShelfIds = snapshot.get("journalShelves") as? [String],
-                   let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
-                   let templates = snapshot.get("templates") as? [String],
-                   let friends = snapshot.get("friends") as? [String],
-                   let lastUsed = snapshot.get("lastUsedShelfId") as? String,
-                   let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
-                {
-                    var journalShelves: [JournalShelf] = []
-                    for astr in journalShelfIds {
-                        let shelf = await getJournalShelfFromID(id: astr)!
-                        journalShelves.append(shelf)
-                    }
-                    let lastUsedID: UUID
-                    if let temp = UUID(uuidString: lastUsed) {
-                        lastUsedID = temp
-                    } else {
-                        print("Error getting last used ID")
-                        lastUsedID = UUID()
-                    }
-                    let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed)
-                    
-                    return user
-                    
-                }
-            }
-        }
-        
-        return nil
-        
-    }
-    
-    func fetchUser() async {
-        guard let uid = auth.currentUser?.uid else {return}
-        
-        guard let snapshot = try? await Firestore.firestore().collection("USERS").document(uid).getDocument() else { return }
-        if snapshot.exists {
-            // Manually extract data from the snapshot
-            if let uid = snapshot.get("uid") as? String,
-               let name = snapshot.get("name") as? String,
-               let username = snapshot.get("username") as? String,
-               let journalShelfIds = snapshot.get("journalShelves") as? [String],
-               let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
-               let templates = snapshot.get("templates") as? [String],
-               let friends = snapshot.get("friends") as? [String],
-               let lastUsed = snapshot.get("lastUsedShelfId") as? String,
-               let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
-            {
-                
-                var scrapbookShelves: [ScrapbookShelf] = []
-                for scrapbookShelfId in scrapbookShelfIds {
-                    let shelf = await getScrapbookShelfFromID(id: scrapbookShelfId) ?? ScrapbookShelf(name: "New Shelf", id: UUID(), scrapbooks: [])
-                    scrapbookShelves.append(shelf)
-
-                }
-                
-                var journalShelves: [JournalShelf] = []
-                for journalShelfID in journalShelfIds {
-                    let shelf = await getJournalShelfFromID(id: journalShelfID)!
-                    journalShelves.append(shelf)
-                }
-                let lastUsedID: UUID
-                if let temp = UUID(uuidString: lastUsed) {
-                    lastUsedID = temp
-                } else {
-                    print("Error getting last used ID")
-                    lastUsedID = UUID()
-                }
-                
-                var imageDict: [String: UIImage] = [:]
-                for shelf in journalShelves {
-                    for journal in shelf.journals {
-                        for page in journal.pages {
-                            for entry in page.entries {
-                                if let entry = entry as? PictureEntry {
-                                    for url in entry.images {
-                                        if let image = await getImageFromURL(urlString: url) {
-                                            imageDict[url] = image
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                print(imageDict)
-                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedShelfID: lastUsedID, isJournalLastUsed: isJournalLastUsed, images: imageDict)
-                
-                // Assign the user object to currentUser
-                await MainActor.run {
-                    self.currentUser = user
-                }
-                
-            }
-        }
-    }
-    
     func testRead() async -> Int {
         let docRef = db.collection("USERS").document("Test")
         
@@ -295,6 +325,10 @@ class FirebaseViewModel: ObservableObject {
             return -1
         }
     }
+    
+    //#########################################################################################
+    
+
     
     /****######################################################################################
     JOURNALS
@@ -376,6 +410,7 @@ class FirebaseViewModel: ObservableObject {
                 let template = Template.fromDictionary(templateDict) ?? Template()
                 let pagesArray = dict["pages"] as? [String: [String]] ?? [:]
                 let currentPage = dict["currentPage"] as? Int ?? 0
+                let favoritePages = dict["favoritePages"] as? [Int] ?? []
                 
                 var journalPages: [JournalPage] = []
                 
@@ -405,7 +440,7 @@ class FirebaseViewModel: ObservableObject {
                     journalPages.append(JournalPage(number: Int(num) ?? 0, entries: journalEntries, realEntryCount: entryCount))
                 }
                 let sortedPages = journalPages.sorted { $0.number < $1.number }
-                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: sortedPages, currentPage: currentPage)
+                return Journal(name: name, id: id, createdDate: createdDate, category: category, isSaved: isSaved, isShared: isShared, template: template, pages: sortedPages, currentPage: currentPage, favoritePages: favoritePages)
                 
             } else {
                 print("No document found")
@@ -414,6 +449,107 @@ class FirebaseViewModel: ObservableObject {
         } catch {
             print("Error fetching Journal Shelf: \(error.localizedDescription)")
             return nil
+        }
+    }
+    
+    func updateFavoritePages(journalID: UUID, newPages: [Int]) async {
+        let journal_reference = db.collection("JOURNALS").document(journalID.uuidString)
+        do {
+            try await journal_reference.updateData([
+                "favoritePages": newPages
+            ])
+        } catch {
+            print("Error updating pages: \(error.localizedDescription)")
+        }
+    }
+    
+    func updateCurrentPage(journalID: UUID, currentPage: Int) async {
+        let journal_reference = db.collection("JOURNALS").document(journalID.uuidString)
+        do {
+            try await journal_reference.updateData([
+                "currentPage": currentPage
+            ])
+        } catch {
+            print("Error updating currentPage: \(error.localizedDescription)")
+        }
+    }
+    
+    //#########################################################################################
+    
+    /****######################################################################################
+    STICKERS
+     #########################################################################################**/
+    
+    func clearStickers(journalID: UUID) async {
+        let stickersRef = db.collection("JOURNALS")
+            .document(journalID.uuidString)
+            .collection("STICKERS")
+
+        do {
+            let snapshot = try await stickersRef.getDocuments()
+            
+            // If the collection doesn't exist or is empty
+            guard !snapshot.isEmpty else {
+                print("Collection is empty or does not exist.")
+                return
+            }
+            
+            let batch = db.batch()
+            
+            for doc in snapshot.documents {
+                batch.deleteDocument(doc.reference)
+            }
+            
+            try await batch.commit()
+            print("Collection cleared successfully.")
+            
+        } catch {
+            print("Failed to clear stickers: \(error)")
+        }
+    }
+    
+    func saveStickers(journal: Journal) async {
+        let stickers_reference = db.collection("JOURNALS").document(journal.id.uuidString).collection("STICKERS")
+        
+        for page in journal.pages {
+            for sticker in page.placedStickers {
+                do {
+                    let stickerRef = stickers_reference.document(sticker.id.uuidString)
+                    var stickerData = sticker.toDictionary()
+                    stickerData["pageNum"] = page.number
+                    try await stickerRef.setData(stickerData)
+                } catch {
+                    print("Error adding sticker: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    func retrieveStickers(journal: Journal) async {
+        let stickersRef = db.collection("JOURNALS")
+            .document(journal.id.uuidString)
+            .collection("STICKERS")
+
+        do {
+            let snapshot = try await stickersRef.getDocuments()
+            
+            // If the collection doesn't exist or is empty
+            guard !snapshot.isEmpty else {
+                print("Collection is empty or does not exist.")
+                return
+            }
+            
+            
+            for doc in snapshot.documents {
+                let data = doc.data()
+                if let sticker = Sticker.fromDictionary(data) {
+                    let pageNum = data["pageNum"] as? Int ?? 1
+                    journal.pages[pageNum - 1].placedStickers.append(sticker)
+                }
+            }
+            
+        } catch {
+            print("Failed to clear stickers: \(error)")
         }
     }
     
@@ -454,8 +590,9 @@ class FirebaseViewModel: ObservableObject {
                 var arrJournals: [Journal] = []
                 
                 for journalId in journalIDs {
-                    let journal = await getJournalFromID(id: journalId)
+                    let journal = await getJournalFromID(id: journalId) 
                     if let journal = journal {
+                        await retrieveStickers(journal: journal)
                         arrJournals.append(journal)
                     }
                 }
@@ -471,11 +608,23 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    func updateUserLastUsedShelf(user: User) async {
+    func updateUserLastUsedJShelf(user: User) async {
         let userRef = db.collection("USERS").document(user.id)
         do {
             try await userRef.updateData([
-                "lastUsedShelfId": user.lastUsedShelfID.uuidString,
+                "lastUsedJShelfID": user.lastUsedJShelfID.uuidString,
+                "isJournalLastUsed": user.isJournalLastUsed
+            ])
+        } catch {
+            print("error setting last used shelf")
+        }
+    }
+    
+    func updateUserLastUsedSShelf(user: User) async {
+        let userRef = db.collection("USERS").document(user.id)
+        do {
+            try await userRef.updateData([
+                "lastUsedSShelfID": user.lastUsedSShelfID.uuidString,
                 "isJournalLastUsed": user.isJournalLastUsed
             ])
         } catch {
@@ -661,6 +810,55 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func deletePage(journalID: UUID, pageNumber: Int) async {
+        do {
+            let docRef = db.collection("JOURNALS").document(journalID.uuidString)
+            let document = try await docRef.getDocument()
+            
+            guard var data = document.data(),
+                  var pages = data["pages"] as? [String: [String]] else {
+                print("Couldn't get page entries")
+                return
+            }
+            
+            // 1. Delete entries for this page
+            let entryIDs = pages["\(pageNumber)"] ?? []
+            for entry in entryIDs {
+                if let entryID = UUID(uuidString: entry) {
+                    await removeJournalEntry(entryID: entryID)
+                }
+            }
+            
+            // 2. Remove the page
+            pages.removeValue(forKey: "\(pageNumber)")
+            
+            // 3. Decrement higher-numbered pages
+            var updatedPages = [String: [String]]()
+            
+            // Sort the remaining pages by their number
+            let sortedKeys = pages.keys.compactMap { Int($0) }.sorted()
+            
+            for oldPageNum in sortedKeys {
+                if oldPageNum < pageNumber {
+                    // Keep pages before the deleted one as-is
+                    updatedPages["\(oldPageNum)"] = pages["\(oldPageNum)"]
+                } else if oldPageNum > pageNumber {
+                    // Decrement pages after the deleted one
+                    updatedPages["\(oldPageNum - 1)"] = pages["\(oldPageNum)"]
+                }
+                // Skip the deleted page (oldPageNum == pageNumber)
+            }
+            
+            // 4. Update Firestore
+            try await docRef.updateData(["pages": updatedPages])
+            
+            print("Successfully deleted page \(pageNumber) and updated subsequent pages")
+            
+        } catch {
+            print("Error deleting page: \(error)")
+        }
+    }
+    
     func removeJournalEntry(entryID: UUID) async {
         do {
             try await db.collection("JOURNAL_ENTRIES").document(entryID.uuidString).delete()
@@ -693,7 +891,7 @@ class FirebaseViewModel: ObservableObject {
     //#########################################################################################
     
     /****######################################################################################
-    Images
+    IMAGES
      #########################################################################################**/
     
     func storeImage(image: UIImage, completion: @escaping (String?) -> Void) {
@@ -727,6 +925,14 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func convertImageToURL(image: UIImage) async -> String {
+        await withCheckedContinuation { continuation in
+            storeImage(image: image) { urlString in
+                continuation.resume(returning: urlString ?? "")
+            }
+        }
+    }
+    
     func getImageFromURL(urlString: String) async -> UIImage? {
         guard let url = URL(string: urlString) else {
             print("Invalid URL string: \(urlString)")
@@ -744,21 +950,10 @@ class FirebaseViewModel: ObservableObject {
     
     //#########################################################################################
     
+    /****######################################################################################
+    VECTOR SEARCH
+     #########################################################################################**/
     
-    // Add an entry into Firebase
-    func getAPIKeys() async throws -> [String: String] {
-        var apimap: [String: String] = [:]
-        
-        let getdocs = try await db.collection("API_KEYS").getDocuments()
-        
-        for doc in getdocs.documents {
-            if let key = doc.data()["key"] as? String {
-                apimap[doc.documentID] = key
-            }
-        }
-        
-        return apimap
-    }
     
     func performVectorSearch(searchTerm: String, journal_id: String) async {
         do {
@@ -791,6 +986,12 @@ class FirebaseViewModel: ObservableObject {
             searchedEntries = entries
         }
     }
+    
+    //#########################################################################################
+    
+    /****######################################################################################
+    CONVERSATION ENTRY
+     #########################################################################################**/
     
     func createConversationEntry(entry: JournalEntry, journalID: String) async -> Bool {
         let journalEntry = db.collection("JOURNAL_ENTRIES")
@@ -877,7 +1078,28 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    // SCRAPBOOKS
+    //#########################################################################################
+    
+    /****######################################################################################
+    SCRAPBOOK SHELF
+     #########################################################################################**/
+    
+    func addScrapbookShelf(scrapbookShelf: ScrapbookShelf, userID: String) async -> Bool {
+        let scrapbookShelfReference = db.collection("SCRAPBOOK_SHELVES").document(scrapbookShelf.id.uuidString)
+        do {
+            // Chains together each Model's "toDictionary()" method for simplicity in code and scalability in editing each Model
+            let scrapbookShelfData = scrapbookShelf.toDictionary()
+            try await scrapbookShelfReference.setData(scrapbookShelfData)
+            
+            try await db.collection("USERS").document(userID).updateData([
+                "scrapbookShelves": FieldValue.arrayUnion([scrapbookShelf.id.uuidString])
+            ])
+            return true
+        } catch {
+            print("Error adding Journal Shelf: \(error.localizedDescription)")
+            return false
+        }
+    }
     
     func getScrapbookShelfFromID(id: String) async -> ScrapbookShelf? {
         let journalShelfReference = db.collection("SCRAPBOOK_SHELVES").document(id)
@@ -908,6 +1130,12 @@ class FirebaseViewModel: ObservableObject {
             return nil
         }
     }
+    
+    //#########################################################################################
+    
+    /****######################################################################################
+    SCRAPBOOKS
+     #########################################################################################**/
     
     
     func saveScrapbook(scrapbook: Scrapbook) async -> Bool {
@@ -998,6 +1226,12 @@ class FirebaseViewModel: ObservableObject {
             return nil
         }
     }
+    
+    //#########################################################################################
+    
+    /****######################################################################################
+    SCRAPBOOK ENTRY
+     #########################################################################################**/
     
     // Add a single ScrapbookEntry to a specified page in a Scrapbook.
     func addScrapbookEntry(scrapbookEntry: ScrapbookEntry, scrapbookID: UUID, pageNumber: Int) async -> Bool {
@@ -1096,6 +1330,12 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    //#########################################################################################
+    
+    /****######################################################################################
+    MISCELLANEOUS
+     #########################################################################################**/
+    
     
     func uploadAudio(_ audioData: Data, fileName: String) async -> Result<URL, Error> {
         let storageRef = Storage.storage().reference().child("audio/\(fileName).m4a")
@@ -1114,4 +1354,20 @@ class FirebaseViewModel: ObservableObject {
             return .failure(error)
         }
     }
+    
+    func getAPIKeys() async throws -> [String: String] {
+        var apimap: [String: String] = [:]
+        
+        let getdocs = try await db.collection("API_KEYS").getDocuments()
+        
+        for doc in getdocs.documents {
+            if let key = doc.data()["key"] as? String {
+                apimap[doc.documentID] = key
+            }
+        }
+        
+        return apimap
+    }
+    
+
 }

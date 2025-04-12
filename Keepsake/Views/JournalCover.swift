@@ -13,12 +13,14 @@ struct JournalCover: View {
 //    @Binding var degrees: CGFloat
     @State var degrees: CGFloat
     @State var title: String
+    @Binding var showOnlyCover: Bool
+    var offset: Bool
     var body: some View {
         ZStack {
             // Spine Effect
             Rectangle()
                 .fill(template.coverColor) // Darker than cover color
-                .brightness(-0.2)
+                .brightness(showOnlyCover ? 0 : -0.2)
                 .frame(width: UIScreen.main.bounds.width * 0.1, height: UIScreen.main.bounds.height * 0.56)
                 .offset(x: UIScreen.main.bounds.width * -0.42)
                 .zIndex(-3)
@@ -31,7 +33,7 @@ struct JournalCover: View {
                         .opacity(0.4) // Adjust for realism
                 )
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius : 10)
                     .fill(template.coverColor)
                     .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
                     .overlay(
@@ -50,12 +52,18 @@ struct JournalCover: View {
                     .foregroundStyle(template.titleColor)
             }
             .rotation3DEffect(.degrees(0), axis: (x: 0.0, y: 1, z: 0.0), anchor: UnitPoint.leading, anchorZ: 0, perspective: 0.2)
-        }
+        }.offset(y: offset ? UIScreen.main.bounds.height * 0.05 : 0)
         
     }
 }
 #Preview {
-    JournalCover(template: Template(coverColor: .red, pageColor: .white, titleColor: .black), degrees: 0, title: "Journal Title")
+    struct Preview: View {
+        @State var showOnlyCover: Bool = false
+        var body: some View {
+            JournalCover(template: Template(coverColor: .red, pageColor: .white, titleColor: .black), degrees: 0, title: "TITLE", showOnlyCover: $showOnlyCover, offset: false)        }
+    }
+
+    return Preview()
 }
 
 //Color(red: 0.96, green: 0.5, blue: 0.5)

@@ -16,6 +16,7 @@ class AIViewModel: ObservableObject {
     @Published var uiImage: UIImage? = nil
     @Published var isLoading = false
     @Published var generatedPrompts: [String] = []
+    @Published var stickersFound: [String] = []
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
     
     let FirebaseVM: FirebaseViewModel = FirebaseViewModel.vm
@@ -328,10 +329,10 @@ class AIViewModel: ObservableObject {
         return nil
     }
     
-    func stickers(entry: JournalEntry) async -> String? {
+    func getStickers(entry: JournalEntry) async {
         let inputText = entry.entryContents
         if inputText.isEmpty {
-            return nil
+            return
         }
 
         let prompt = "Give one word to describe this entry so I can find a sticker associated with it. Here is text: \(inputText)"
@@ -343,14 +344,48 @@ class AIViewModel: ObservableObject {
             )
             let description = response.trimmingCharacters(in: .whitespacesAndNewlines)
             if !description.isEmpty {
-                return await fetchStickerFromGiphy(query: description)
+                let url = await fetchStickerFromGiphy(query: description) ?? ""
+                await MainActor.run {
+                    stickersFound.append(url)
+                }
             }
             
         } catch {
             print("Error fetching description from OpenAI: \(error.localizedDescription)")
         }
+    }
+    
+    func getStickersFromMultipleEntries(entries: [JournalEntry]) async {
+        var prompt = """
+        '"I am inputting multiple entries. For each entry, give me one word to describe it so I can find a sticker associated with it. Try to find different words for each entry.
+        Return your words as a comma-separated list.
+        """
         
-        return nil
+        for entry in entries {
+            if !entry.entryContents.isEmpty {
+                prompt += "Entry: \(entry.entryContents) \n\n"
+            }
+        }
+        
+        do {
+            let response = try await openAIAPIKey.sendMessage(
+                text: prompt,
+                model: .gpt_hyphen_4
+            )
+            let description = response.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !description.isEmpty {
+                let words: [String] = description.split(separator: ",").map { String($0) }
+                for word in words {
+                    let url = await fetchStickerFromGiphy(query: word) ?? ""
+                    await MainActor.run {
+                        stickersFound.append(url)
+                    }
+                }
+            }
+            
+        } catch {
+            print("Error fetching description from OpenAI: \(error.localizedDescription)")
+        }
     }
 
     func fetchStickerFromGiphy(query: String) async -> String? {
@@ -467,6 +502,10 @@ class AIViewModel: ObservableObject {
     func fetchImages(for category: String) -> [UIImage]? {
         return categorizedImages[category]
     }
+    
+    
+    
+    
     
     struct OpenAIResponse: Codable {
         struct Choice: Codable {
