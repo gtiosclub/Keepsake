@@ -16,7 +16,7 @@ struct ScrapbookShelfView: View {
     @Binding var showScrapbookForm: Bool
     @Binding var selectedOption: ViewOption
     @State var showDeleteButton: Bool = false
-    @State var deleteJournalID: String = ""
+    @State var deleteScrapbookID: String = ""
     @State var hideToolBar: Bool = false
     @State var showOnlyCover: Bool = true
     @State var scaleEffect: CGFloat = 0.6
@@ -183,14 +183,45 @@ struct ScrapbookShelfView: View {
                         GeometryReader { geometry in
                             let verticalOffset = calculateVerticalOffset(proxy: geometry)
                             VStack(spacing: 35) {
-                                NavigationLink {
-                                    CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
-                                } label: {
-                                    JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $showOnlyCover, offset: true)
-                                        .scaleEffect(scaleEffect)
-                                        .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
-                                        .transition(.identity)
-                                        .matchedGeometryEffect(id: "journal_\(scrapbook.id)", in: scrapbookShelfNamespace, properties: .position, anchor: .center)
+                                ZStack {
+                                    NavigationLink {
+                                        CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
+                                    } label: {
+                                        JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $showOnlyCover, offset: true)
+                                            .scaleEffect(scaleEffect)
+                                            .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                                            .transition(.identity)
+                                            .matchedGeometryEffect(id: "journal_\(scrapbook.id)", in: scrapbookShelfNamespace, properties: .position, anchor: .center)
+                                            .onTapGesture {
+                                                if showDeleteButton {
+                                                    showDeleteButton.toggle()
+                                                }
+                                            }
+                                            .onLongPressGesture(minimumDuration: 0.5) {
+                                                print("yoooo")
+                                                withAnimation(.spring()) {
+                                                    showDeleteButton.toggle()
+                                                    deleteScrapbookID = scrapbook.id.uuidString
+                                                }
+                                            }
+                                    }
+                                }
+                                if showDeleteButton && deleteScrapbookID == scrapbook.id.uuidString {
+                                    Button {
+                                        userVM.removeScrapbookFromShelf(shelfIndex: shelfIndex, scrapbookID: scrapbook.id)
+                                        Task {
+                                            await fbVM.deleteScrapbook(scrapbookID: scrapbook.id.uuidString, scrapbookShelfID: userVM.getScrapbookShelves()[shelfIndex].id)
+                                        }
+                                        showDeleteButton.toggle()
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .font(.system(size: 28))
+                                            .foregroundColor(.red)
+                                            .background(Circle().fill(Color.white))
+                                            .padding(8)
+                                    }
+                                    .transition(.scale.combined(with: .opacity))
+                                    .zIndex(1)
                                 }
                                 VStack(spacing: 10) {
                                     //Journal name, date, created by you
@@ -237,7 +268,7 @@ struct ScrapbookShelfView: View {
                         let threshold: CGFloat = 100
                         if abs(value.translation.width) > threshold {
                             let nextJournal = value.translation.width > 0 ? -1 : 1
-                            let newIndex = currentScrollIndex + nextJournal
+                            let newIndex = min(max(currentScrollIndex + nextJournal,0), shelf.scrapbooks.count-1)
                             
                             withAnimation {
                                 currentScrollIndex = newIndex

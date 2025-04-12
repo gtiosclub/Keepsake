@@ -252,6 +252,16 @@ class UserViewModel: ObservableObject {
         }
     }
     
+    func removeScrapbookFromShelf(shelfIndex: Int, scrapbookID: UUID) {
+        let scrapbooks = user.getScrapbookShelves()[shelfIndex].scrapbooks
+        for index in scrapbooks.indices {
+            if scrapbookID == scrapbooks[index].id {
+                user.getScrapbookShelves()[shelfIndex].scrapbooks.remove(at: index)
+                return
+            }
+        }
+    }
+    
     func addPage(page: JournalPage, journal: Journal) {
         journal.pages.append(JournalPage(number: journal.pages.count + 1, page: page))
     }
