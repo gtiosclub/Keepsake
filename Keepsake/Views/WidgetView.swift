@@ -145,6 +145,25 @@ struct TextEntryView: View {
     }
 }
 
+struct BlankEntryView: View {
+    var entry: JournalEntry
+    var width: CGFloat
+    var height: CGFloat
+    var padding: CGFloat
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(.black)
+                .fill(LinearGradient(colors: [
+                    Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]).opacity(0.9),
+                    Color(red: entry.color[0] * 0.8, green: entry.color[1] * 0.8, blue: entry.color[2] * 0.8)
+                ], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
+                .opacity(entry.isFake ? 0 : 1)
+        }.frame(width: width, height: height, alignment: .topLeading)
+    }
+}
+
 //
 @ViewBuilder
 func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, padding: CGFloat, isDisplay: Bool, inEntry: Binding<EntryType>, selectedEntry: Binding<Int>, fbVM: FirebaseViewModel, journal: Journal, userVM: UserViewModel, pageNum: Int, entryIndex: Int, frontDegrees: Binding<CGFloat>, showDeleteButton: Binding<Int>, isWiggling: Binding<Bool>, fontSize: Int) -> some View {
@@ -153,6 +172,8 @@ func createView(for widget: JournalEntry, width: CGFloat, height: CGFloat, paddi
         PictureEntryView(entry: widget as! PictureEntry, width: width, height: height, isDisplay: isDisplay, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: entryIndex, frontDegrees: frontDegrees, showDeleteButton: showDeleteButton, isWiggling: isWiggling, padding: padding, fontSize: CGFloat(fontSize)).opacity(widget.isFake ? 0 : 1)
     case .voice:
         VoiceMemoEntryView(entry: widget as! VoiceEntry, width: width, height: height, padding: padding, fontSize: CGFloat(fontSize))
+    case .blank:
+        BlankEntryView(entry: widget, width: width, height: height, padding: padding)
     default:
         TextEntryView(entry: widget, width: width, height: height, padding: padding, fontSize: CGFloat(fontSize)).opacity(widget.isFake ? 0 : 1)
     }

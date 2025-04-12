@@ -185,7 +185,7 @@ struct ScrapbookShelfView: View {
                                 NavigationLink {
                                     CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
                                 } label: {
-                                    JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $showOnlyCover)
+                                    JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $showOnlyCover, offset: true)
                                         .scaleEffect(scaleEffect)
                                         .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                                         .transition(.identity)

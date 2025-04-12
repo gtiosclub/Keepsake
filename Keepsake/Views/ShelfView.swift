@@ -133,7 +133,7 @@ struct ShelfView: View {
                         )
                     }
                 },
-                templates: userVM.user.savedTemplates
+                templates: userVM.user.savedTemplates, userVM: userVM, fbVM: fbVM
             )
         }
     }
@@ -235,7 +235,7 @@ struct ShelfView: View {
                             let verticalOffset = calculateVerticalOffset(proxy: geometry)
                             VStack(spacing: 35) {
                                 ZStack {
-                                    JournalCover(template: journal.template, degrees: 0, title: journal.name, showOnlyCover: $showOnlyCover)
+                                    JournalCover(template: journal.template, degrees: 0, title: journal.name, showOnlyCover: $showOnlyCover, offset: true)
                                         .scaleEffect(scaleEffect)
                                         .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect,
                                                height: UIScreen.main.bounds.height * 0.56 * scaleEffect)

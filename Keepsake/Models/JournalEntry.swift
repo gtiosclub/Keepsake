@@ -7,6 +7,7 @@ enum EntryType: String, Codable {
     case chat
     case picture
     case voice
+    case blank
 }
 
 class JournalEntry: ObservableObject, Identifiable, Hashable, Codable {
@@ -336,3 +337,4 @@ class VoiceEntry: JournalEntry {
         fatalError("init(from:) has not been implemented")
     }
 }
+

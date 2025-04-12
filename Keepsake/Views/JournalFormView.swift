@@ -6,25 +6,40 @@ struct JournalFormView: View {
     var templates: [Template]
     
     @State private var title: String = ""
-    @State private var coverColor: Color = .blue
+    @State private var coverColor: Color = Color(red: 1.0, green: 0.7686, blue: 0.7294)
+    @State var colorArr: [Double] = [1.0, 0.7686, 0.7294]
     @State private var pageColor: Color = .white
-    @State private var titleColor: Color = .black
     @State private var selectedTemplate: Template? = nil
     @State private var selectedTexture: Texture = .leather
     @State private var journalPages: [JournalPage]? = nil
     @State private var selectedTab: String = "cover"
     @State private var showOnlyCover: Bool = false
+    @ObservedObject var userVM: UserViewModel
+    @ObservedObject var fbVM: FirebaseViewModel
+    
     
     let journalWidth = UIScreen.main.bounds.width * 0.92 * 0.5
     let journalHeight = UIScreen.main.bounds.height * 0.56 * 0.5
     
     // color options
-    let colorOptions: [(name: String, color: Color)] = [
-        ("Blue", .blue),
-        ("Red", .red),
-        ("Green", .green),
-        ("Multicolor", .pink)
+    let colorOptions: [(name: String, color: Color, colorArr: [Double])] = [
+        ("Red", Color(red: 1.0, green: 0.7686, blue: 0.7294), [1.0, 0.7686, 0.7294]),
+        ("Orange", Color(red: 1.0, green: 0.8392, blue: 0.7020), [1.0, 0.8392, 0.7020]),
+        ("Yellow", Color(red: 1.0, green: 0.9804, blue: 0.6667), [1.0, 0.9804, 0.6667]),
+        ("Green", Color(red: 0.8667, green: 0.9294, blue: 0.6667), [0.8667, 0.9294, 0.6667]),
+        ("Blue", Color(red: 0.7059, green: 0.8667, blue: 0.949), [0.7059, 0.8667, 0.949]),
+        ("Purple", Color(red: 0.8, green: 0.7765, blue: 0.9765), [0.8, 0.7765, 0.9765])
     ]
+    
+    //Fake variables because Alec sucks at coding
+    @State var inEntry: EntryType = .openJournal
+    @State var selectedEntry: Int = 0
+    @State var showDeleteButton: Int = -1
+    @State var frontDegrees: CGFloat = -180
+    @State var isWiggling: Bool = false
+    @State var deletePage: Int = -1
+    @State var pageWiggling: Bool = false
+    @State var journal: Journal = Journal()
     
     var body: some View {
         VStack(spacing: 0) {
@@ -47,7 +62,7 @@ struct JournalFormView: View {
                             selected.journalPages
                         )
                     } else {
-                        onCreate(title, coverColor, pageColor, titleColor, selectedTexture, nil)
+                        onCreate(title, coverColor, pageColor, .black, selectedTexture, nil)
                     }
                     isPresented = false
                 }
@@ -78,12 +93,13 @@ struct JournalFormView: View {
                                     name: title.isEmpty ? "Untitled Journal" : title,
                                     coverColor: coverColor,
                                     pageColor: .white,
-                                    titleColor: titleColor,
+                                    titleColor: .black,
                                     texture: selectedTexture
                                 ),
                                 degrees: 0,
-                                title: title.isEmpty ? "Untitled Journal" : title, showOnlyCover: $showOnlyCover
+                                title: title.isEmpty ? "Untitled Journal" : title, showOnlyCover: $showOnlyCover, offset: false
                             )
+                            .id("\(coverColor)\(title) \(selectedTexture)")
                             .scaleEffect(0.5)
                             .frame(width: 120, height: 157)
                             .cornerRadius(8)
@@ -116,15 +132,39 @@ struct JournalFormView: View {
                             .frame(width: 170, height: 213)
                             .shadow(radius: 2)
                         
-                        VStack(spacing: 25) {
+                        VStack {
                             Text("WIDGETS")
                                 .font(.caption)
                                 .foregroundColor(.primary)
                                 .padding(.top, 10)
                             
-                            Image("WidgetView")
-                                .frame(width: 120, height: 120)
-                                .padding(.top, 5)
+                            VStack(spacing: 8) {
+                                let mainWidgetPage = JournalPage.previewTemplate(pageNumber: 0, colorArr: colorArr)
+                                ZStack(alignment: .topLeading) {
+                                    // Rectangle shaped like a paper
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.white)
+                                        .shadow(radius: 5)
+                                        .frame(width: 120, height: 157) // Adjusted to look more like
+                                    ZStack {
+                                        let gridItems = [GridItem(.fixed(51), spacing: UIScreen.main.bounds.width * 0.010, alignment: .leading),
+                                                         GridItem(.fixed(51), spacing: UIScreen.main.bounds.width * 0.010, alignment: .leading),]
+                                        
+                                        LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.01) {
+                                            ForEach(Array(zip(mainWidgetPage.entries.indices, mainWidgetPage.entries)), id: \.0) { index, widget in
+                                                ZStack(alignment: .topLeading) {
+                                                    createView(for: widget, width: 51, height: 33, padding: 0.005, isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: mainWidgetPage.number, entryIndex: index, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling, fontSize: 10)
+                                                }.allowsHitTesting(false)
+                                                    .offset(y: 0)
+                                            }
+                                        }
+                                    }
+                                    .frame(width: 120, height: 157)
+                                }
+
+                            }
+                            .padding(.leading, 15)
+                            .padding(.trailing, 15)
                         }
                         VStack {
                             Spacer()
@@ -161,11 +201,6 @@ struct JournalFormView: View {
                                 }
                             }
                             
-                            Picker("Title Color", selection: $titleColor) {
-                                ForEach(colorOptions, id: \.name) { option in
-                                    Text(option.name).tag(option.color)
-                                }
-                            }
                             
                             Picker("Cover Texture", selection: $selectedTexture) {
                                 ForEach(Texture.allCases, id: \.self) { texture in
@@ -187,7 +222,8 @@ struct JournalFormView: View {
                                                 template: template,
                                                 degrees: 0,
                                                 title: template.name,
-                                                showOnlyCover: $showOnlyCover
+                                                showOnlyCover: $showOnlyCover,
+                                                offset: false
                                             )
                                             .frame(width: 120, height: 157)
                                             .scaleEffect(0.5)
@@ -229,21 +265,41 @@ struct JournalFormView: View {
                     Section(header: Text("Color Schemes")) {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 0) {
-                                ForEach(["Red", "Green", "Blue", "Multicolor"], id: \.self) { scheme in
+                                ForEach(colorOptions, id: \.name) { option in
+                                    let widgetPage = JournalPage.previewTemplate(pageNumber: 0, colorArr: option.colorArr)
                                     VStack(spacing: 8) {
-                                        Image("WidgetView")
-                                            .resizable()
-                                            .scaledToFit()
+                                        ZStack(alignment: .topLeading) {
+                                            // Rectangle shaped like a paper
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .fill(Color.white)
+                                                .shadow(radius: 5)
+                                                .frame(width: 120, height: 180) // Adjusted to look more like 
+                                            ZStack {
+                                                let gridItems = [GridItem(.fixed(55), spacing: UIScreen.main.bounds.width * 0.010, alignment: .leading),
+                                                                 GridItem(.fixed(55), spacing: UIScreen.main.bounds.width * 0.010, alignment: .leading),]
+                                                
+                                                LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.01) {
+                                                    ForEach(Array(zip(widgetPage.entries.indices, widgetPage.entries)), id: \.0) { index, widget in
+                                                        ZStack(alignment: .topLeading) {
+                                                            createView(for: widget, width: 55, height: 38, padding: 0.005, isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: widgetPage.number, entryIndex: index, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling, fontSize: 10)
+                                                        }.allowsHitTesting(false)
+                                                            .offset(y: -5)
+                                                    }
+                                                }.padding(.top, 15)
+                                            }
                                             .frame(width: 120, height: 180)
-                                            .cornerRadius(12)
+                                        }
 
-                                        Text(scheme)
+                                        Text(option.name)
                                             .font(.caption)
                                             .foregroundColor(.primary)
                                     }
                                     .padding(.vertical, 20)
                                     .padding(.leading, 15)
                                     .padding(.trailing, 15)
+                                    .onTapGesture(perform: {
+                                        coverColor = option.color
+                                    })
                                 }
                             }
                         }
@@ -252,6 +308,14 @@ struct JournalFormView: View {
                 }
 
             }
+        }.onChange(of: coverColor) { newColor in
+            // Match the newColor with one in colorOptions
+            if let match = colorOptions.first(where: { $0.color == newColor }) {
+                colorArr = match.colorArr
+            } else {
+                // fallback if not found
+                colorArr = [0.5, 0.5, 0.5]
+            }
         }
     }
     
@@ -259,9 +323,9 @@ struct JournalFormView: View {
         selectedTemplate = template
         coverColor = template.coverColor
         pageColor = template.pageColor
-        titleColor = template.titleColor
         selectedTexture = template.texture
         journalPages = template.journalPages
+        title = template.name
     }
 }
 struct JournalFormView_Previews: PreviewProvider {
@@ -313,7 +377,7 @@ struct JournalFormView_Previews: PreviewProvider {
             onCreate: { title, coverColor, pageColor, titleColor, texture, journalPages in
                 print("Creating journal: \(title)")
             },
-            templates: sampleTemplates
+            templates: sampleTemplates, userVM: UserViewModel(user: User()), fbVM: FirebaseViewModel()
         )
     }
 }

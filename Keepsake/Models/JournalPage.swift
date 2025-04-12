@@ -167,5 +167,30 @@ extension JournalPage: CustomStringConvertible {
         return JournalPage(number: pageNumber, entries: entries, realEntryCount: 3)
     }
     
+    static func previewTemplate(pageNumber: Int, colorArr: [Double]) -> JournalPage {
+        var entries: [JournalEntry] = []
+        
+        func color(_ r: Double, _ g: Double, _ b: Double) -> [Double] {
+            return [r, g, b]
+        }
+        
+        let entry1 = JournalEntry(date: "", title: "", entryContents: "", width: 1, height: 2, isFake: false, color: colorArr, type: .blank)
+        entries.append(entry1)
+        
+        let entry2 = JournalEntry(date: "", title: "", entryContents: "", width: 1, height: 1, isFake: false, color: colorArr, type: .blank)
+        entries.append(entry2)
+        entries.append(JournalEntry())
+        
+        let entry3 = JournalEntry(date: "", title: "", entryContents: "", width: 1, height: 1, isFake: false, color: colorArr, type: .blank)
+        entries.append(entry3)
+        
+        let entry4 = JournalEntry(date: "", title: "", entryContents: "", width: 2, height: 2, isFake: false, color: colorArr, type: .blank)
+        entries.append(entry4)
+        entries.append(JournalEntry())
+        entries.append(JournalEntry())
+        entries.append(JournalEntry())
+        
+        return JournalPage(number: pageNumber, entries: entries, realEntryCount: 4)
+    }
     
 }
