@@ -90,14 +90,14 @@ struct ScrapbookFormView: View {
                             
                             JournalCover(
                                 template: Template(
-                                    name: title.isEmpty ? "Untitled Scrapbook" : title,
+                                    name: title.isEmpty ? "Untitled" : title,
                                     coverColor: coverColor,
                                     pageColor: .white,
                                     titleColor: .black,
                                     texture: selectedTexture
                                 ),
                                 degrees: 0,
-                                title: title.isEmpty ? "Untitled Scrapbook" : title, showOnlyCover: $showOnlyCover, offset: false
+                                title: title.isEmpty ? "Untitled" : title, showOnlyCover: $showOnlyCover, offset: false
                             )
                             .id("\(coverColor)\(title) \(selectedTexture)")
                             .scaleEffect(0.5)
@@ -243,7 +243,7 @@ struct ScrapbookFormView_Previews: PreviewProvider {
                 coverColor: .gray,
                 pageColor: .white,
                 titleColor: .blue,
-                texture: .blackLeather,
+                texture: .leather,
                 journalPages: [
                     JournalPage(number: 1),
                     JournalPage(number: 2),
@@ -255,7 +255,7 @@ struct ScrapbookFormView_Previews: PreviewProvider {
                 coverColor: .gray,
                 pageColor: .white,
                 titleColor: .blue,
-                texture: .blackLeather,
+                texture: .leather,
                 journalPages: [
                     JournalPage(number: 1),
                     JournalPage(number: 2),

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct NewPageView: View {
-    var pageTemplates: [JournalPage] = [JournalPage(number: 1), JournalPage.defaultTemplate(pageNumber: 1),  JournalPage.dailyReflectionTemplate(pageNumber: 1), JournalPage.tripTemplate(pageNumber: 1)]
     var pageTemplateTitles: [String] = ["Blank","Default", "Daily Reflection", "Trip"]
     @State var inEntry: EntryType = .openJournal
     @State var selectedEntry: Int = 0
@@ -22,6 +21,7 @@ struct NewPageView: View {
     @Binding var showNewPage: Bool
     @Binding var displayPage: Int
     
+    @State var pageTemplates: [JournalPage] = []
     // Define grid columns (2 columns in this case)
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
     
@@ -108,6 +108,9 @@ struct NewPageView: View {
                 
             }
             .padding(.top)
+        }
+        .onAppear() {
+            pageTemplates = [JournalPage(number: 1), JournalPage.defaultTemplate(pageNumber: 1, color: journal.template.coverColor),  JournalPage.dailyReflectionTemplate(pageNumber: 1, color: journal.template.coverColor), JournalPage.tripTemplate(pageNumber: 1, color: journal.template.coverColor)]
         }
     }
 }

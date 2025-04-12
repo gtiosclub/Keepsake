@@ -32,13 +32,11 @@ extension Color {
 enum Texture: String {
     case leather
     case bears
-    case blackLeather
     case flower1
     case flower2
     case flower3
     case garden
     case green
-    case redLeather
     case snoopy
     case stars
     
@@ -48,8 +46,6 @@ enum Texture: String {
             return ["type": "leather"]
         case .bears:
             return ["type": "bears"]
-        case .blackLeather:
-            return ["type": "blackLeather"]
         case .flower1:
             return ["type": "flower1"]
         case .flower2:
@@ -60,8 +56,6 @@ enum Texture: String {
             return ["type": "garden"]
         case .green:
             return ["type": "green"]
-        case .redLeather:
-            return ["type": "redLeather"]
         case .snoopy:
             return ["type": "snoopy"]
         case .stars:

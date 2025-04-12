@@ -90,14 +90,14 @@ struct JournalFormView: View {
                             
                             JournalCover(
                                 template: Template(
-                                    name: title.isEmpty ? "Untitled Journal" : title,
+                                    name: title.isEmpty ? "Untitled" : title,
                                     coverColor: coverColor,
                                     pageColor: .white,
                                     titleColor: .black,
                                     texture: selectedTexture
                                 ),
                                 degrees: 0,
-                                title: title.isEmpty ? "Untitled Journal" : title, showOnlyCover: $showOnlyCover, offset: false
+                                title: title.isEmpty ? "Untitled" : title, showOnlyCover: $showOnlyCover, offset: false
                             )
                             .id("\(coverColor)\(title) \(selectedTexture)")
                             .scaleEffect(0.5)
@@ -139,7 +139,7 @@ struct JournalFormView: View {
                                 .padding(.top, 10)
                             
                             VStack(spacing: 8) {
-                                let mainWidgetPage = JournalPage.previewTemplate(pageNumber: 0, colorArr: colorArr)
+                                let mainWidgetPage = JournalPage.previewTemplate(pageNumber: 0, color: coverColor)
                                 ZStack(alignment: .topLeading) {
                                     // Rectangle shaped like a paper
                                     RoundedRectangle(cornerRadius: 10)
@@ -266,7 +266,7 @@ struct JournalFormView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 0) {
                                 ForEach(colorOptions, id: \.name) { option in
-                                    let widgetPage = JournalPage.previewTemplate(pageNumber: 0, colorArr: option.colorArr)
+                                    let widgetPage = JournalPage.previewTemplate(pageNumber: 0, color: option.color)
                                     VStack(spacing: 8) {
                                         ZStack(alignment: .topLeading) {
                                             // Rectangle shaped like a paper
@@ -350,7 +350,7 @@ struct JournalFormView_Previews: PreviewProvider {
                 coverColor: .gray,
                 pageColor: .white,
                 titleColor: .blue,
-                texture: .blackLeather,
+                texture: .leather,
                 journalPages: [
                     JournalPage(number: 1),
                     JournalPage(number: 2),
@@ -362,7 +362,7 @@ struct JournalFormView_Previews: PreviewProvider {
                 coverColor: .gray,
                 pageColor: .white,
                 titleColor: .blue,
-                texture: .blackLeather,
+                texture: .leather,
                 journalPages: [
                     JournalPage(number: 1),
                     JournalPage(number: 2),
