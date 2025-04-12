@@ -12,7 +12,7 @@ struct ProfileView: View {
     @State private var showStreak = false
     @State private var pulse = false
     @State private var remindersWithAudio: [(reminder: Reminder, audioUrl: String)] = []
-
+    @State var retrievedImage: UIImage?
     var body: some View {
         NavigationView {
             ScrollView {
@@ -37,7 +37,6 @@ struct ProfileView: View {
             }
             .navigationTitle("Profile")
             .onAppear {
-                viewModel.getProfilePic()
                 fetchStreaks()
                 fetchAllAudioFiles()
             }
@@ -68,7 +67,7 @@ struct ProfileView: View {
 
     var profileCard: some View {
         HStack(alignment: .center, spacing: 16) {
-            if let profileImage = viewModel.retrievedImage {
+            if let profileImage = retrievedImage {
                 Image(uiImage: profileImage)
                     .resizable()
                     .scaledToFill()

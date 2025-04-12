@@ -227,7 +227,7 @@ class FirebaseViewModel: ObservableObject {
                 
                 var scrapbookShelves: [ScrapbookShelf] = []
                 for scrapbookShelfId in scrapbookShelfIds {
-                    let shelf = await getScrapbookShelfFromID(id: scrapbookShelfId)!
+                    let shelf = await getScrapbookShelfFromID(id: scrapbookShelfId) ?? ScrapbookShelf(name: "New Shelf", id: UUID(), scrapbooks: [])
                     scrapbookShelves.append(shelf)
 
                 }

@@ -31,8 +31,11 @@ struct ContentView: View {
                         ScrapbookShelfView(userVM: userVM, shelf: userVM.user.getScrapbookShelves()[userVM.getShelfIndex()], aiVM: aiVM, fbVM: fbVM, shelfIndex: userVM.getShelfIndex(), selectedOption: .constant(.journal_shelf))
                     }
                     Tab("Profile", systemImage:"person.crop.circle") {
-                        ProfileView()
+                        ProfileView(retrievedImage: fbVM.retrievedImage)
                     }
+                }
+                .onAppear() {
+                    fbVM.getProfilePic()
                 }
                 
             }
