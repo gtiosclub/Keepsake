@@ -8,6 +8,14 @@
 import SwiftUI
 import RealityKit
 
+
+enum FrameType {
+    case polaroid
+    case classic
+    // Add more options as needed
+}
+
+
 class FramedImageEntity: Entity {
     
     var image: UIImage
@@ -32,12 +40,23 @@ class FramedImageEntity: Entity {
         // Optionally, fix the orientation and rounding.
         let fixedImage = fixedOrientationImage(from: image)
         let roundedImage = roundedImage(from: fixedImage, cornerRadius: image.size.width * 0.05)
-        if let cgImage = roundedImage.cgImage {
-            do {
-                let textureResource = try await TextureResource(image: cgImage, options: .init(semantic: .color))
-                imageMaterial.color = .init(texture: MaterialParameters.Texture(textureResource))
-            } catch {
-                print("Error creating texture: \(error)")
+        if frameType == .classic {
+            if let cgImage = roundedImage.cgImage {
+                do {
+                    let textureResource = try await TextureResource(image: cgImage, options: .init(semantic: .color))
+                    imageMaterial.color = .init(texture: MaterialParameters.Texture(textureResource))
+                } catch {
+                    print("Error creating texture: \(error)")
+                }
+            }
+        } else {
+            if let cgImage = fixedImage.cgImage {
+                do {
+                    let textureResource = try await TextureResource(image: cgImage, options: .init(semantic: .color))
+                    imageMaterial.color = .init(texture: MaterialParameters.Texture(textureResource))
+                } catch {
+                    print("Error creating texture: \(error)")
+                }
             }
         }
         
@@ -52,12 +71,14 @@ class FramedImageEntity: Entity {
         self.addChild(imageEntity)
         
         // Now, create the frame entity.
-        let frameEntity = await makeFrameEntity(for: frameType,
-                                                imageWidth: width,
-                                                imageHeight: imageHeight)
-        
-        frameEntity.transform.translation = [0, 0, 0]
-        self.addChild(frameEntity)
+        if frameType != .classic {
+            let frameEntity = await makeFrameEntity(for: frameType,
+                                                    imageWidth: width,
+                                                    imageHeight: imageHeight)
+            
+            frameEntity.transform.translation = [0, 0, 0]
+            self.addChild(frameEntity)
+        }
     }
     
     private func makeFrameEntity(for type: FrameType, imageWidth: Float, imageHeight: Float) async -> ModelEntity {
@@ -70,7 +91,7 @@ class FramedImageEntity: Entity {
         switch type {
         case .polaroid:
             // For a Polaroid-style frame, add extra space on the bottom.
-            let bottomExtra: Float = 0.08
+            let bottomExtra: Float = 0.2
             let frameWidth = imageWidth + (2 * borderSize)
             let frameHeight = imageHeight + borderSize + bottomExtra
             frameMesh = MeshResource.generatePlane(width: frameWidth, height: frameHeight)
@@ -85,6 +106,9 @@ class FramedImageEntity: Entity {
             self.children.first?.transform.translation.y = yOffset
         case .classic:
             // For a simple border around the image, make the frame uniformly larger.
+            
+            // THIS PART NEVER GETS RUN IN THE CURRENT CODE
+            // I AM CONSIDERING CLASSIC AS NO BORDER
             let frameWidth = imageWidth + (2 * borderSize)
             let frameHeight = imageHeight + (2 * borderSize)
             frameMesh = MeshResource.generatePlane(width: frameWidth, height: frameHeight)
@@ -97,10 +121,4 @@ class FramedImageEntity: Entity {
     required init() {
         fatalError("init() has not been implemented")
     }
-}
-
-enum FrameType {
-    case polaroid
-    case classic
-    // Add more options as needed
 }

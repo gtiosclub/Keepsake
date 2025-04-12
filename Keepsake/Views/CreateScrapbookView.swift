@@ -62,6 +62,10 @@ struct CreateScrapbookView: View {
     @State private var animationInProgress = false
     
     @State private var isCustomizingImage: Bool = false
+    
+    @State var noFrameSelected: Bool = true
+    @State var polaroidFrameSelected: Bool = false
+    @State var flowerFrameSelected: Bool = false
 
     var body: some View {
         ZStack {
@@ -167,7 +171,11 @@ struct CreateScrapbookView: View {
                 Task {
                     if let validImage = currImage {
 //                        let newImage = await FramedImageEntity(image: validImage, frameType: .polaroid)
-                        let newImage = await ImageEntity(image: validImage)
+                        var frameType = FrameType.classic
+                        if polaroidFrameSelected {
+                            frameType = FrameType.polaroid
+                        }
+                        let newImage = await FramedImageEntity(image: validImage, frameType: frameType)
                         newImage.name = "\(counter)"
                         entityPos.append(.zero)
                         counter += 1
@@ -313,7 +321,6 @@ struct CreateScrapbookView: View {
         ZStack {
             Rectangle()
                 .fill(.ultraThinMaterial)
-                .opacity(0.95)
                 .cornerRadius(20, corners: [.topLeft, .topRight])
             VStack {
                 if let validImage = currImage {
@@ -335,10 +342,45 @@ struct CreateScrapbookView: View {
                     .padding(20)
                 
                 HStack {
-                    Image("no_frame")
-                    Image("polaroid_frame")
-                        .offset(x: 13)
-                    Image("flower_frame")
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            noFrameSelected = true
+                            polaroidFrameSelected = false
+                            flowerFrameSelected = false
+                        }
+                    } label: {
+                        Image("no_frame")
+                            .shadow(color: noFrameSelected ? Color.black.opacity(0.3) : Color.clear,
+                                    radius: noFrameSelected ? 10 : 0, x: 0, y: 5)
+                            .offset(y: noFrameSelected ? -5 : 0)
+                    }
+                    
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            noFrameSelected = false
+                            polaroidFrameSelected = true
+                            flowerFrameSelected = false
+                        }
+                    } label: {
+                        Image("polaroid_frame")
+                            .shadow(color: polaroidFrameSelected ? Color.black.opacity(0.3) : Color.clear,
+                                    radius: polaroidFrameSelected ? 10 : 0, x: 0, y: 5)
+                            .offset(y: polaroidFrameSelected ? -5 : 0)
+                            .offset(x: 13)
+                    }
+                    
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            noFrameSelected = false
+                            polaroidFrameSelected = false
+                            flowerFrameSelected = true
+                        }
+                    } label: {
+                        Image("flower_frame")
+                            .shadow(color: flowerFrameSelected ? Color.black.opacity(0.3) : Color.clear,
+                                    radius: flowerFrameSelected ? 10 : 0, x: 0, y: 5)
+                            .offset(y: flowerFrameSelected ? -5 : 0)
+                    }
                 }
             }
             VStack {
@@ -350,6 +392,7 @@ struct CreateScrapbookView: View {
                     } label: {
                         Text("Done")
                             .font(.title2)
+                            .foregroundStyle(.white)
                             .padding(25)
                     }
                 }
