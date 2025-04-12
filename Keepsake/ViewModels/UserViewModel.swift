@@ -237,11 +237,26 @@ class UserViewModel: ObservableObject {
         user.getJournalShelves()[shelfIndex].journals.append(journal)
     }
     
+    func addScrapbookToShelf(scrapbook: Scrapbook, shelfIndex: Int) {
+//        user.journalShelves[shelfIndex].journals.append(journal)
+        user.getScrapbookShelves()[shelfIndex].scrapbooks.append(scrapbook)
+    }
+    
     func removeJournalFromShelf(shelfIndex: Int, journalID: UUID) {
         let journals = user.getJournalShelves()[shelfIndex].journals
         for index in journals.indices {
             if journalID == journals[index].id {
                 user.getJournalShelves()[shelfIndex].journals.remove(at: index)
+                return
+            }
+        }
+    }
+    
+    func removeScrapbookFromShelf(shelfIndex: Int, scrapbookID: UUID) {
+        let scrapbooks = user.getScrapbookShelves()[shelfIndex].scrapbooks
+        for index in scrapbooks.indices {
+            if scrapbookID == scrapbooks[index].id {
+                user.getScrapbookShelves()[shelfIndex].scrapbooks.remove(at: index)
                 return
             }
         }

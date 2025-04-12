@@ -90,14 +90,14 @@ struct ScrapbookFormView: View {
                             
                             JournalCover(
                                 template: Template(
-                                    name: title.isEmpty ? "Untitled Journal" : title,
+                                    name: title.isEmpty ? "Untitled" : title,
                                     coverColor: coverColor,
                                     pageColor: .white,
                                     titleColor: .black,
                                     texture: selectedTexture
                                 ),
                                 degrees: 0,
-                                title: title.isEmpty ? "Untitled Journal" : title, showOnlyCover: $showOnlyCover, offset: false
+                                title: title.isEmpty ? "Untitled" : title, showOnlyCover: $showOnlyCover, offset: false
                             )
                             .id("\(coverColor)\(title) \(selectedTexture)")
                             .scaleEffect(0.5)
@@ -123,65 +123,6 @@ struct ScrapbookFormView: View {
                     selectedTab = "cover"
                 }
                 
-                // WIDGET
-                VStack(spacing: 0) {
-                    
-                    ZStack (alignment: .top){
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.gray.opacity(selectedTab == "widgets" ? 0.2 : 0.00))
-                            .frame(width: 170, height: 213)
-                            .shadow(radius: 2)
-                        
-                        VStack {
-                            Text("WIDGETS")
-                                .font(.caption)
-                                .foregroundColor(.primary)
-                                .padding(.top, 10)
-                            
-                            VStack(spacing: 8) {
-                                let mainWidgetPage = JournalPage.previewTemplate(pageNumber: 0, color: coverColor)
-                                ZStack(alignment: .topLeading) {
-                                    // Rectangle shaped like a paper
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color.white)
-                                        .shadow(radius: 5)
-                                        .frame(width: 120, height: 157) // Adjusted to look more like
-                                    ZStack {
-                                        let gridItems = [GridItem(.fixed(51), spacing: UIScreen.main.bounds.width * 0.010, alignment: .leading),
-                                                         GridItem(.fixed(51), spacing: UIScreen.main.bounds.width * 0.010, alignment: .leading),]
-                                        
-                                        LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.01) {
-                                            ForEach(Array(zip(mainWidgetPage.entries.indices, mainWidgetPage.entries)), id: \.0) { index, widget in
-                                                ZStack(alignment: .topLeading) {
-                                                    createView(for: widget, width: 51, height: 33, padding: 0.005, isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: mainWidgetPage.number, entryIndex: index, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling, fontSize: 10)
-                                                }.allowsHitTesting(false)
-                                                    .offset(y: 0)
-                                            }
-                                        }
-                                    }
-                                    .frame(width: 120, height: 157)
-                                }
-
-                            }
-                            .padding(.leading, 15)
-                            .padding(.trailing, 15)
-                        }
-                        VStack {
-                            Spacer()
-                            
-                            Capsule()
-                                .fill(Color.blue)
-                                .frame(width: 60, height: 4)
-                                .opacity(selectedTab == "widgets" ? 1: 0)
-                            
-                        }
-                        .frame(height: 213)
-                    }
-                    
-                }
-                .onTapGesture {
-                    selectedTab = "widgets"
-                }
                 
             }
             .padding()
@@ -192,7 +133,7 @@ struct ScrapbookFormView: View {
                 Form {
                     // FORM FIELDS
                     Section {
-                        TextField("Journal Title", text: $title)
+                        TextField("Scrapbook Title", text: $title)
                         
                         if selectedTemplate == nil {
                             Picker("Cover Color", selection: $coverColor) {
@@ -259,54 +200,6 @@ struct ScrapbookFormView: View {
                     }
                     
                 }
-            }
-            else if selectedTab == "widgets" {
-                Form {
-                    Section(header: Text("Color Schemes")) {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 0) {
-                                ForEach(colorOptions, id: \.name) { option in
-                                    let widgetPage = JournalPage.previewTemplate(pageNumber: 0, color: option.color)
-                                    VStack(spacing: 8) {
-                                        ZStack(alignment: .topLeading) {
-                                            // Rectangle shaped like a paper
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .fill(Color.white)
-                                                .shadow(radius: 5)
-                                                .frame(width: 120, height: 180) // Adjusted to look more like
-                                            ZStack {
-                                                let gridItems = [GridItem(.fixed(55), spacing: UIScreen.main.bounds.width * 0.010, alignment: .leading),
-                                                                 GridItem(.fixed(55), spacing: UIScreen.main.bounds.width * 0.010, alignment: .leading),]
-                                                
-                                                LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.01) {
-                                                    ForEach(Array(zip(widgetPage.entries.indices, widgetPage.entries)), id: \.0) { index, widget in
-                                                        ZStack(alignment: .topLeading) {
-                                                            createView(for: widget, width: 55, height: 38, padding: 0.005, isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: widgetPage.number, entryIndex: index, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling, fontSize: 10)
-                                                        }.allowsHitTesting(false)
-                                                            .offset(y: -5)
-                                                    }
-                                                }.padding(.top, 15)
-                                            }
-                                            .frame(width: 120, height: 180)
-                                        }
-
-                                        Text(option.name)
-                                            .font(.caption)
-                                            .foregroundColor(.primary)
-                                    }
-                                    .padding(.vertical, 20)
-                                    .padding(.leading, 15)
-                                    .padding(.trailing, 15)
-                                    .onTapGesture(perform: {
-                                        coverColor = option.color
-                                    })
-                                }
-                            }
-                        }
-                        .listRowInsets(EdgeInsets())
-                    }
-                }
-
             }
         }.onChange(of: coverColor) { newColor in
             // Match the newColor with one in colorOptions

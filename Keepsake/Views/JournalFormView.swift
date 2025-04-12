@@ -90,14 +90,14 @@ struct JournalFormView: View {
                             
                             JournalCover(
                                 template: Template(
-                                    name: title.isEmpty ? "Untitled Journal" : title,
+                                    name: title.isEmpty ? "Untitled" : title,
                                     coverColor: coverColor,
                                     pageColor: .white,
                                     titleColor: .black,
                                     texture: selectedTexture
                                 ),
                                 degrees: 0,
-                                title: title.isEmpty ? "Untitled Journal" : title, showOnlyCover: $showOnlyCover, offset: false
+                                title: title.isEmpty ? "Untitled" : title, showOnlyCover: $showOnlyCover, offset: false
                             )
                             .id("\(coverColor)\(title) \(selectedTexture)")
                             .scaleEffect(0.5)

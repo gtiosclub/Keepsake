@@ -1181,7 +1181,7 @@ class FirebaseViewModel: ObservableObject {
      #########################################################################################**/
     
     
-    func addScrapbook(scrapbook: Scrapbook, scrapbookShelfID: UUID) async -> Bool {
+    func addScrapbook(scrapbook: Scrapbook, scrapbookShelfID: UUID) async {
         let scrapbook_reference = db.collection("SCRAPBOOKS").document(scrapbook.id.uuidString)
         do {
             let scrapbookData = scrapbook.toDictionary()
@@ -1191,10 +1191,9 @@ class FirebaseViewModel: ObservableObject {
                 "scrapbooks": FieldValue.arrayUnion([scrapbook.id.uuidString])
             ])
             
-            return true
         } catch {
             print("Error adding journal: \(error.localizedDescription)")
-            return false
+
         }
     }
     

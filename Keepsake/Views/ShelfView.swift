@@ -349,7 +349,7 @@ struct ShelfView: View {
                         let threshold: CGFloat = 100
                         if abs(value.translation.width) > threshold {
                             let nextJournal = value.translation.width > 0 ? -1 : 1
-                            let newIndex = currentScrollIndex + nextJournal
+                            let newIndex = min(max(currentScrollIndex + nextJournal,0), shelf.journals.count-1)
                             
                             withAnimation {
                                 currentScrollIndex = newIndex
