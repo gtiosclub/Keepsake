@@ -126,10 +126,10 @@ struct JournalPagesView: View {
                             .padding(.top, 6)
                             
                             ZStack {
-                                let gridItems = [GridItem(.fixed(75), spacing: UIScreen.main.bounds.width * 0.015, alignment: .leading),
-                                                 GridItem(.fixed(75), spacing: UIScreen.main.bounds.width * 0.015, alignment: .leading),]
+                                let gridItems = [GridItem(.fixed(75), spacing: UIScreen.main.bounds.width * 0.01, alignment: .leading),
+                                                 GridItem(.fixed(75), spacing: UIScreen.main.bounds.width * 0.01, alignment: .leading),]
                                 
-                                LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.015) {
+                                LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.01) {
                                     ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
                                         ZStack(alignment: .topLeading) {
                                             createView(for: widget, width: 75, height: 45, padding: 0.01, isDisplay: false, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: page.number, entryIndex: index, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling, fontSize: 10)
