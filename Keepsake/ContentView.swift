@@ -25,7 +25,7 @@ struct ContentView: View {
                     
                     
                     Tab("Community", systemImage: "person.2") {
-                        CommunityView()
+                        CommunityView(userVM: userVM, fbVM: fbVM, retrievedImage: fbVM.retrievedImage)
                     }
                     Tab("Profile", systemImage:"person.crop.circle") {
                         ProfileView(retrievedImage: fbVM.retrievedImage)

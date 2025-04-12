@@ -105,7 +105,8 @@ class FirebaseViewModel: ObservableObject {
 
                 "lastUsedJShelfID": "\(initialShelf.id)",
                 "lastUsedSShelfID": "\(initialScrapbookShelf.id)",
-                "isJournalLastUsed": true
+                "isJournalLastUsed": true,
+                "savedScrapbookIDs": []
 
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
@@ -197,7 +198,8 @@ class FirebaseViewModel: ObservableObject {
                let friends = snapshot.get("friends") as? [String],
                let lastUsedJ = snapshot.get("lastUsedJShelfID") as? String,
                let lastUsedS = snapshot.get("lastUsedSShelfID") as? String,
-               let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
+               let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool,
+               let savedScrapbookIDs = snapshot.get("savedScrapbookIDs") as? [String]
             {
                 var scrapbookShelves: [ScrapbookShelf] = []
                 for scrapbookShelfId in scrapbookShelfIds {
@@ -247,7 +249,16 @@ class FirebaseViewModel: ObservableObject {
                     }
                 }
                 print("is journal: \(isJournalLastUsed)")
-                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed, images: imageDict)
+                var savedScrapbooks: [Scrapbook] = []
+                for scrapbookID in savedScrapbookIDs {
+                    if scrapbookID.isEmpty { continue }
+                    let scrapbook = await loadScrapbook(scrapbookID: scrapbookID)
+                    if let unwrapped = scrapbook {
+                        savedScrapbooks.append(unwrapped)
+                    }
+                }
+                let communityScrapbooks = await getAllSharedScrapbooks(userID: uid)
+                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed, images: imageDict, communityScrapbooks: communityScrapbooks, savedScrapbooks: savedScrapbooks)
                 
                 // Assign the user object to currentUser
                 await MainActor.run {
@@ -1114,6 +1125,7 @@ class FirebaseViewModel: ObservableObject {
                 var arrScrapbooks: [Scrapbook] = []
                 
                 for scrapbookID in scrapbookIDs {
+                    if scrapbookID.isEmpty { continue }
                     let scrapbook = await loadScrapbook(scrapbookID: scrapbookID)
                     if let scrapbook = scrapbook {
                         arrScrapbooks.append(scrapbook)
@@ -1286,6 +1298,63 @@ class FirebaseViewModel: ObservableObject {
             try await db.collection("SCRAPBOOKS").document(scrapbookID).delete()
         } catch {
             print("Error removing document: \(error)")
+        }
+    }
+    
+    func getAllSharedScrapbooks(userID: String) async -> [Scrapbook] {
+        print("User ID: \(userID)")
+        var sharedScrapbooks: [Scrapbook] = []
+        var allScrapIDs: [String] = []
+        // Get all scrapIDs
+        do {
+            let snapshot = try await db.collection("SCRAPBOOKS").getDocuments()
+            allScrapIDs = snapshot.documents.map { $0.documentID }
+        } catch {
+            print("Error getting all scrapbook IDs")
+        }
+        // Get all user scrapbook IDs
+        var userScrapIDs: [String] = []
+        do {
+            let document = try await db.collection("USERS").document(userID).getDocument()
+            let shelfIDs = (document.data()?["scrapbookShelves"] as? [String]) ?? []
+            for shelf in shelfIDs {
+                let shelfDocument = try await db.collection("SCRAPBOOK_SHELVES").document(shelf).getDocument()
+                let scrapIDs = (shelfDocument.data()?["scrapbooks"] as? [String]) ?? []
+                for astring in scrapIDs {
+                    userScrapIDs.append(astring)
+                }
+            }
+            print("User scrap IDS: \(userScrapIDs)")
+        } catch {
+            print("Error getting user scrapbooks")
+        }
+        // Get scrapbook from IDs
+        print("all scrap IDs: \(allScrapIDs)")
+        for scrapID in allScrapIDs {
+            if !userScrapIDs.contains(scrapID) && !scrapID.isEmpty {
+                let scrapbook = await loadScrapbook(scrapbookID: scrapID)
+                if let unwrapped = scrapbook {
+                    if unwrapped.isShared {
+                        sharedScrapbooks.append(unwrapped)
+                    }
+                }
+            }
+        }
+        return sharedScrapbooks
+    }
+    
+    func updateSavedScrapbooks(userID: String, newScrapbooks: [Scrapbook]) async {
+        var scrapbookIDs: [String] = []
+        for scrapbook in newScrapbooks {
+            scrapbookIDs.append(scrapbook.id.uuidString)
+        }
+        let journal_reference = db.collection("USERS").document(userID)
+        do {
+            try await journal_reference.updateData([
+                "savedScrapbookIDs": scrapbookIDs
+            ])
+        } catch {
+            print("Error updating pages: \(error.localizedDescription)")
         }
     }
     

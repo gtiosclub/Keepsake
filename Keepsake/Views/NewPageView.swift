@@ -86,6 +86,7 @@ struct NewPageView: View {
                                                     fontSize: 10
                                                 )
                                             }.allowsHitTesting(false)
+                                                .offset(y: -4)
                                         }
                                     }
                                     .padding(.top, 15)

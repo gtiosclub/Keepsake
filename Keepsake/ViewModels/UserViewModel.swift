@@ -46,6 +46,11 @@ class UserViewModel: ObservableObject {
         self.user = user
     }
     
+    func getCommunityScrapbooks() -> [Scrapbook] {
+        return user.communityScrapbooks
+    }
+    
+    
     func addJournalShelfToUser(_ shelf: JournalShelf) {
         user.addJournalShelf(shelf: shelf)
     }
@@ -79,6 +84,13 @@ class UserViewModel: ObservableObject {
         return user.getScrapbookShelves()[shelfIndex].scrapbooks[bookIndex]
     }
     
+    func updateSavedScrapbooks(scrapbooks: [Scrapbook]) {
+        user.savedScrapbooks = scrapbooks
+    }
+    
+    func getSavedScrapbooks() -> [Scrapbook] {
+        return user.savedScrapbooks
+    }
     
     func getJournalIndex(journal: Journal, shelfIndex: Int) -> Int {
         var journals = getJournalShelves()[shelfIndex].journals
