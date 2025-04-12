@@ -49,95 +49,27 @@ struct CreateScrapbookView: View {
     @State private var backgroundColor: Color = .white
     @State private var textColor: Color = .black
     @State private var textAlignment: NSTextAlignment = .center
-    let fontSizes: [CGFloat] = Array(stride(from: 100, to: 300, by: 10))
     @State private var isBold: Bool = false
     @State private var isItalic: Bool = false
     @State private var isUnderlined: Bool = false
     @State private var showTextColorPicker: Bool = false
     @State private var showBackgroundColorPicker: Bool = false
-    
-    let fontOptions = [
-        "Helvetica",
-        "Times New Roman",
-        "Courier",
-        "Comic Sans",
-        "Arial",
-        "Impact",
-        "Lato",
-        "Oswald",
-    ]
+    let fontOptions = ["Helvetica", "Times New Roman", "Courier", "Comic Sans", "Arial", "Impact", "Lato", "Oswald"]
+    let fontSizes: [CGFloat] = Array(stride(from: 100, to: 300, by: 10))
+    let buttonSize: CGFloat = 50
     
     @State private var isExpanded = false
     @State private var animationInProgress = false
     
     @State private var isCustomizingImage: Bool = false
-    
-    // Colors and sizing constants
-    let toolbarColor = Color(red: 0.15, green: 0.15, blue: 0.15)
-    let buttonSize: CGFloat = 50
-    let spacing: CGFloat = 12
 
     var body: some View {
         ZStack {
-            // RealityKit View
             ARView
                 .ignoresSafeArea()
-            // Tap gesture that changes the selectedEntity to the entity you click on
-            .gesture(SpatialTapGesture(coordinateSpace: .local).targetedToAnyEntity()
-                .onEnded{ value in
-                    /*
-                     hitTest creates a ray at value.location and returns a list of CollisionCastHits that it encounters
-                     We then use the first CollisionCastHit and get it's entity's parent
-                     We get the parent instead of just the entity because
-                     the entity will be the collsion shape attached to the entity instead of the entity itself
-                     */
-                    if let selected = value.hitTest(point: value.location, in: .local).first?.entity.parent {
-                        selectedEntity = selected
-                    }
-                    print(selectedEntity?.name ?? "No Entity Selected")
-                })
-            
-            // drag gesture to move the entities around in a sphere-like shape
-            // gets change in 2D drag distance and converts that into 3D transformations
-            .gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
-                .onChanged { value in
-                    // Gets the last known position for the selected entity and edits from there
-                    // note the position is not its 3D position, its the 2D location of where the dragGesture ended
-                    // the name of an entity is its index in the position array
-                    let position = entityPos[Int(selectedEntity?.name ?? "0") ?? 0]
-                    let dy = Float(value.translation.height + position.y) * 0.002
-                    let maxAngle: Float = .pi / 2.5  // 45 degrees in radians
-                    let dx = Float(value.translation.width + position.x) * 0.002
-                    selectedEntity?.position.x = dx
-                    selectedEntity?.position.y = -dy
-                    
-                    // Clamp the horizontal rotation angle:
-                    let clampedDX = min(max(dx, -maxAngle), maxAngle)
-                    let clampedDY = min(max(dy, -maxAngle), maxAngle)
-                    
-                    // Create the rotation using the clamped value:
-                    let horizontalRotation = simd_quatf(angle: -clampedDX, axis: SIMD3<Float>(0, 1, 0))
-                    let verticalRotation = simd_quatf(angle: -clampedDY, axis: SIMD3<Float>(1, 0, 0))
-                    
-                    // Combine rotations (order matters)
-                    selectedEntity?.transform.rotation = horizontalRotation * verticalRotation
-                }
-                .onEnded { value in
-                    // Store final translation offsets
-                    entityPos[Int(selectedEntity?.name ?? "0") ?? 0].x += value.translation.width
-                    entityPos[Int(selectedEntity?.name ?? "0") ?? 0].y += value.translation.height
-                }
-            )
-            .gesture(
-                MagnificationGesture()
-                    .onChanged { value in
-                        currentScale = finalScale * value
-                        selectedEntity?.scale = SIMD3<Float>(repeating: Float(currentScale))
-                    }
-                    .onEnded { value in
-                        finalScale = currentScale
-                    }
-            )
+                .gesture(tapGesture)
+                .gesture(dragGesture)
+                .gesture(magnificationGesture)
             
             VStack {
                 Spacer()
@@ -149,6 +81,7 @@ struct CreateScrapbookView: View {
                 } else {
                     ToolBarView
                         .padding()
+                        .padding(.bottom, 20)
                 }
             }.ignoresSafeArea(edges: .bottom)
         }
@@ -177,22 +110,7 @@ struct CreateScrapbookView: View {
         }
     }
     
-    // function to get a UIImage out of a PhotosPickerItem
-    private func loadImage() async {
-        if let data = try? await selectedItem?.loadTransferable(type: Data.self) {
-            if let uiImage = UIImage(data: data) {
-                currImage = uiImage
-            }
-        }
-    }
-    
-    
-    private func updateTextBox() {
-        if let editingTextEntity = selectedEntity as? TextBoxEntity {
-            editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, isBold: isBold, isItalic: isItalic, isUnderlined: isUnderlined, textColor: textColor, backgroundColor: backgroundColor)
-        }
-    }
-    
+    // RealityKit View
     private var ARView: some View {
         RealityView { content in
             content.camera = .spatialTracking
@@ -224,10 +142,6 @@ struct CreateScrapbookView: View {
                 let dy = Float(entry.position[1]) * 0.002
                 let maxAngle: Float = .pi / 2.5  // 45 degrees in radians
                 let dx = Float(entry.position[0]) * 0.002
-                
-                let clampedDX = min(max(dx, -maxAngle), maxAngle)
-                let clampedDY = min(max(dy, -maxAngle), maxAngle)
-                
                 
                 // Combine rotations (order matters)
                 let rotation = simd_quatf(ix: entry.rotation[0], iy: entry.rotation[1], iz: entry.rotation[2], r: entry.rotation[3])
@@ -271,7 +185,7 @@ struct CreateScrapbookView: View {
         HStack {
             Spacer()
             
-            HStack(spacing: spacing) {
+            HStack(spacing: 12) {
                 // Only show these buttons when expanded
                 if isExpanded {
                     PhotosPicker (selection: $selectedItem, matching: .images){
@@ -582,6 +496,84 @@ struct CreateScrapbookView: View {
         .cornerRadius(15)
         .padding()
     }
+    
+    
+    // drag gesture to move the entities around in a sphere-like shape
+    // gets change in 2D drag distance and converts that into 3D transformations
+    var dragGesture: some Gesture {
+        DragGesture(minimumDistance: 15, coordinateSpace: .global)
+            .onChanged { value in
+                // Gets the last known position for the selected entity and edits from there
+                // note the position is not its 3D position, its the 2D location of where the dragGesture ended
+                // the name of an entity is its index in the position array
+                let position = entityPos[Int(selectedEntity?.name ?? "0") ?? 0]
+                let dy = Float(value.translation.height + position.y) * 0.002
+                let maxAngle: Float = .pi / 2.5  // 45 degrees in radians
+                let dx = Float(value.translation.width + position.x) * 0.002
+                selectedEntity?.position.x = dx
+                selectedEntity?.position.y = -dy
+                
+                // Clamp the horizontal rotation angle:
+                let clampedDX = min(max(dx, -maxAngle), maxAngle)
+                let clampedDY = min(max(dy, -maxAngle), maxAngle)
+                
+                // Create the rotation using the clamped value:
+                let horizontalRotation = simd_quatf(angle: -clampedDX, axis: SIMD3<Float>(0, 1, 0))
+                let verticalRotation = simd_quatf(angle: -clampedDY, axis: SIMD3<Float>(1, 0, 0))
+                
+                // Combine rotations (order matters)
+                selectedEntity?.transform.rotation = horizontalRotation * verticalRotation
+            }
+            .onEnded { value in
+                // Store final translation offsets
+                entityPos[Int(selectedEntity?.name ?? "0") ?? 0].x += value.translation.width
+                entityPos[Int(selectedEntity?.name ?? "0") ?? 0].y += value.translation.height
+            }
+    }
+    
+    // Tap gesture that changes the selectedEntity to the entity you click on
+    var tapGesture: some Gesture {
+        SpatialTapGesture(coordinateSpace: .local).targetedToAnyEntity()
+            .onEnded{ value in
+                /*
+                 hitTest creates a ray at value.location and returns a list of CollisionCastHits that it encounters
+                 We then use the first CollisionCastHit and get it's entity's parent
+                 We get the parent instead of just the entity because
+                 the entity will be the collsion shape attached to the entity instead of the entity itself
+                 */
+                if let selected = value.hitTest(point: value.location, in: .local).first?.entity.parent {
+                    selectedEntity = selected
+                }
+                print(selectedEntity?.name ?? "No Entity Selected")
+            }
+    }
+    
+    var magnificationGesture: some Gesture {
+        MagnificationGesture()
+            .onChanged { value in
+                currentScale = finalScale * value
+                selectedEntity?.scale = SIMD3<Float>(repeating: Float(currentScale))
+            }
+            .onEnded { value in
+                finalScale = currentScale
+            }
+    }
+    
+    // function to get a UIImage out of a PhotosPickerItem
+    private func loadImage() async {
+        if let data = try? await selectedItem?.loadTransferable(type: Data.self) {
+            if let uiImage = UIImage(data: data) {
+                currImage = uiImage
+            }
+        }
+    }
+    
+    
+    private func updateTextBox() {
+        if let editingTextEntity = selectedEntity as? TextBoxEntity {
+            editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, isBold: isBold, isItalic: isItalic, isUnderlined: isUnderlined, textColor: textColor, backgroundColor: backgroundColor)
+        }
+    }
 }
 
 // This is to make the color picker appear more seamlessly when you change text or background color in a textbox
@@ -603,51 +595,6 @@ class UIColorWellHelper: NSObject {
     }
 }
 
-struct ImageCustomization: View {
-    var body: some View {
-        VStack {
-            Spacer()
-            ZStack {
-                Rectangle()
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(20, corners: [.topLeft, .topRight])
-                VStack {
-                    Rectangle()
-                        .frame(width: 250, height: 300)
-                        .foregroundStyle(.white)
-                        .padding(.bottom, 20)
-                    Text("Frames")
-                        .frame(width: 350, height: 25)
-                        .background(.white)
-                        .cornerRadius(10)
-                        .padding(20)
-                    
-                    HStack {
-                        Image("no_frame")
-                        Image("polaroid_frame")
-                            .offset(x: 13)
-                        Image("flower_frame")
-                    }
-                }
-                VStack {
-                    HStack {
-                        Spacer()
-                        Button {
-                            
-                        } label: {
-                            Text("Done")
-                                .font(.title2)
-                                .padding(25)
-                        }
-                    }
-                    Spacer()
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: 700)
-        }.ignoresSafeArea(edges: .bottom)
-    }
-}
-
 extension View {
     func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
         clipShape(RoundedCorner(radius: radius, corners: corners))
@@ -666,8 +613,4 @@ struct RoundedCorner: Shape {
         )
         return Path(path.cgPath)
     }
-}
-
-#Preview {
-    ImageCustomization()
 }
