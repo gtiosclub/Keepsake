@@ -148,15 +148,12 @@ final class Connectivity: NSObject, WCSessionDelegate {
             print("audio file count: \(items.count)")
             var audioFilesUrl: [String] = []
             let dispatchGroup = DispatchGroup()
-            
             let db = Firestore.firestore()
             var reminders: [Reminder] = []
             var tempRemindersWithAudio: [(Reminder, String)] = []
             for item in items {
                 dispatchGroup.enter()
                 item.downloadURL { url, error in
-                    
-                    
                     if let error = error {
                         print("error with download url \(item.name): \(error.localizedDescription)")
                     } else if let url = url {
@@ -169,7 +166,6 @@ final class Connectivity: NSObject, WCSessionDelegate {
                             if let error = error {
                                 print("Error getting reminder: \(error.localizedDescription)")
                             } else if let document = document, document.exists {
-                                // Parse reminder data here
                                 print("reminder found")
                                 if let reminder = try? document.data(as: Reminder.self) {
                                     self.remindersWithAudio.append((reminder, url.absoluteString))

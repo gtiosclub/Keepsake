@@ -142,7 +142,9 @@ class FirebaseViewModel: ObservableObject {
                 "templates": [],
                 "friends": [],
                 "lastUsedShelfId": "\(initialShelf.id)",
-                "isJournalLastUsed": true
+                "isJournalLastUsed": true,
+                "streaks": 0,
+                "lastJournaled": Date().timeIntervalSince1970
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
             await self.addJournalShelf(journalShelf: initialShelf, userID: user.id)
@@ -542,13 +544,48 @@ class FirebaseViewModel: ObservableObject {
                 "pages.\(pageNumber + 1)": FieldValue.arrayUnion([journalEntry.id.uuidString])
             ])
             
+            //after the user adds an entry, this code checks streak stuff
+            let userRef = db.collection("USERS").document((currentUser?.id)!)
+            do {
+                let document = try await userRef.getDocument()
+                    let data = document.data()
+                    let streaks = data?["streaks"] as? Int ?? 0
+
+                    if streaks == 0 {
+                        let currentTime = Date().timeIntervalSince1970
+                        currentUser?.lastJournaled = currentTime
+                        currentUser?.streaks = 1
+
+                        try await userRef.updateData([
+                            "streaks": currentUser?.streaks ?? 1,
+                            "lastJournaled": currentTime
+                        ])
+                    } else {
+                        var lastJournaled = Date().timeIntervalSince1970
+                        let userRef = db.collection("USERS").document((currentUser?.id)!)
+                        userRef.getDocument { (document, error) in
+                            if let document = document, document.exists {
+                                let data = document.data()
+                                lastJournaled = TimeInterval(data?["lastJournaled"] as? TimeInterval ?? Date().timeIntervalSince1970)
+                            }
+                            
+                        }
+                    }
+            }
+                    
+                    
+                    
+            
+            
+            
+            
             return true
         } catch {
             print("Error adding journal: \(error.localizedDescription)")
             return false
         }
+        
     }
-    
     func updateJournalPage(entries: [JournalEntry], journalID: UUID, pageNumber: Int) async {
         var previousEntryIds: [String] = []
         do {
