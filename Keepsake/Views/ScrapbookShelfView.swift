@@ -106,27 +106,13 @@ struct ScrapbookShelfView: View {
                 
                 Spacer()
                 
-                Menu {
-                    Button(action: {
-                        showJournalForm = true
-                        print("clicked")
-                    }) {
-                        Text("New Journal")
-                    }
-                    
-                    Button(action: {
-                        showJournalForm = true
-                    }) {
-                        Text("New AR Scrapbook")
-                    }
-                    
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 30))
-                        .foregroundColor(.gray)
-                }
-                .padding(.top, 20)
-                .padding(.trailing, 30)
+                Button(action: {}) {
+                     Image(systemName: "plus")
+                         .font(.system(size: 28))
+                         .foregroundColor(Color(hex: "#7FD2E7"))
+                         
+                }.padding(.top, 20)
+                    .padding(.trailing, 30)
             }
         }
     }
@@ -162,7 +148,7 @@ struct ScrapbookShelfView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color.blue.opacity(0.7))
+                    .background(Color(hex: "#7FD2E7"))
                     .cornerRadius(12)
             }
             .buttonStyle(PlainButtonStyle())
@@ -199,7 +185,7 @@ struct ScrapbookShelfView: View {
                                 NavigationLink {
                                     CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
                                 } label: {
-                                    JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $showOnlyCover)
+                                    JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $showOnlyCover, offset: true)
                                         .scaleEffect(scaleEffect)
                                         .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
                                         .transition(.identity)

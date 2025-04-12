@@ -13,14 +13,14 @@ struct JournalSpine: View {
                 )
                 .frame(width: UIScreen.main.bounds.width * 0.4, height: UIScreen.main.bounds.height * 0.56)
                 .shadow(radius: 5)
-                .overlay(
-                    Image("leather") // Load texture image from assets
-                        .resizable()
-                        .frame(width: UIScreen.main.bounds.width * 0.4, height: UIScreen.main.bounds.height * 0.56)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .scaledToFill()
-                        .opacity(0.5) // Adjust for realism
-                )
+//                .overlay(
+//                    Image("leather") // Load texture image from assets
+//                        .resizable()
+//                        .frame(width: UIScreen.main.bounds.width * 0.4, height: UIScreen.main.bounds.height * 0.56)
+//                        .clipShape(RoundedRectangle(cornerRadius: 10))
+//                        .scaledToFill()
+//                        .opacity(0.5) // Adjust for realism
+//                )
                 .overlay(
                     VStack(spacing: UIScreen.main.bounds.height * 0.45) { // Space them more
                         ForEach(0..<2) { _ in
