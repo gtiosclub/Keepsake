@@ -28,7 +28,13 @@ struct ContentView: View {
                         CommunityView()
                     }
                     Tab("Profile", systemImage:"person.crop.circle") {
-                        ProfileView()
+                        ProfileView(retrievedImage: fbVM.retrievedImage)
+                    }
+                }
+                .onAppear() {
+                    fbVM.getProfilePic()
+                    Task {
+                        await fbVM.checkIfStreaksRestarted()
                     }
                 }
                 

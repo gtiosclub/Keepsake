@@ -8,83 +8,37 @@ struct ProfileView: View {
     @State private var showImageOptions = false
     @State private var showCamera = false
     @State private var isCamera = false
-    
+    @State private var streaks: Int = 0
+    @State private var showStreak = false
+    @State private var pulse = false
+    @State private var remindersWithAudio: [(reminder: Reminder, audioUrl: String)] = []
+    @State var retrievedImage: UIImage?
     var body: some View {
         NavigationView {
-            VStack {
-                if let user = viewModel.currentUser {
-                    List {
-                        Section {
-                            HStack {
-                                if let profileImage = viewModel.retrievedImage {
-                                    Image(uiImage: profileImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 72, height: 72)
-                                        .clipShape(Circle())
-                                        .onTapGesture {
-                                            showImageOptions.toggle()
-                                        }
-                                } else {
-                                    Image(systemName: "person.crop.circle.fill")
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 72, height: 72)
-                                        .foregroundColor(.gray)
-                                        .onTapGesture {
-                                            showImageOptions.toggle()
-                                        }
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(user.name)
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .padding(.top)
-                                    
-                                    Text(user.username)
-                                        .font(.footnote)
-                                        .accentColor(.pink)
-                                }
-                            }
-                        }
-                        Section("Friends") {
-                            NavigationLink(destination: FriendsView()) {
-                                SettingsRowView(imageName: "person.2.fill", title: "View Friends", tintColor: .blue)
-                            }
-                        }
-                        
-                        Section("Audio Reminders") {
-                            NavigationLink(
-                                destination: AudioFilesView()
-                                    .environmentObject(viewModel),
-                                label: {
-                                    HStack {
-                                        Image(systemName: "headphones")
-                                            .foregroundColor(Color(hex: "FFADF4"))
-                                        Text("Audio Recordings")
-                                            .foregroundColor(.primary)
-                                    }
-                                    .padding()
-                                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.3)))
-                                    .shadow(radius: 5)
-                                }
-                            )
-                        }
-                        
-                        Section("Account") {
-                            Button {
-                                viewModel.signOut()
-                            } label: {
-                                SettingsRowView(imageName: "arrow.backward.circle.fill", title: "Sign Out", tintColor: .red)
-                            }
-                        }
+            ScrollView {
+                VStack(spacing: 20) {
+                    profileCard
+                    streakCard
+                    NavigationLink(destination: FriendsView()) {
+                        settingBox(icon: "person.2.fill", title: "View Friends", color: .blue)
                     }
+                    NavigationLink(destination: AudioFilesView(remindersWithAudio: remindersWithAudio).environmentObject(viewModel)) {
+                        settingBox(icon: "headphones", title: "Audio Recordings", color: Color(hex: "FFADF4"))
+                    }
+
+                    Button {
+                        viewModel.signOut()
+                    } label: {
+                        settingBox(icon: "arrow.backward.circle.fill", title: "Sign Out", color: .red)
+                    }
+                    
                 }
+                .padding()
             }
-            .onAppear() {
-                viewModel.getProfilePic()
-                
+            .navigationTitle("Profile")
+            .onAppear {
+                fetchStreaks()
+                fetchAllAudioFiles()
             }
             .actionSheet(isPresented: $showImageOptions) {
                 ActionSheet(title: Text("Select Profile Image"), buttons: [
@@ -105,12 +59,117 @@ struct ProfileView: View {
             .onChange(of: profileImage) { newImage in
                 if let image = newImage {
                     viewModel.storeProfilePic(image: image)
-                    
                 }
             }
         }
     }
+
+
+    var profileCard: some View {
+        HStack(alignment: .center, spacing: 16) {
+            if let profileImage = retrievedImage {
+                Image(uiImage: profileImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 72, height: 72)
+                    .clipShape(Circle())
+                    .onTapGesture {
+                        showImageOptions.toggle()
+                    }
+            } else {
+                Image(systemName: "person.crop.circle.fill")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 72, height: 72)
+                    .foregroundColor(.gray)
+                    .onTapGesture {
+                        showImageOptions.toggle()
+                    }
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(viewModel.currentUser?.name ?? "Name")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+
+                Text("@\(viewModel.currentUser?.username ?? "username")")
+                    .font(.subheadline)
+                    .foregroundColor(Color(hex: "FFADF4"))
+            }
+            Spacer()
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemBackground)).shadow(radius: 3))
+    }
+
+
+    var streakCard: some View {
+        HStack(spacing: 8) {
+            Text("🔥")
+                .font(.largeTitle)
+                .scaleEffect(pulse ? 1.2 : 1.0)
+                .animation(pulse ? Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true) : .default, value: pulse)
+
+            Text("Streak: \(streaks)")
+                .font(.headline)
+                .fontWeight(.bold)
+                .foregroundColor(.orange)
+
+            Spacer()
+        }
+        .padding()
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(16)
+        .offset(x: showStreak ? 0 : -200)
+        .opacity(showStreak ? 1 : 0)
+        .animation(.easeOut(duration: 0.6), value: showStreak)
+        .onAppear {
+            showStreak = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                pulse = true
+            }
+        }
+    }
+
+    func settingBox(icon: String, title: String, color: Color) -> some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(color)
+                .frame(width: 24, height: 24)
+
+            Text(title)
+                .foregroundColor(.primary)
+                .fontWeight(.medium)
+
+            Spacer()
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemBackground)).shadow(radius: 2))
+    }
+    func fetchStreaks() {
+        let db = viewModel.db
+        db.collection("USERS").document(viewModel.currentUser?.id ?? "").getDocument { snapshot, error in
+            if let data = snapshot?.data(), let streaks = data["streaks"] as? Int {
+                DispatchQueue.main.async {
+                    self.streaks = streaks
+                }
+            }
+        }
+    }
+    func fetchAllAudioFiles() {
+        #if os(iOS)
+        Task {
+            await Connectivity.shared.fetchAudioFiles()
+            print("in audio files doc this is connectviity: \(Connectivity.shared.remindersWithAudio.count)")
+            remindersWithAudio = Connectivity.shared.remindersWithAudio
+        }
+        #endif
+        #if os(watchOS)
+        Connectivity.shared.requestAudioFiles()
+        #endif
+    }
 }
+
 
 struct ImagePickerController: View {
     @Binding var image: UIImage?
@@ -158,9 +217,7 @@ struct ImagePickerViewController: UIViewControllerRepresentable {
     }
     
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    
 }
 
-#Preview {
-    ProfileView()
-        .environmentObject(FirebaseViewModel())
-}
+
