@@ -75,7 +75,6 @@ struct BookshelfForScrapbookView: View {
                     .offset(x: isEven ? spacing : -1 * spacing, y: 0)
                     .frame(width: scale * UIScreen.main.bounds.width * 0.4,
                            height: scale * UIScreen.main.bounds.height * 0.56)
-                    .shadow(color: .black.opacity(0.3), radius: 12, x: 4, y: 4)
             }
         }
         .padding(.leading, isEven ? 9 : 0)
@@ -96,7 +95,7 @@ struct BookshelfForScrapbookView: View {
                 .frame(width: 150)
             } else {
                 Text(shelf.name)
-                    .font(.system(size: 30, weight: .semibold))
+                    .font(.system(size: 25, weight: .semibold))
                 
             }
         }
