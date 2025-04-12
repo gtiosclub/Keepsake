@@ -25,6 +25,21 @@ struct ScrapbookShelfView: View {
         ZStack {
             shelfParent
                 .ignoresSafeArea(.container, edges: .top)
+                .sheet(isPresented: $showJournalForm) {
+        //            JournalFormView(
+        //                isPresented: $showJournalForm,
+        //                onCreate: { title, coverColor, pageColor, titleColor, texture, journalPages in
+        //                    Task {
+        //                        await createJournal(
+        //                            from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: texture, journalPages: journalPages),
+        //                            shelfIndex: shelfIndex, shelfID: shelf.id
+        //                        )
+        //                    }
+        //                },
+        //                templates: userVM.user.savedTemplates, userVM: userVM, fbVM: fbVM
+        //            )
+                    Text("fsadf")
+                }
         }.background(
             Group {
                 VStack {
@@ -78,10 +93,8 @@ struct ScrapbookShelfView: View {
                 showDeleteButton.toggle()
             }
         })
-        //            .onAppear() {
-        //                print(userVM.user.journalShelves)
-        //            }
         .frame(maxHeight: .infinity, alignment: .top)
+        
     }
     
     private var textView: some View {
@@ -106,7 +119,9 @@ struct ScrapbookShelfView: View {
                 
                 Spacer()
                 
-                Button(action: {}) {
+                Button(action: { print("Button tapped - showJournalForm before: \(showJournalForm)")
+                    showJournalForm = true
+                    print("Button tapped - showJournalForm after: \(showJournalForm)") }) {
                      Image(systemName: "plus")
                          .font(.system(size: 28))
                          .foregroundColor(Color(hex: "#7FD2E7"))
@@ -325,6 +340,22 @@ struct ScrapbookShelfView: View {
     }
 
     
+    func createJournal(from template: Template, shelfIndex: Int, shelfID: UUID) async {
+        let newJournal = Journal(
+            name: template.name,
+            id: UUID(),
+            createdDate: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short),
+            category: "General",
+            isSaved: false,
+            isShared: false,
+            template: template,
+            pages: template.journalPages ?? [JournalPage(number: 1)],
+            currentPage: 0
+        )
+        //        userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
+        userVM.addJournalToShelfAndAddEntries(journal: newJournal, shelfIndex: shelfIndex)
+        _ = await fbVM.addJournal(journal: newJournal, journalShelfID: shelfID)
+    }
     
    
     
