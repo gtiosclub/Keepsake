@@ -114,6 +114,7 @@ class FirebaseViewModel: ObservableObject {
         
     }
     
+    
     func signIn(withEmail email: String, password: String) async throws {
         
             let result = try await auth.signIn(withEmail: email, password: password)
@@ -565,13 +566,6 @@ class FirebaseViewModel: ObservableObject {
                         ])
                     }
             }
-                    
-                    
-                    
-            
-            
-            
-            
             return true
         } catch {
             print("Error adding journal: \(error.localizedDescription)")
@@ -579,6 +573,27 @@ class FirebaseViewModel: ObservableObject {
         }
         
     }
+    
+    func checkIfStreaksRestarted() async {
+        let userRef = db.collection("USERS").document((currentUser?.id)!)
+        do {
+            
+            let document = try await userRef.getDocument()
+                let data = document.data()
+                let streaks = data?["streaks"] as? Int ?? 0
+                let lastJournaledTimestamp = data?["lastJournaled"] as? Timestamp
+                let lastJournaledDate = lastJournaledTimestamp?.dateValue() ?? Date.distantPast
+                if streaks != 0 && Date().timeIntervalSince(lastJournaledDate) > 24 * 60 * 60 {
+                    currentUser?.lastJournaled = Date().timeIntervalSince1970
+                    try await userRef.updateData([
+                        "streaks": 0
+                    ])
+                }
+        } catch {
+            
+        }
+    }
+    
     func updateJournalPage(entries: [JournalEntry], journalID: UUID, pageNumber: Int) async {
         var previousEntryIds: [String] = []
         do {

@@ -36,6 +36,9 @@ struct ContentView: View {
                 }
                 .onAppear() {
                     fbVM.getProfilePic()
+                    Task {
+                        await fbVM.checkIfStreaksRestarted()
+                    }
                 }
                 
             }
