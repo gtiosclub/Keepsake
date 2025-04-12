@@ -7,17 +7,18 @@
 import SwiftUI
 
 struct AudioFilesView: View {
-    @State private var remindersWithAudio: [(reminder: Reminder, audioUrl: String)] = []
+    @State var remindersWithAudio: [(reminder: Reminder, audioUrl: String)]
     @State private var isChecked: Bool = false
     var body: some View {
         VStack {
             if remindersWithAudio.isEmpty {
-                Text("No audio files found")
+                Text("\(remindersWithAudio.count)")
                     .foregroundColor(.secondary)
                     .padding()
             } else {
                 List {
                     ForEach(remindersWithAudio, id: \.audioUrl) { reminderWithAudio in
+                        
                         Button(action: {
                             playAudio(from: reminderWithAudio.audioUrl)
                         }) {
@@ -60,6 +61,7 @@ struct AudioFilesView: View {
 
                             .padding(.vertical, 8)
                         }
+                       
                         
                     }
 
@@ -68,7 +70,12 @@ struct AudioFilesView: View {
             }
         }
         .onAppear {
-            fetchAllAudioFiles()
+            print("View appeared, current count: \(remindersWithAudio.count)")
+            if remindersWithAudio.count == 0 {
+                fetchAllAudioFiles()
+            }
+            
+            print("View appeared, current count: \(remindersWithAudio.count)")
         }
     }
 
@@ -76,6 +83,7 @@ struct AudioFilesView: View {
         #if os(iOS)
         Task {
             await Connectivity.shared.fetchAudioFiles()
+            print("in audio files doc this is connectviity: \(Connectivity.shared.remindersWithAudio.count)")
             remindersWithAudio = Connectivity.shared.remindersWithAudio
         }
         #endif

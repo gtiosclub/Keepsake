@@ -66,9 +66,11 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+
     /****######################################################################################
     USER
      #########################################################################################**/
+
     
     func signIn(withEmail email: String, password: String) async throws {
         
@@ -97,9 +99,14 @@ class FirebaseViewModel: ObservableObject {
                 "scrapbookShelves": ["\(initialScrapbookShelf.id)"],
                 "templates": [],
                 "friends": [],
+
+                "streaks": 0,
+                "lastJournaled": Date().timeIntervalSince1970,
+
                 "lastUsedJShelfID": "\(initialShelf.id)",
                 "lastUsedSShelfID": "\(initialScrapbookShelf.id)",
                 "isJournalLastUsed": true
+
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
             await self.addJournalShelf(journalShelf: initialShelf, userID: user.id)
@@ -194,8 +201,12 @@ class FirebaseViewModel: ObservableObject {
             {
                 var scrapbookShelves: [ScrapbookShelf] = []
                 for scrapbookShelfId in scrapbookShelfIds {
+
+                    //let shelf = await getScrapbookShelfFromID(id: scrapbookShelfId) ?? ScrapbookShelf(name: "New Shelf", id: UUID(), scrapbooks: [])
+
                     print(scrapbookShelfId)
-                    let shelf = await getScrapbookShelfFromID(id: scrapbookShelfId)!
+                    let shelf = await getScrapbookShelfFromID(id: scrapbookShelfId) ?? ScrapbookShelf(name: "New Shelf", id: UUID(), scrapbooks: [])
+
                     scrapbookShelves.append(shelf)
 
                 }
@@ -683,10 +694,52 @@ class FirebaseViewModel: ObservableObject {
                 "pages.\(pageNumber + 1)": FieldValue.arrayUnion([journalEntry.id.uuidString])
             ])
             
+            //after the user adds an entry, this code checks streak stuff
+            let firestoreTimestamp = Timestamp(date: Date())
+            
+            let userRef = db.collection("USERS").document((currentUser?.id)!)
+            do {
+                
+                let document = try await userRef.getDocument()
+                    let data = document.data()
+                    let streaks = data?["streaks"] as? Int ?? 0
+                    let lastJournaledTimestamp = data?["lastJournaled"] as? Timestamp
+                    let lastJournaledDate = lastJournaledTimestamp?.dateValue() ?? Date.distantPast
+                    if streaks == 0 || Date().timeIntervalSince(lastJournaledDate) >= 24 * 60 * 60 {
+                        currentUser?.lastJournaled = Date().timeIntervalSince1970
+                        currentUser?.streaks = streaks + 1
+
+                        try await userRef.updateData([
+                            "streaks": currentUser?.streaks ?? 1,
+                            "lastJournaled": firestoreTimestamp
+                        ])
+                    }
+            }
             return true
         } catch {
             print("Error adding journal: \(error.localizedDescription)")
             return false
+        }
+        
+    }
+    
+    func checkIfStreaksRestarted() async {
+        let userRef = db.collection("USERS").document((currentUser?.id)!)
+        do {
+            
+            let document = try await userRef.getDocument()
+                let data = document.data()
+                let streaks = data?["streaks"] as? Int ?? 0
+                let lastJournaledTimestamp = data?["lastJournaled"] as? Timestamp
+                let lastJournaledDate = lastJournaledTimestamp?.dateValue() ?? Date.distantPast
+                if streaks != 0 && Date().timeIntervalSince(lastJournaledDate) > 24 * 60 * 60 {
+                    currentUser?.lastJournaled = Date().timeIntervalSince1970
+                    try await userRef.updateData([
+                        "streaks": 0
+                    ])
+                }
+        } catch {
+            
         }
     }
     

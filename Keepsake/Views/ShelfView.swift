@@ -133,7 +133,7 @@ struct ShelfView: View {
                         )
                     }
                 },
-                templates: userVM.user.savedTemplates
+                templates: userVM.user.savedTemplates, userVM: userVM, fbVM: fbVM
             )
         }
     }
@@ -160,27 +160,13 @@ struct ShelfView: View {
                 
                 Spacer()
                 
-                Menu {
-                    Button(action: {
-                        showJournalForm = true
-                        print("clicked")
-                    }) {
-                        Text("New Journal")
-                    }
-                    
-                    Button(action: {
-                        showJournalForm = true
-                    }) {
-                        Text("New AR Scrapbook")
-                    }
-                    
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 30))
-                        .foregroundColor(.gray)
-                }
-                .padding(.top, 20)
-                .padding(.trailing, 30)
+                Button(action: { showJournalForm = true }) {
+                     Image(systemName: "plus")
+                         .font(.system(size: 28))
+                         .foregroundColor(Color(hex: "#7FD2E7"))
+                         
+                }.padding(.top, 20)
+                    .padding(.trailing, 30)
             }
         }
     }
@@ -197,7 +183,7 @@ struct ShelfView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color.blue.opacity(0.7))
+                    .background(Color(hex: "#7FD2E7"))
                     .cornerRadius(12) // Smaller corner radius
             }
             .buttonStyle(PlainButtonStyle())
@@ -249,7 +235,7 @@ struct ShelfView: View {
                             let verticalOffset = calculateVerticalOffset(proxy: geometry)
                             VStack(spacing: 35) {
                                 ZStack {
-                                    JournalCover(template: journal.template, degrees: 0, title: journal.name, showOnlyCover: $showOnlyCover)
+                                    JournalCover(template: journal.template, degrees: 0, title: journal.name, showOnlyCover: $showOnlyCover, offset: true)
                                         .scaleEffect(scaleEffect)
                                         .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect,
                                                height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
