@@ -1131,6 +1131,49 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func deleteScrapbookShelf(shelfID: UUID, userID: String) async {
+        // Delete all scrapbooks
+        do {
+            let document = try await db.collection("SCRAPBOOK_SHELVES").document(shelfID.uuidString).getDocument()
+            if let data = document.data(),
+               let scrapbooks = data["scrapbooks"] as? [String] {
+                for scrapbook in scrapbooks {
+                    await deleteScrapbook(scrapbookID: scrapbook, scrapbookShelfID: shelfID)
+                }
+            } else {
+                print("Error getting journals to delete")
+            }
+        } catch {
+            print("error deleting journals from shelf")
+            return
+        }
+        // Remove shelf Id from user shelves
+        let documentRef = db.collection("USERS").document(userID)
+        do {
+            try await documentRef.updateData(["scrapbookShelves": FieldValue.arrayRemove([shelfID.uuidString])])
+        } catch {
+            print("could not remove shelf from user")
+            return
+        }
+        //Remove Journal
+        do {
+            try await db.collection("SCRAPBOOK_SHELVES").document(shelfID.uuidString).delete()
+        } catch {
+            print("Error removing shelf: \(error)")
+        }
+    }
+    
+    func updateScrapbookShelfName(shelfID: UUID, newName: String) async {
+        let shelfRef = db.collection("SCRAPBOOK_SHELVES").document(shelfID.uuidString)
+        do {
+            try await shelfRef.updateData([
+                "name": newName
+            ])
+        } catch {
+            print("error renaming shelf")
+        }
+    }
+    
     //#########################################################################################
     
     /****######################################################################################
@@ -1138,40 +1181,19 @@ class FirebaseViewModel: ObservableObject {
      #########################################################################################**/
     
     
-    func saveScrapbook(scrapbook: Scrapbook) async -> Bool {
-        // Reference to the scrapbook document in Firestore.
-        let scrapbookRef = db.collection("SCRAPBOOKS").document(scrapbook.id.uuidString)
-        
-        // Prepare the pages dictionary.
-        var pagesDict: [String: [String]] = [:]
-        
-        // Iterate over each page.
-        for page in scrapbook.pages {
-            pagesDict[String(page.number)] = []
-            // For each entry in the page, save it in the SCRAPBOOK_ENTRIES collection.
-            for entry in page.entries {
-                let entryRef = db.collection("SCRAPBOOK_ENTRIES").document(entry.id.uuidString)
-                let entryData = entry.toDictionary(scrapbookID: scrapbook.id)
-                do {
-                    try await entryRef.setData(entryData)
-                    // Add this entry's id to the page dictionary.
-                    pagesDict[String(page.number)]?.append(entry.id.uuidString)
-                } catch {
-                    print("Error saving scrapbook entry \(entry.id): \(error.localizedDescription)")
-                }
-            }
-        }
-        
-        // Create the scrapbook data using its toDictionary method and update the pages field.
-        var scrapbookData = scrapbook.toDictionary()
-        scrapbookData["pages"] = pagesDict
-        
-        // Save the scrapbook document.
+    func addScrapbook(scrapbook: Scrapbook, scrapbookShelfID: UUID) async -> Bool {
+        let scrapbook_reference = db.collection("SCRAPBOOKS").document(scrapbook.id.uuidString)
         do {
-            try await scrapbookRef.setData(scrapbookData)
+            let scrapbookData = scrapbook.toDictionary()
+            try await scrapbook_reference.setData(scrapbookData)
+            
+            try await db.collection("SCRAPBOOK_SHELVES").document(scrapbookShelfID.uuidString).updateData([
+                "scrapbooks": FieldValue.arrayUnion([scrapbook.id.uuidString])
+            ])
+            
             return true
         } catch {
-            print("Error saving scrapbook: \(error.localizedDescription)")
+            print("Error adding journal: \(error.localizedDescription)")
             return false
         }
     }
@@ -1224,6 +1246,47 @@ class FirebaseViewModel: ObservableObject {
         } catch {
             print("Error fetching Journal Shelf: \(error.localizedDescription)")
             return nil
+        }
+    }
+    
+    func deleteScrapbook(scrapbookID: String, scrapbookShelfID: UUID) async {
+        var allEntryIds: [String] = []
+        // Delete all entries
+        do {
+            let document = try await db.collection("SCRAPBOOKS").document(scrapbookID).getDocument()
+            if let data = document.data(),
+               let pages = data["pages"] as? [String: [String]] {
+                for (page, entry) in pages {
+                    allEntryIds.append(contentsOf: entry)
+                }
+            } else {
+                print("Couldn't get all page entries")
+            }
+            print(allEntryIds)
+            for entry in allEntryIds {
+                if let uuid = UUID(uuidString: entry) {
+                    await removeScrapbookEntry(entryID: uuid)
+                } else {
+                    print("Invalid UUID string: \(entry)")
+                }
+            }
+        } catch {
+            print("error deleting entries")
+            return
+        }
+        // Remove Journal Id from journal Shelf
+        let documentRef = db.collection("SCRAPBOOK_SHELVES").document(scrapbookShelfID.uuidString)
+        do {
+            try await documentRef.updateData(["scrapbooks": FieldValue.arrayRemove([scrapbookID])])
+        } catch {
+            print("could not remove scrapbook ID from shelf")
+            return
+        }
+        //Remove Journal
+        do {
+            try await db.collection("SCRAPBOOKS").document(scrapbookID).delete()
+        } catch {
+            print("Error removing document: \(error)")
         }
     }
     
@@ -1307,7 +1370,7 @@ class FirebaseViewModel: ObservableObject {
             print("Error removing scrapbook entry \(entryID): \(error.localizedDescription)")
         }
     }
-
+    
     // Fetch a ScrapbookEntry from Firestore using its document ID.
     func getScrapbookEntryFromID(id: String) async -> ScrapbookEntry? {
         let entryRef = db.collection("SCRAPBOOK_ENTRIES").document(id)

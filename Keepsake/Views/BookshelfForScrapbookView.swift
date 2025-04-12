@@ -67,7 +67,7 @@ struct BookshelfForScrapbookView: View {
                     shelf.name = editedName
                     isEditing = false
                     Task {
-                        await fbVM.updateShelfName(shelfID: shelf.id, newName: editedName)
+                        await fbVM.updateScrapbookShelfName(shelfID: shelf.id, newName: editedName)
                     }
                 })
                 .textFieldStyle(RoundedBorderTextFieldStyle())
