@@ -150,44 +150,6 @@ struct CreateScrapbookView: View {
                 
                 self.anchor?.addChild(entity)
             }
-            
-        } update: { content in
-            // creates a new textbox when the button in toolbar is pressed
-            if isTextClicked {
-                Task {
-                    let newTextbox = await TextBoxEntity(text: "[Enter text]")
-                    newTextbox.name = "\(counter)"
-                    entityPos.append(.zero)
-                    counter += 1
-                    self.anchor?.addChild(newTextbox)
-                    
-                }
-            }
-            // creates a new image when the button in toolbar is pressed
-            if isImageClicked {
-                Task {
-                    if let validImage = currImage {
-//                        let newImage = await FramedImageEntity(image: validImage, frameType: .polaroid)
-                        var frameType = FrameType.classic
-                        if polaroidFrameSelected {
-                            frameType = FrameType.polaroid
-                        }
-                        let newImage = await FramedImageEntity(image: validImage, frameType: frameType)
-                        newImage.name = "\(counter)"
-                        entityPos.append(.zero)
-                        counter += 1
-                        self.anchor?.addChild(newImage)
-                        
-                        // MAKE SURE THIS ISNT BUGGY
-                        noFrameSelected = true
-                        polaroidFrameSelected = false
-                        flowerFrameSelected = false
-                        isImageClicked = false
-                    } else {
-                        print("No image loaded")
-                    }
-                }
-            }
         }
     }
     
@@ -209,18 +171,19 @@ struct CreateScrapbookView: View {
                                 .foregroundColor(.black)
                         }
                     }.onChange(of: selectedItem) { _, _ in
-                        isCustomizingImage = true
                         Task {
                             await loadImage()
                         }
-//                        isImageClicked = true
+                        isCustomizingImage = true
                     }
         
                     Button {
-                        isTextClicked = true
                         Task {
-                            try await Task.sleep(nanoseconds: 10_000)
-                            isTextClicked = false
+                            let newTextbox = await TextBoxEntity(text: "[Enter text]")
+                            newTextbox.name = "\(counter)"
+                            entityPos.append(.zero)
+                            counter += 1
+                            self.anchor?.addChild(newTextbox)
                         }
                     } label: {
                         ZStack {
@@ -232,12 +195,10 @@ struct CreateScrapbookView: View {
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.black)
                         }
-                        
                     }
                     
                     Button {
                         isEditing = true
-                        print("edit button pressed")
                     } label : {
                         ZStack {
                             Circle()
@@ -251,7 +212,9 @@ struct CreateScrapbookView: View {
                     }.disabled(selectedEntity == nil)
                     
                     Button {
-
+                        if let selected = selectedEntity{
+                            anchor?.removeChild(selected)
+                        }
                     } label : {
                         ZStack {
                             Circle()
@@ -390,7 +353,28 @@ struct CreateScrapbookView: View {
                     Spacer()
                     Button {
                         isCustomizingImage = false
-                        isImageClicked = true
+                        
+                        Task {
+                            if let validImage = currImage {
+                                var frameType = FrameType.classic
+                                if polaroidFrameSelected {
+                                    frameType = FrameType.polaroid
+                                }
+                                let newImage = await FramedImageEntity(image: validImage, frameType: frameType)
+                                newImage.name = "\(counter)"
+                                entityPos.append(.zero)
+                                counter += 1
+                                self.anchor?.addChild(newImage)
+                                
+                                // MAKE SURE THIS ISNT BUGGY
+                                noFrameSelected = true
+                                polaroidFrameSelected = false
+                                flowerFrameSelected = false
+                                isImageClicked = false
+                            } else {
+                                print("No image loaded")
+                            }
+                        }
                     } label: {
                         Text("Done")
                             .font(.title2)
