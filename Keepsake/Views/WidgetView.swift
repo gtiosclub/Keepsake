@@ -35,7 +35,7 @@ struct WidgetView: View {
             LazyVGrid(columns: gridItems, spacing: UIScreen.main.bounds.width * 0.02) {
                 ForEach(Array(zip(page.entries.indices, page.entries)), id: \.0) { index, widget in
                     ZStack(alignment: .topLeading) {
-                        createView(for: widget, width: width, height: height, padding: 0.02, isDisplay: isDisplay, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: index, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling, fontSize: 17)
+                        createView(for: widget, width: width, height: height, padding: 0.02, isDisplay: isDisplay, inEntry: $inEntry, selectedEntry: $selectedEntry, fbVM: fbVM, journal: journal, userVM: userVM, pageNum: pageNum, entryIndex: index, frontDegrees: $frontDegrees, showDeleteButton: $showDeleteButton, isWiggling: $isWiggling, fontSize: 25)
                             .onTapGesture {
                                 if showDeleteButton != -1 {
                                     showDeleteButton = -1
@@ -121,25 +121,26 @@ struct TextEntryView: View {
     var fontSize: CGFloat
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(.black)
+            RoundedRectangle(cornerRadius: fontSize * 0.833)
                 .fill(LinearGradient(colors: [
                     Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]).opacity(0.9),
                     Color(red: entry.color[0] * 0.8, green: entry.color[1] * 0.8, blue: entry.color[2] * 0.8)
                 ], startPoint: .topLeading, endPoint: .bottomTrailing))
                 .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
                 .opacity(entry.isFake ? 0 : 1)
+                .shadow(color: .gray, radius: 0.08 * fontSize, x: 0, y: 0.08 * fontSize)
             VStack {
                 Text(entry.title)
-                    .font(.system(size: fontSize))
+                    .font(.system(size: fontSize).weight(.bold))
+                    .foregroundStyle(.white)
                     .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1) - 10)
                     .scaledToFill()
                     .lineLimit(2)
-                Text(entry.date)
-                    .font(.system(size: fontSize))
-                    .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1) - 10)
-                    .scaledToFill()
-                    .lineLimit(1)
+//                Text(entry.date)
+//                    .font(.system(size: fontSize))
+//                    .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1) - 10)
+//                    .scaledToFill()
+//                    .lineLimit(1)
             }
         }.frame(width: width, height: height, alignment: .topLeading)
     }
@@ -206,19 +207,23 @@ struct PictureEntryView: View {
         ZStack {
             // Background Color
             Color.secondary
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .clipShape(RoundedRectangle(cornerRadius: 25))
                 .ignoresSafeArea()
 
             if uiImages.count != 0 {
                 imageCarousel
             } else {
-                HStack {
+                VStack {
                     Text("Upload")
-                        .font(.system(size: fontSize + 2))
-                    Image(systemName: "camera")
-                        .font(.system(size: fontSize + 2))
+                        .font(.system(size: fontSize).weight(.bold))
+                        .foregroundStyle(Color.white)
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: fontSize))
+                        .foregroundStyle(Color.white)
                 }.frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2])))
+                    .background(RoundedRectangle(cornerRadius: fontSize * 0.833).fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2])))
+                    .shadow(color: .gray, radius: 0.08 * fontSize, x: 0, y: 0.08 * fontSize)
+
                     
             }
             // Carousel
@@ -386,20 +391,22 @@ struct VoiceMemoEntryView: View {
     var fontSize: CGFloat
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: fontSize * 0.833)
                 .fill(Color(red: entry.color[0], green: entry.color[1], blue: entry.color[2]))
                 .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1), height: height * CGFloat(entry.height) + UIScreen.main.bounds.width * padding * CGFloat(entry.height - 1))
                 .opacity(entry.isFake ? 0 : 1)
+                .shadow(color: .gray, radius: 0.08 * fontSize, x: 0, y: 0.08 * fontSize)
 
             VStack(spacing: 8) {
                 Image(systemName: "waveform.circle.fill")
                     .resizable()
                     .scaledToFit()
                     .frame(width: iconSize, height: iconSize)
-                    .foregroundColor(.black)
+                    .foregroundColor(.white)
 
                 Text(entry.title)
-                    .font(.system(size: fontSize + 2))
+                    .font(.system(size: fontSize).weight(.bold))
+                    .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                     .lineLimit(titleLineLimit)
                     .frame(width: width * CGFloat(entry.width) + UIScreen.main.bounds.width * padding * CGFloat(entry.width - 1))
@@ -435,7 +442,7 @@ public func todaysdate() -> String {
 #Preview {
     struct Preview: View {
 //        @ObservedObject var page: JournalPage = JournalPage(number: 2, entries: [PictureEntry(date: "Date", title: "title", images: [], width: 1, height: 2, isFake: false, color: [0.5, 0.5, 0.5]), WrittenEntry(date: "", title: "", text: "Text", summary: "summary", width: 1, height: 2, isFake: false, color: [0.5, 0.5, 0.5]), JournalEntry(), JournalEntry(), WrittenEntry(date: "", title: "", text: "Text", summary: "summary", width: 2, height: 2, isFake: false, color: [0.5, 0.5, 0.5])], realEntryCount: 3)
-        @ObservedObject var page = JournalPage.dailyReflectionTemplate(pageNumber: 1)
+        @ObservedObject var page = JournalPage.dailyReflectionTemplate(pageNumber: 1, color: .red)
         @State var selectedImageIndex: Int = 0
         @State var inEntry: EntryType = .openJournal
         @State var selectedEntry: Int = 0

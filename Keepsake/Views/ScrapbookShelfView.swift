@@ -7,25 +7,26 @@
 import SwiftUI
 
 struct ScrapbookShelfView: View {
-    @Namespace private var shelfNamespace
+    @Namespace private var scrapbookShelfNamespace
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var shelf: ScrapbookShelf
     @ObservedObject var aiVM: AIViewModel
     @ObservedObject var fbVM: FirebaseViewModel
     var shelfIndex: Int
-    @State private var showJournalForm = false
+    @Binding var showScrapbookForm: Bool
     @Binding var selectedOption: ViewOption
     @State var showDeleteButton: Bool = false
-    @State var deleteJournalID: String = ""
+    @State var deleteScrapbookID: String = ""
     @State var hideToolBar: Bool = false
     @State var showOnlyCover: Bool = true
     @State var scaleEffect: CGFloat = 0.6
     @State var currentScrollIndex: Int = 0
     var body: some View {
         ZStack {
-            shelfParent
+            scrapbookShelfParent
                 .ignoresSafeArea(.container, edges: .top)
-        }.background(
+        }
+        .background(
             Group {
                 VStack {
                     Circle()
@@ -43,29 +44,29 @@ struct ScrapbookShelfView: View {
         )
     }
     
-    private var shelfParent: some View {
+    private var scrapbookShelfParent: some View {
         VStack(alignment: .leading, spacing: 10) {
-            topVStack
+            scrapbookTopVStack
                 .transition(
                     .opacity
                         .animation(.easeIn(duration: 0.5)) // Fast appear
                 )
                 .padding(.top, 70)
-            textView
+            scrapbookTextView
                 .transition(
                     .opacity
                         .animation(.easeIn(duration: 0.5)) // Fast appear
                 )
                 .padding(.bottom, 10)
-            buttonNavigationView
+            scrapbookButtonNavigationView
                 .transition(.opacity.animation(.easeIn(duration: 0.5)))
                 .padding(.bottom, 50)
             if shelf.scrapbooks.count == 0 {
-                defaultScrollView
+                scrapbookDefaultScrollView
                     .padding(.top, UIScreen.main.bounds.height * -0.05)
                     
             } else {
-                scrollView
+                scrapbookScrollView
                     .transition(
                         .opacity
                             .animation(.easeIn(duration: 0.01)) // Fast appear
@@ -78,13 +79,11 @@ struct ScrapbookShelfView: View {
                 showDeleteButton.toggle()
             }
         })
-        //            .onAppear() {
-        //                print(userVM.user.journalShelves)
-        //            }
         .frame(maxHeight: .infinity, alignment: .top)
+        
     }
     
-    private var textView: some View {
+    private var scrapbookTextView: some View {
         Text("What is on your mind today?")
             .font(.largeTitle)
             .bold()
@@ -94,7 +93,7 @@ struct ScrapbookShelfView: View {
             .padding(.leading, 30)
     }
     
-    private var topVStack: some View {
+    private var scrapbookTopVStack: some View {
         VStack(alignment: .leading, spacing: 5) {
             HStack {
                 Text("Welcome back, \(userVM.user.name)")
@@ -106,7 +105,9 @@ struct ScrapbookShelfView: View {
                 
                 Spacer()
                 
-                Button(action: {}) {
+                Button(action: { print("Button tapped - showJournalForm before: \(showScrapbookForm)")
+                    showScrapbookForm = true
+                    print("Button tapped - showJournalForm after: \(showScrapbookForm)") }) {
                      Image(systemName: "plus")
                          .font(.system(size: 28))
                          .foregroundColor(Color(hex: "#7FD2E7"))
@@ -117,7 +118,7 @@ struct ScrapbookShelfView: View {
         }
     }
     
-    private var buttonNavigationView: some View {
+    private var scrapbookButtonNavigationView: some View {
         HStack(spacing: 26) { // Reduced spacing
             Spacer()
             
@@ -174,7 +175,7 @@ struct ScrapbookShelfView: View {
         .zIndex(1)
     }
     
-    private var scrollView: some View {
+    private var scrapbookScrollView: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 45) {
@@ -182,14 +183,45 @@ struct ScrapbookShelfView: View {
                         GeometryReader { geometry in
                             let verticalOffset = calculateVerticalOffset(proxy: geometry)
                             VStack(spacing: 35) {
-                                NavigationLink {
-                                    CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
-                                } label: {
-                                    JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $showOnlyCover, offset: true)
-                                        .scaleEffect(scaleEffect)
-                                        .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
-                                        .transition(.identity)
-                                        .matchedGeometryEffect(id: "journal_\(scrapbook.id)", in: shelfNamespace, properties: .position, anchor: .center)
+                                ZStack {
+                                    NavigationLink {
+                                        CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
+                                    } label: {
+                                        JournalCover(template: scrapbook.template, degrees: 0, title: scrapbook.name, showOnlyCover: $showOnlyCover, offset: true)
+                                            .scaleEffect(scaleEffect)
+                                            .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
+                                            .transition(.identity)
+                                            .matchedGeometryEffect(id: "journal_\(scrapbook.id)", in: scrapbookShelfNamespace, properties: .position, anchor: .center)
+                                            .onTapGesture {
+                                                if showDeleteButton {
+                                                    showDeleteButton.toggle()
+                                                }
+                                            }
+                                            .onLongPressGesture(minimumDuration: 0.5) {
+                                                print("yoooo")
+                                                withAnimation(.spring()) {
+                                                    showDeleteButton.toggle()
+                                                    deleteScrapbookID = scrapbook.id.uuidString
+                                                }
+                                            }
+                                    }
+                                }
+                                if showDeleteButton && deleteScrapbookID == scrapbook.id.uuidString {
+                                    Button {
+                                        userVM.removeScrapbookFromShelf(shelfIndex: shelfIndex, scrapbookID: scrapbook.id)
+                                        Task {
+                                            await fbVM.deleteScrapbook(scrapbookID: scrapbook.id.uuidString, scrapbookShelfID: userVM.getScrapbookShelves()[shelfIndex].id)
+                                        }
+                                        showDeleteButton.toggle()
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .font(.system(size: 28))
+                                            .foregroundColor(.red)
+                                            .background(Circle().fill(Color.white))
+                                            .padding(8)
+                                    }
+                                    .transition(.scale.combined(with: .opacity))
+                                    .zIndex(1)
                                 }
                                 VStack(spacing: 10) {
                                     //Journal name, date, created by you
@@ -236,7 +268,7 @@ struct ScrapbookShelfView: View {
                         let threshold: CGFloat = 100
                         if abs(value.translation.width) > threshold {
                             let nextJournal = value.translation.width > 0 ? -1 : 1
-                            let newIndex = currentScrollIndex + nextJournal
+                            let newIndex = min(max(currentScrollIndex + nextJournal,0), shelf.scrapbooks.count-1)
                             
                             withAnimation {
                                 currentScrollIndex = newIndex
@@ -249,7 +281,7 @@ struct ScrapbookShelfView: View {
 
     }
     
-    private var defaultScrollView: some View {
+    private var scrapbookDefaultScrollView: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 45) {
@@ -325,6 +357,22 @@ struct ScrapbookShelfView: View {
     }
 
     
+    func createJournal(from template: Template, shelfIndex: Int, shelfID: UUID) async {
+        let newJournal = Journal(
+            name: template.name,
+            id: UUID(),
+            createdDate: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short),
+            category: "General",
+            isSaved: false,
+            isShared: false,
+            template: template,
+            pages: template.journalPages ?? [JournalPage(number: 1)],
+            currentPage: 0
+        )
+        //        userVM.addJournalToShelf(journal: newJournal, shelfIndex: shelfIndex)
+        userVM.addJournalToShelfAndAddEntries(journal: newJournal, shelfIndex: shelfIndex)
+        _ = await fbVM.addJournal(journal: newJournal, journalShelfID: shelfID)
+    }
     
    
     
@@ -342,17 +390,18 @@ struct ScrapbookShelfView: View {
 #Preview {
     struct Preview: View {
         @State var selectedOption: ViewOption = .library
+        @State var showScrapbookForm: Bool = false
         var body: some View {
             ScrapbookShelfView(userVM: UserViewModel(user: User(id: "123", name: "Steve", journalShelves: [JournalShelf(name: "Bookshelf", journals: [
                 Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), WrittenEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
-                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [    JournalPage.dailyReflectionTemplate(pageNumber: 1), JournalPage.tripTemplate(pageNumber: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
+                Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [    JournalPage.dailyReflectionTemplate(pageNumber: 1, color: .red), JournalPage.tripTemplate(pageNumber: 2, color: .red), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
             ]), JournalShelf(name: "Shelf 2", journals: [
                 Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry1", isSaved: true, isShared: false, template: Template(name: "Template 1", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather), pages: [JournalPage(number: 1), JournalPage(number: 2, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake")], realEntryCount: 1), JournalPage(number: 3, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff"), WrittenEntry(date: "03/04/25", title: "Daily Reflection", text: "irrelevant", summary: "Went to classes and IOS club")], realEntryCount: 3), JournalPage(number: 4, entries: [WrittenEntry(date: "03/04/25", title: "Shake Recipe", text: "irrelevant", summary: "Recipe for great protein shake"), WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")], realEntryCount: 2), JournalPage(number: 5)], currentPage: 3),
                 Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry3", isSaved: false, isShared: false, template: Template(name: "Template 3", coverColor: .blue, pageColor: .black, titleColor: .white, texture: .snoopy), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
                 Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry4", isSaved: true, isShared: false, template: Template(name: "Template 4", coverColor: .brown, pageColor: .white, titleColor: .black, texture: .flower3), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0)
-            ])], scrapbookShelves: [])), shelf: ScrapbookShelf(name: "Scrapshelf", scrapbooks: [Scrapbook(name: "Scrapbook1", id: UUID(), createdDate: "5/6/2026", category: "", isSaved: true, isShared: false, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [ScrapbookPage(number: 1, entries: [ScrapbookEntry(id: UUID(), type: "text", position: [0, 0, -2], scale: 1.0, rotation: [0.0, 0.0, 0.0, 0.0], text: "Hello", imageURL: nil)], entryCount: 2)], currentPage: 0)]), aiVM: AIViewModel(), fbVM: FirebaseViewModel(), shelfIndex: 0, selectedOption: $selectedOption)
+            ])], scrapbookShelves: [])), shelf: ScrapbookShelf(name: "Scrapshelf", scrapbooks: [Scrapbook(name: "Scrapbook1", id: UUID(), createdDate: "5/6/2026", category: "", isSaved: true, isShared: false, template: Template(name: "Tempalte 2", coverColor: .green, pageColor: .white, titleColor: .black, texture: .leather), pages: [ScrapbookPage(number: 1, entries: [ScrapbookEntry(id: UUID(), type: "text", position: [0, 0, -2], scale: 1.0, rotation: [0.0, 0.0, 0.0, 0.0], text: "Hello", imageURL: nil)], entryCount: 2)], currentPage: 0)]), aiVM: AIViewModel(), fbVM: FirebaseViewModel(), shelfIndex: 0, showScrapbookForm: $showScrapbookForm, selectedOption: $selectedOption)
         }
     }
 

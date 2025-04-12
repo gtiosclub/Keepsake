@@ -81,18 +81,9 @@ struct AddEntryButtonView: View {
                     LazyVGrid(columns: columns, spacing: 20) {
                         Button {
                             if journal.pages[journal.currentPage].entries.count <= 8 {
-                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: WrittenEntry(date: todaysdate(), title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
-                                var newIndex = 0
-                                switch journal.pages[journal.currentPage].realEntryCount {
-                                case 1: newIndex = 0
-                                case 2: newIndex = 4
-                                case 3: newIndex = 1
-                                case 4: newIndex = 3
-                                case 5: newIndex = 6
-                                case 6: newIndex = 7
-                                case 7: newIndex = 5
-                                default: newIndex = 2
-                                }
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: WrittenEntry(date: todaysdate(), title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: randomColorOffset(
+                                    from: journal.template.coverColor.toRGBArray().map(Double.init)
+                                )))
                             } else {
                                 //handle too many entries
                             }
@@ -123,18 +114,9 @@ struct AddEntryButtonView: View {
                             }
                             if journal.pages[journal.currentPage].entries.count <= 8 {
 
-                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: WrittenEntry(date: todaysdate(), title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
-                                var newIndex = 0
-                                switch journal.pages[journal.currentPage].realEntryCount {
-                                case 1: newIndex = 0
-                                case 2: newIndex = 4
-                                case 3: newIndex = 1
-                                case 4: newIndex = 3
-                                case 5: newIndex = 6
-                                case 6: newIndex = 7
-                                case 7: newIndex = 5
-                                default: newIndex = 2
-                                }
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: WrittenEntry(date: todaysdate(), title: "", text: "", summary: "***", width: 10, height: 1, isFake: false, color: randomColorOffset(
+                                    from: journal.template.coverColor.toRGBArray().map(Double.init)
+                                )))
                             } else {
                                 //handle too many entries
                             }
@@ -157,18 +139,21 @@ struct AddEntryButtonView: View {
                         }
                         Button {
                             if journal.pages[journal.currentPage].entries.count <= 8 {
-                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: VoiceEntry(date: todaysdate(), title: "", audio: nil, width: 10, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
-                                var newIndex = 0
-                                switch journal.pages[journal.currentPage].realEntryCount {
-                                case 1: newIndex = 0
-                                case 2: newIndex = 4
-                                case 3: newIndex = 1
-                                case 4: newIndex = 3
-                                case 5: newIndex = 6
-                                case 6: newIndex = 7
-                                case 7: newIndex = 5
-                                default: newIndex = 2
-                                }
+                                selectedEntry = userVM.newAddJournalEntry(
+                                    journal: journal,
+                                    pageNum: displayPage,
+                                    entry: VoiceEntry(
+                                        date: todaysdate(),
+                                        title: "",
+                                        audio: nil,
+                                        width: 10,
+                                        height: 1,
+                                        isFake: false,
+                                        color: randomColorOffset(
+                                            from: journal.template.coverColor.toRGBArray().map(Double.init)
+                                        )
+                                    )
+                                )
                             } else {
                                 //handle too many entries
                             }
@@ -192,21 +177,13 @@ struct AddEntryButtonView: View {
                         }
                         Button {
                             if journal.pages[journal.currentPage].entries.count <= 8 {
-                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: ConversationEntry(date: todaysdate(), title: "", conversationLog: []))
+                                
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: ConversationEntry(date: todaysdate(), title: "Echo 🌐", conversationLog: [], width: 1, height: 1, color: randomColorOffset(
+                                    from: journal.template.coverColor.toRGBArray().map(Double.init)
+                                )))
                                 
                                 aiVM.conversationHistory = []
                                 
-                                var newIndex = 0
-                                switch journal.pages[journal.currentPage].realEntryCount {
-                                case 1: newIndex = 0
-                                case 2: newIndex = 4
-                                case 3: newIndex = 1
-                                case 4: newIndex = 3
-                                case 5: newIndex = 6
-                                case 6: newIndex = 7
-                                case 7: newIndex = 5
-                                default: newIndex = 2
-                                }
                             } else {
                                 //handle too many entries
                             }
@@ -228,7 +205,18 @@ struct AddEntryButtonView: View {
                             }
                         }
                         Button {
-                            
+                            if journal.pages[journal.currentPage].entries.count <= 8 {
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: PictureEntry(date: "", title: "", images: [], width: 1, height: 1, isFake: false, color: randomColorOffset(
+                                    from: journal.template.coverColor.toRGBArray().map(Double.init)
+                                )))
+                                Task {
+                                    await fbVM.updateJournalPage(entries: journal.pages[displayPage].entries, journalID: journal.id, pageNumber: displayPage)
+                                }
+                                
+                                isExpanded.toggle()
+                            } else {
+                                //handle too many entries
+                            }
                         } label: {
                             ZStack(alignment: .topLeading) {
                                 RoundedRectangle(cornerRadius: 20)
@@ -289,6 +277,14 @@ struct AddEntryButtonView: View {
     }
 }
 
+func randomColorOffset(from baseColor: [Double], maxOffset: Double = 0.1) -> [Double] {
+    return baseColor.map { component in
+        // Generate a random offset between -maxOffset and +maxOffset
+        let offset = Double.random(in: -maxOffset...maxOffset)
+        // Apply the offset and clamp between 0 and 1
+        return max(0, min(1, component + offset))
+    }
+}
 struct ToastView: View {
 
     @Binding var isShowing: Bool
@@ -337,7 +333,9 @@ struct SelectedPhotoView: View {
                                 }
                                 if count == selectedImages.count {
 
-                                    selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: PictureEntry(date: "", title: "", images: imageURLs, width: 1, height: 1, isFake: false, color: (0..<3).map { _ in Double.random(in: 0.5...0.99) }))
+                                    selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: PictureEntry(date: "", title: "", images: imageURLs, width: 1, height: 1, isFake: false, color: randomColorOffset(
+                                        from: journal.template.coverColor.toRGBArray().map(Double.init)
+                                    )))
 
 //                                    print()
 //                                    print(journal.pages[displayPage].entries[selectedEntry])

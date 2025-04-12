@@ -49,7 +49,7 @@ struct JournalTextInputView: View {
                     Button {
                         Task {
                             print(entry.width, entry.title)
-                            var newEntry = WrittenEntry(date: date, title: title, text: inputText, summary: entry.summary, width: entry.width, height: entry.height, isFake: false, color: entry.color)
+                            var newEntry = WrittenEntry(date: date, title: title, text: inputText, summary: entry.summary, width: entry.width, height: entry.height, isFake: false, color: entry.color, selectedPrompt: selectedPrompt ?? "")
                             if entry.text != inputText {
                                 newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
                             }

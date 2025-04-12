@@ -32,7 +32,7 @@ class UserViewModel: ObservableObject {
                                     WrittenEntry(date: "03/04/25", title: "Shopping Haul", text: "irrelevant", summary: "Got some neat shirts and stuff")],
                                 realEntryCount: 2),
                     JournalPage(number: 5)]),
-                Template(name: "Minimalist", coverColor: .gray, pageColor: .white, titleColor: .black, texture: .blackLeather, journalPages: [JournalPage(
+                Template(name: "Minimalist", coverColor: .gray, pageColor: .white, titleColor: .black, texture: .leather, journalPages: [JournalPage(
                     number: 1,
                     entries: [WrittenEntry(date: "2025-03-26",title: "Entry 1",text: "Sample text for entry 1",summary: "Summary of entry 1"),
                               WrittenEntry(date: "2025-03-26",title: "Entry 2",text: "Sample text for entry 2",summary: "Summary of entry 2"),
@@ -55,7 +55,7 @@ class UserViewModel: ObservableObject {
     }
     
     func removeScrapbookShelf(index: Int) {
-        user.journalShelves.remove(at: index)
+        user.scrapbookShelves.remove(at: index)
     }
     
     func addScrapbookShelfToUser(_ shelf: ScrapbookShelf) {
@@ -237,11 +237,26 @@ class UserViewModel: ObservableObject {
         user.getJournalShelves()[shelfIndex].journals.append(journal)
     }
     
+    func addScrapbookToShelf(scrapbook: Scrapbook, shelfIndex: Int) {
+//        user.journalShelves[shelfIndex].journals.append(journal)
+        user.getScrapbookShelves()[shelfIndex].scrapbooks.append(scrapbook)
+    }
+    
     func removeJournalFromShelf(shelfIndex: Int, journalID: UUID) {
         let journals = user.getJournalShelves()[shelfIndex].journals
         for index in journals.indices {
             if journalID == journals[index].id {
                 user.getJournalShelves()[shelfIndex].journals.remove(at: index)
+                return
+            }
+        }
+    }
+    
+    func removeScrapbookFromShelf(shelfIndex: Int, scrapbookID: UUID) {
+        let scrapbooks = user.getScrapbookShelves()[shelfIndex].scrapbooks
+        for index in scrapbooks.indices {
+            if scrapbookID == scrapbooks[index].id {
+                user.getScrapbookShelves()[shelfIndex].scrapbooks.remove(at: index)
                 return
             }
         }

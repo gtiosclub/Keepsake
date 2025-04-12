@@ -20,6 +20,7 @@ struct HomeView: View {
     @State var selectedOption: ViewOption = .library
     @State var jIndex: Int = 0
     @State var sIndex: Int = 0
+    @State var showScrapbookForm: Bool = false
     var body: some View {
         Group {
             switch selectedOption {
@@ -28,7 +29,7 @@ struct HomeView: View {
             case .library:
                 LibraryView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: $selectedOption)
             case .scrapbook_shelf:
-                ScrapbookShelfView(userVM: userVM, shelf: userVM.getScrapbookShelves()[sIndex], aiVM: aiVM, fbVM: fbVM, shelfIndex: sIndex, selectedOption: $selectedOption)
+                ScrapbookShelfView(userVM: userVM, shelf: userVM.getScrapbookShelves()[sIndex], aiVM: aiVM, fbVM: fbVM, shelfIndex: sIndex, showScrapbookForm: $showScrapbookForm, selectedOption: $selectedOption)
             }
         }
         .onAppear {
@@ -46,6 +47,37 @@ struct HomeView: View {
         .onChange(of: userVM.getScrapbookShelfIndex(), {
             sIndex = userVM.getScrapbookShelfIndex()
         })
+        .sheet(isPresented: $showScrapbookForm) {
+            ScrapbookFormView(
+                isPresented: $showScrapbookForm,
+                onCreate: { title, coverColor, pageColor, titleColor, texture, journalPages in
+                    Task {
+                        await createScrapbook(
+                            from: Template(name: title, coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: texture, journalPages: journalPages),
+                            shelfIndex: sIndex, shelfID: userVM.getScrapbookShelves()[sIndex].id
+                        )
+                    }
+                },
+                templates: userVM.user.savedTemplates, userVM: userVM, fbVM: fbVM
+            )
+        }
+    }
+    
+    func createScrapbook(from template: Template, shelfIndex: Int, shelfID: UUID) async {
+        let newScrapbook = Scrapbook(
+            name: template.name,
+            id: UUID(),
+            createdDate: DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short),
+            category: "General",
+            isSaved: false,
+            isShared: false,
+            template: template,
+            pages: [ScrapbookPage(number: 0, entries: [], entryCount: 0)],
+            currentPage: 0
+        )
+        userVM.addScrapbookToShelf(scrapbook: newScrapbook, shelfIndex: sIndex)
+        await fbVM.addScrapbook(scrapbook: newScrapbook, scrapbookShelfID: shelfID)
+       
     }
 }
 
