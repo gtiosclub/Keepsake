@@ -350,7 +350,7 @@ struct JournalFormView_Previews: PreviewProvider {
                 coverColor: .gray,
                 pageColor: .white,
                 titleColor: .blue,
-                texture: .blackLeather,
+                texture: .leather,
                 journalPages: [
                     JournalPage(number: 1),
                     JournalPage(number: 2),
@@ -362,7 +362,7 @@ struct JournalFormView_Previews: PreviewProvider {
                 coverColor: .gray,
                 pageColor: .white,
                 titleColor: .blue,
-                texture: .blackLeather,
+                texture: .leather,
                 journalPages: [
                     JournalPage(number: 1),
                     JournalPage(number: 2),
