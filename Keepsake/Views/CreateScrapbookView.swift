@@ -293,6 +293,7 @@ struct CreateScrapbookView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 200)
+                        .cornerRadius(10)
                         .padding(.bottom, 20)
                 } else {
                     Rectangle()
@@ -378,8 +379,8 @@ struct CreateScrapbookView: View {
                     } label: {
                         Text("Done")
                             .font(.title2)
-                            .foregroundStyle(.white)
-                            .padding(25)
+                            .foregroundStyle(.black)
+                            .padding(20)
                     }
                 }
                 Spacer()
