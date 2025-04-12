@@ -20,10 +20,31 @@ struct BookshelfForScrapbookView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            Color.white
+            
+            ZStack {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill()
+                RoundedRectangle(cornerRadius: 20)
+                        .fill(.shadow(.inner(color: .white.opacity(0.8), radius: 1, x: 0, y: 0)))
+                        .mask {
+                            LinearGradient(
+                                colors: [.clear, .black],
+                                startPoint: UnitPoint(x: 0.5, y: 0.7),
+                                endPoint: UnitPoint(x: 0.5, y: 0.9)
+                            )
+                        }
+                RoundedRectangle(cornerRadius: 20)
+                        .fill(.shadow(.inner(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)))
+                        .mask {
+                            LinearGradient(
+                                colors: [.black, .clear],
+                                startPoint: UnitPoint(x: 0.5, y: 0.1),
+                                endPoint: UnitPoint(x: 0.5, y: 0.6)
+                            )
+                        }
+                }
+                .foregroundStyle(Color(white: 0.95))
                 .frame(height: 150)
-                .cornerRadius(10)
-                .shadow(radius: 2)
 
             HStack(alignment: .bottom) {
                 if isEven {
@@ -54,10 +75,11 @@ struct BookshelfForScrapbookView: View {
                     .offset(x: isEven ? spacing : -1 * spacing, y: 0)
                     .frame(width: scale * UIScreen.main.bounds.width * 0.4,
                            height: scale * UIScreen.main.bounds.height * 0.56)
+                    .shadow(color: .black.opacity(0.3), radius: 12, x: 4, y: 4)
             }
         }
-        .padding(.leading, isEven ? 4 : 0)
-        .padding(.trailing, isEven ? 0 : 4)
+        .padding(.leading, isEven ? 9 : 0)
+        .padding(.trailing, isEven ? 0 : 9)
     }
 
     var textSection: some View {
@@ -74,22 +96,20 @@ struct BookshelfForScrapbookView: View {
                 .frame(width: 150)
             } else {
                 Text(shelf.name)
-                    .font(.headline)
-            }
-            
-            Button(action: {
-                isEditing.toggle()
-                if isEditing {
-                    editedName = shelf.name
-                }
-            }) {
-                Image(systemName: "pencil")
-                    .foregroundColor(.black)
+                    .font(.system(size: 30, weight: .semibold))
+                
             }
         }
         .frame(height: scale * UIScreen.main.bounds.height * 0.56, alignment: .top)
-        .padding(.leading, isEven ? 0 : 4)
-        .padding(.trailing, isEven ? 4 : 0)
+        .padding(.leading, isEven ? 0 : 10)
+        .padding(.trailing, isEven ? 10 : 0)
+        .offset(y: -20)
+        .onTapGesture(count: 2) { // Detect double tap
+            isEditing.toggle()
+            if isEditing {
+                editedName = shelf.name
+            }
+        }
     }
 }
 //#Preview {
