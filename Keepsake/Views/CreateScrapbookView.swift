@@ -143,9 +143,6 @@ struct CreateScrapbookView: View {
                 entity.position = SIMD3<Float>(x: entry.position[0], y: entry.position[1], z: entry.position[2])
                 entity.scale = SIMD3<Float>(repeating: Float(entry.scale))
                 
-                let dy = Float(entry.position[1]) * 0.002
-                let maxAngle: Float = .pi / 2.5  // 45 degrees in radians
-                let dx = Float(entry.position[0]) * 0.002
                 
                 // Combine rotations (order matters)
                 let rotation = simd_quatf(ix: entry.rotation[0], iy: entry.rotation[1], iz: entry.rotation[2], r: entry.rotation[3])
@@ -590,7 +587,19 @@ struct CreateScrapbookView: View {
                  the entity will be the collsion shape attached to the entity instead of the entity itself
                  */
                 if let selected = value.hitTest(point: value.location, in: .local).first?.entity.parent {
+                    if let previousSelected = selectedEntity as? TextBoxEntity{
+                        previousSelected.setSelected(false)
+                    } else if let previousSelected = selectedEntity as? FramedImageEntity{
+                        previousSelected.setSelected(false)
+                    }
                     selectedEntity = selected
+                    if let nextSelected = selectedEntity as? TextBoxEntity{
+                        nextSelected.setSelected(true)
+                        print("changing opacity")
+                    } else if let nextSelected = selectedEntity as? FramedImageEntity{
+                        nextSelected.setSelected(true)
+                        print("changing opacity")
+                    }
                 }
                 print(selectedEntity?.name ?? "No Entity Selected")
             }
