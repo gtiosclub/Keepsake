@@ -180,6 +180,11 @@ struct CreateScrapbookView: View {
                         entityPos.append(.zero)
                         counter += 1
                         self.anchor?.addChild(newImage)
+                        
+                        // MAKE SURE THIS ISNT BUGGY
+                        noFrameSelected = true
+                        polaroidFrameSelected = false
+                        flowerFrameSelected = false
                         isImageClicked = false
                     } else {
                         print("No image loaded")
