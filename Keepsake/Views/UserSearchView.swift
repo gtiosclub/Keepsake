@@ -12,11 +12,12 @@ struct UserSearchView: View {
     @Environment(\.presentationMode) var presentationMode
     @FocusState private var isTextFieldFocused: Bool
     @State private var searchText = ""
-    @StateObject var firebaseViewModel = FirebaseViewModel()
-    @StateObject private var viewModel = UserLookupViewModel()
+    @ObservedObject var viewModel: FirebaseViewModel
+    @ObservedObject var userVM: UserViewModel
+    //@StateObject private var viewModel = UserLookupViewModel()
     var body: some View {
         NavigationStack {
-            let newUser = firebaseViewModel.currentUser
+            let newUser = viewModel.currentUser
             
             VStack {
                 HStack {
@@ -72,31 +73,10 @@ struct UserSearchView: View {
                         .buttonStyle(PlainButtonStyle())
 
                         Spacer()
-                        
-                        Button(action: {
-                            guard let currentUserID = newUser?.id else { return }
-
-                            if user.friends.contains(currentUserID) {
-                                // Remove friend locally
-                                if let index = viewModel.users.firstIndex(where: { $0.id == user.id }) {
-                                    viewModel.users[index].friends.removeAll { $0 == currentUserID }
-                                }
-                                viewModel.removeFriend(currentUserID: currentUserID, friendUserID: user.id)
-                            } else {
-                                // Add friend locally
-                                if let index = viewModel.users.firstIndex(where: { $0.id == user.id }) {
-                                    viewModel.users[index].friends.append(currentUserID)
-                                }
-                                viewModel.addFriend(currentUserID: currentUserID, friendUserID: user.id)
-                            }
-                        }) {
-                            Text(user.friends.contains(newUser?.id ?? "") ? "Remove Friend" : "Add Friend")
-                                .foregroundColor(.pink)
-                        }
                     }
                     .background(
                         NavigationLink(
-                            destination: SearchedUserProfileView(currentUserID: newUser?.id ?? "", selectedUserID: user.id),
+                            destination: SearchedUserProfileView(currentUserID: newUser?.id ?? "", selectedUserID: user.id, userVM: userVM, viewModel: viewModel),
                             tag: user.id,
                             selection: $selectedUserID
                         ) {
@@ -120,5 +100,5 @@ struct UserSearchView: View {
 }
 
 #Preview {
-    UserSearchView()
+    UserSearchView(viewModel: FirebaseViewModel(), userVM: UserViewModel(user: User()))
 }
