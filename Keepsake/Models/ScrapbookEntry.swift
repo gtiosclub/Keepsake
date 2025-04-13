@@ -11,7 +11,6 @@ import Foundation
 
 struct ScrapbookEntry: Codable {
     let id: UUID
-    let name: String
     let type: String
     let position: [Float]
     let scale: Float
@@ -26,7 +25,7 @@ struct ScrapbookEntry: Codable {
     let textColor: [Float]
     let backgroundColor: [Float]
 
-    init(id: UUID, name: String = "", type: String, position: [Float], scale: Float, rotation: [Float], text: String?, imageURL: String?, frame: String = "classic", font: String = "Helvetica", fontSize: Int = 200, isBold: Bool = false, isItalic: Bool = false, textColor: [Float] = [0, 0, 0], backgroundColor: [Float] = [1, 1, 1]) {
+    init(id: UUID, type: String, position: [Float], scale: Float, rotation: [Float], text: String?, imageURL: String?, frame: String = "classic", font: String = "Helvetica", fontSize: Int = 200, isBold: Bool = false, isItalic: Bool = false, textColor: [Float] = [0, 0, 0], backgroundColor: [Float] = [1, 1, 1]) {
         self.id = id
         self.type = type
         self.position = position
@@ -36,7 +35,6 @@ struct ScrapbookEntry: Codable {
         self.imageURL = imageURL
         self.frame = frame
         self.font = font
-        self.name = name
         self.fontSize = fontSize
         self.isBold = isBold
         self.isItalic = isItalic
