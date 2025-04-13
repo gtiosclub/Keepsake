@@ -295,6 +295,7 @@ struct ScrapbookShelfView: View {
                                         .offset(y: UIScreen.main.bounds.height * 0.05 * scaleEffect)
                                 }
                                 .onTapGesture {
+                                    showScrapbookForm = true
                                 }
                                 VStack(spacing: 10) {
                                     Text("Create New")
