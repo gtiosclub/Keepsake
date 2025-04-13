@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import PhotosUI
 
-typealias UserInfo = (userID: String, name: String, profilePic: UIImage?)
+typealias UserInfo = (userID: String, name: String,username: String, profilePic: UIImage?, friends: [String])
 
 class User: Identifiable, ObservableObject {
     var id: String

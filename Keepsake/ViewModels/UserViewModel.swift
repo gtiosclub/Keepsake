@@ -50,6 +50,24 @@ class UserViewModel: ObservableObject {
         return user.communityScrapbooks
     }
     
+    func filterCommunityScrapbooks(userID: String) -> [Scrapbook] {
+        return user.communityScrapbooks
+            .filter { $0.value.contains { $0.userID == userID } }  // Filter scrapbooks containing the user
+            .map { $0.key }  // Extract just the Scrapbook objects
+    }
+    
+    func removeFriend(friendID: String) {
+        if let index = user.friends.firstIndex(of: friendID) {
+            user.friends.remove(at: index)
+        }
+    }
+    
+    func addFriend(friendID: String) {
+        if !user.friends.contains(friendID) {
+            user.friends.append(friendID)
+        }
+    }
+    
     
     func addJournalShelfToUser(_ shelf: JournalShelf) {
         user.addJournalShelf(shelf: shelf)

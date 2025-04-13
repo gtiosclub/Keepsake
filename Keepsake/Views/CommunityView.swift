@@ -21,7 +21,7 @@ struct CommunityView: View {
     }
     @State var scaleEffect = 0.4
     @State private var searchText = ""
-    @StateObject private var viewModel = UserLookupViewModel()
+    //@StateObject private var viewModel = UserLookupViewModel()
     @State var dummy: Bool = false
     @State var retrievedImage: UIImage?
     @State private var selectedViewType = "Public Works" // New state for picker
@@ -53,7 +53,7 @@ struct CommunityView: View {
                         }.padding(.horizontal, 20)
                         
                         // Search bar
-                        NavigationLink(destination: UserSearchView()) {
+                        NavigationLink(destination: UserSearchView(viewModel: fbVM, userVM: userVM)) {
                             HStack {
                                 Image(systemName: "magnifyingglass")
                                     .foregroundColor(.gray)
@@ -279,7 +279,7 @@ struct SortOptionButton: View {
             pages: [],
             currentPage: 0
         ): [
-            (userID: "user1", name: "Bill", profilePic: UIImage(systemName: "person.cirle")) // String instead of UIImage
+            (userID: "user1", name: "Bill", username: "username", profilePic: UIImage(systemName: "person.cirle"), friends: [])
         ],
         Scrapbook(
             name: "Scrap 2",
@@ -299,7 +299,7 @@ struct SortOptionButton: View {
             pages: [],
             currentPage: 0
         ): [
-            (userID: "user1", name: "Bill", profilePic: UIImage(systemName: "person.cirle")) // String instead of UIImage
+            (userID: "user1", name: "Bill", username: "username", profilePic: UIImage(systemName: "person.cirle"), friends: [])
         ]
     ]
 )), fbVM: FirebaseViewModel())

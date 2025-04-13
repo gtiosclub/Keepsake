@@ -12,6 +12,7 @@ struct ContentView: View {
     @ObservedObject var aiVM: AIViewModel
     @ObservedObject var fbVM: FirebaseViewModel
     @EnvironmentObject var reminderViewModel: RemindersViewModel
+    @State var image: UIImage?
     
     var body: some View {
         
@@ -25,15 +26,15 @@ struct ContentView: View {
                     
                     
                     Tab("Community", systemImage: "person.2") {
-                        CommunityView(userVM: userVM, fbVM: fbVM, retrievedImage: fbVM.retrievedImage)
+                        CommunityView(userVM: userVM, fbVM: fbVM, retrievedImage: image)
                     }
                     Tab("Profile", systemImage:"person.crop.circle") {
-                        ProfileView(retrievedImage: fbVM.retrievedImage)
+                        ProfileView(retrievedImage: image)
                     }
                 }
                 .onAppear() {
-                    fbVM.getProfilePic(uid: userVM.user.id)
                     Task {
+                        image = await fbVM.getProfilePic(uid: userVM.user.id)
                         await fbVM.checkIfStreaksRestarted()
                     }
                 }
