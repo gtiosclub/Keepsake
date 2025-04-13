@@ -131,6 +131,9 @@ final class Connectivity: NSObject, WCSessionDelegate {
         }
     
     func fetchAudioFiles() async {
+        if remindersWithAudio.count > 0 {
+            return
+        }
         print("Starting audio files fetch")
         #if os(iOS)
         guard let uid = firebaseVM.currentUser?.id else {
