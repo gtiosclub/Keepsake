@@ -43,7 +43,7 @@ class ViewController: UIViewController {
         var prompt = ""
         Task {
             try await Task.sleep(for: .seconds(10))
-            await prompt = aiViewModel.getPromptOfTheDay()
+            //await prompt = aiViewModel.getPromptOfTheDay()
             let body = "Write down your answer to this prompt: \(prompt)"
             UserDefaults.standard.set(prompt, forKey: "prompt")
             let isDaily = true
