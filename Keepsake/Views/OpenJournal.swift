@@ -156,7 +156,7 @@ struct OpenJournal: View {
                 .offset(y: UIScreen.main.bounds.height * -0.05)
             
             if showSearch {
-                SearchOverlayView(isPresented: $showSearch, firebaseVM: FirebaseViewModel.vm, journalID: journal.id.uuidString)
+                SearchOverlayView(isPresented: $showSearch, firebaseVM: FirebaseViewModel.vm, inEntry: $inEntry, selectedEntry: $selectedEntry, journal: journal, displayPageIndex: $displayPageIndex)
                     .transition(.opacity.combined(with: .scale(scale: 1.1)))
                     .zIndex(2)
             }

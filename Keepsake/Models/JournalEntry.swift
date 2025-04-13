@@ -53,8 +53,8 @@ class JournalEntry: ObservableObject, Identifiable, Hashable, Codable {
         self.type = .written
     }
 
-    init(date: String, title: String, entryContents: String, width: Int = 1, height: Int = 1, isFake: Bool = false, color: [Double] = [0.5,0.5,0.5], type: EntryType) {
-        self.id = UUID()
+    init(id: UUID = UUID(), date: String, title: String, entryContents: String, width: Int = 1, height: Int = 1, isFake: Bool = false, color: [Double] = [0.5,0.5,0.5], type: EntryType) {
+        self.id = id
         self.date = date
         self.title = title
         self.width = width
@@ -196,9 +196,9 @@ class JournalEntry: ObservableObject, Identifiable, Hashable, Codable {
 class PictureEntry: JournalEntry {
     var images: [String]
 
-    init(date: String, title: String, images: [String], width: Int = 1, height: Int = 1, isFake: Bool = false, color: [Double] = [0.5,0.5,0.5]) {
+    init(id: UUID = UUID(), date: String, title: String, images: [String], width: Int = 1, height: Int = 1, isFake: Bool = false, color: [Double] = [0.5,0.5,0.5]) {
         self.images = images
-        super.init(date: date, title: title, entryContents: "", width: width, height: height, isFake: isFake, color: color, type: .picture)
+        super.init(id: id, date: date, title: title, entryContents: "", width: width, height: height, isFake: isFake, color: color, type: .picture)
     }
     
     required init(from decoder: Decoder) throws {
@@ -212,7 +212,9 @@ class PictureEntry: JournalEntry {
     }
 
     override static func fromDictionary(_ dict: [String: Any]) -> PictureEntry? {
-        guard let date = dict["date"] as? String,
+        guard let idString = dict["id"] as? String,
+              let id = UUID(uuidString: idString),
+              let date = dict["date"] as? String,
               let title = dict["title"] as? String,
               let images = dict["images"] as? [String],
               let width = dict["width"] as? Int,
@@ -221,7 +223,7 @@ class PictureEntry: JournalEntry {
               let color = dict["color"] as? [Double]
         else { return nil }
 
-        return PictureEntry(date: date, title: title, images: images, width: width, height: height, isFake: isFake, color: color)
+        return PictureEntry(id: id, date: date, title: title, images: images, width: width, height: height, isFake: isFake, color: color)
     }
 }
 
@@ -230,10 +232,10 @@ class WrittenEntry: JournalEntry {
     var text: String
     var summary: String
 
-    init(date: String, title: String, text: String, summary: String, width: Int = 1, height: Int = 1, isFake: Bool = false, color: [Double] = [0.5,0.5,0.5]) {
+    init(id: UUID = UUID(), date: String, title: String, text: String, summary: String, width: Int = 1, height: Int = 1, isFake: Bool = false, color: [Double] = [0.5,0.5,0.5]) {
         self.text = text
         self.summary = summary
-        super.init(date: date, title: title, entryContents: text, width: width, height: height, isFake: isFake, color: color, type: .written)
+        super.init(id: id, date: date, title: title, entryContents: text, width: width, height: height, isFake: isFake, color: color, type: .written)
     }
     
     required init(from decoder: Decoder) throws {
@@ -248,7 +250,9 @@ class WrittenEntry: JournalEntry {
     }
 
     override static func fromDictionary(_ dict: [String: Any]) -> WrittenEntry? {
-        guard let date = dict["date"] as? String,
+        guard let idString = dict["id"] as? String,
+              let id = UUID(uuidString: idString),
+              let date = dict["date"] as? String,
               let title = dict["title"] as? String,
               let text = dict["text"] as? String,
               let summary = dict["summary"] as? String,
@@ -258,16 +262,16 @@ class WrittenEntry: JournalEntry {
               let color = dict["color"] as? [Double]
         else { return nil }
 
-        return WrittenEntry(date: date, title: title, text: text, summary: summary, width: width, height: height, isFake: isFake, color: color)
+        return WrittenEntry(id: id, date: date, title: title, text: text, summary: summary, width: width, height: height, isFake: isFake, color: color)
     }
 }
 
 class ConversationEntry: JournalEntry {
     var conversationLog: [String]
 
-    init(date: String, title: String, conversationLog: [String], width: Int = 1, height: Int = 1, color: [Double] = [0.5,0.5,0.5]) {
+    init(id: UUID = UUID(), date: String, title: String, conversationLog: [String], width: Int = 1, height: Int = 1, color: [Double] = [0.5,0.5,0.5]) {
         self.conversationLog = conversationLog
-        super.init(date: date, title: title, entryContents: conversationLog.description, width: width, height: height, isFake: false, color: color, type: .chat)
+        super.init(id: id, date: date, title: title, entryContents: conversationLog.description, width: width, height: height, isFake: false, color: color, type: .chat)
     }
     
     override func toDictionary(journalID: UUID) -> [String: Any] {
@@ -277,13 +281,15 @@ class ConversationEntry: JournalEntry {
     }
 
     override static func fromDictionary(_ dict: [String: Any]) -> ConversationEntry? {
-        guard let date = dict["date"] as? String,
+        guard let idString = dict["id"] as? String,
+              let id = UUID(uuidString: idString),
+              let date = dict["date"] as? String,
               let title = dict["title"] as? String,
               let conversationLog = dict["conversationLog"] as? [String],
               let color = dict["color"] as? [Double]
         else { return nil }
 
-        return ConversationEntry(date: date, title: title, conversationLog: conversationLog, color: color)
+        return ConversationEntry(id: id, date: date, title: title, conversationLog: conversationLog, color: color)
     }
     
     required init(from decoder: Decoder) throws {
@@ -296,11 +302,11 @@ class VoiceEntry: JournalEntry {
     var transcription: String
     var audioURL: String?
 
-    init(date: String, title: String, audio: Data?, audioURL: String = "", transcription: String = "", width: Int = 1, height: Int = 1, isFake: Bool = false, color: [Double] = [0.5,0.5,0.5]) {
+    init(id: UUID = UUID(), date: String, title: String, audio: Data?, audioURL: String = "", transcription: String = "", width: Int = 1, height: Int = 1, isFake: Bool = false, color: [Double] = [0.5,0.5,0.5]) {
         self.audio = audio
         self.transcription = transcription
         self.audioURL = audioURL
-        super.init(date: date, title: title, entryContents: transcription, width: width, height: height, isFake: isFake, color: color, type: .voice)
+        super.init(id: id, date: date, title: title, entryContents: transcription, width: width, height: height, isFake: isFake, color: color, type: .voice)
     }
     
     override func toDictionary(journalID: UUID) -> [String: Any] {
@@ -311,7 +317,9 @@ class VoiceEntry: JournalEntry {
     }
 
     override static func fromDictionary(_ dict: [String: Any]) -> VoiceEntry? {
-        guard let date = dict["date"] as? String,
+        guard let idString = dict["id"] as? String,
+              let id = UUID(uuidString: idString),
+              let date = dict["date"] as? String,
               let title = dict["title"] as? String,
               let audioURL = dict["audioURL"] as? String,
               let transcription = dict["transcription"] as? String,
@@ -321,7 +329,7 @@ class VoiceEntry: JournalEntry {
               let color = dict["color"] as? [Double]
         else { return nil }
 
-        return VoiceEntry(date: date, title: title, audio: nil, audioURL: audioURL, transcription: transcription, width: width, height: height, isFake: isFake, color: color)
+        return VoiceEntry(id: id, date: date, title: title, audio: nil, audioURL: audioURL, transcription: transcription, width: width, height: height, isFake: isFake, color: color)
     }
     
     func fetchAudioData(from urlString: String) async throws -> Data {
