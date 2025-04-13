@@ -8,7 +8,7 @@ struct SearchedUserProfileView: View {
     let selectedUserID: String
     
     @Environment(\.presentationMode) var presentationMode
-    @State private var selectUserInfo: UserInfo = UserInfo(userID: "", name: "Name", username: "Username", profilePic: UIImage(systemName: "person.circle"), friends: [])
+    @State private var selectUserInfo: UserInfoWithStreaks = UserInfoWithStreaks(userID: "", name: "Name", username: "Username", profilePic: UIImage(systemName: "person.circle"), friends: [], streakCount: 0)
     @State private var isFriend: Bool = false
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var viewModel: FirebaseViewModel
@@ -47,26 +47,30 @@ struct SearchedUserProfileView: View {
                     Text(selectUserInfo.username)
                         .font(.title3)
                         .accentColor(.pink)
-                    
+                    if let streak = selectUserInfo.streakCount {
+                        HStack(spacing: 6) {
+                            Image(systemName: "flame.fill")
+                                .foregroundColor(.orange)
+                            Text("Streak: \(streak)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                     Button(action: {
-                        if selectUserInfo.friends.contains(currentUserID) {
-                            // Remove friend locally
-                            //                        if let index = viewModel.users.firstIndex(where: { $0.id == user.id }) {
-                            //                            viewModel.users[index].friends.removeAll { $0 == currentUserID }
-                            //                        }
-                            //                        selectedUser?.friends.removeAll { $0 == currentUserID }
+                        if isFriend {
                             viewModel.removeFriend(currentUserID: currentUserID, friendUserID: selectUserInfo.userID)
+                            if let index = selectUserInfo.friends.firstIndex(of: currentUserID) {
+                                selectUserInfo.friends.remove(at: index)
+                            }
+                            isFriend = false
                         } else {
-                            // Add friend locally
-                            //                        if let index = viewModel.users.firstIndex(where: { $0.id == user.id }) {
-                            //                            viewModel.users[index].friends.append(currentUserID)
-                            //                        }
-                            //                        selectedUser?.friends.append(currentUserID)
                             userVM.addFriend(friendID: selectUserInfo.userID)
                             viewModel.addFriend(currentUserID: currentUserID, friendUserID: selectUserInfo.userID)
+                            selectUserInfo.friends.append(currentUserID)
+                            isFriend = true
                         }
                     }) {
-                        Text(selectUserInfo.friends.contains(currentUserID) ? "Remove Friend" : "Add Friend")
+                        Text(isFriend ? "Remove Friend" : "Add Friend")
                             .foregroundStyle(Color(hex: "#4CA5C0"))
                             .padding(.horizontal, 20)
                             .padding(.vertical, 10)
@@ -76,6 +80,7 @@ struct SearchedUserProfileView: View {
                         RoundedRectangle(cornerRadius: 20)
                             .fill(Color(hex: "#7FD2E7").opacity(0.4))
                     )
+
                     
                 }
                 
@@ -89,11 +94,12 @@ struct SearchedUserProfileView: View {
         }.padding(.horizontal, 30)
             .onAppear() {
                 Task {
-                    selectUserInfo = await viewModel.getUserInfo(userID: selectedUserID) ?? selectUserInfo
+                    selectUserInfo = await viewModel.getUserInfoWithStreaks(userID: selectedUserID) ?? selectUserInfo
+                    let currentFriends = await viewModel.getFriends(for: currentUserID)
+                            isFriend = currentFriends.contains(selectedUserID)
                 }
                 communityScrapbooks = userVM.getCommunityScrapbooks()
                 savedScrapbooks = userVM.getSavedScrapbooks()
-                
             }
             .navigationBarBackButtonHidden(true)
             .navigationBarItems(leading:

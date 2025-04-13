@@ -14,9 +14,11 @@ import SwiftUI
 
 extension Notification.Name {
     static let navigateToHome = Notification.Name("navigateToHome")
+    static let navigateToProfile = Notification.Name("navigateToProfile")
 }
 class ViewController: UIViewController {
     @ObservedObject var aiViewModel = AIViewModel()
+    @ObservedObject var firebaseViewModel = FirebaseViewModel()
     override func viewDidLoad() {
         print("hi")
         super.viewDidLoad()
@@ -38,10 +40,11 @@ class ViewController: UIViewController {
     }
     func dispatchNotification() {
         print("Scheduling notification now with prompt")
-        let title = "Keep Journaling!"
+        
         var prompt = ""
         Task {
             try await Task.sleep(for: .seconds(10))
+            let title = "Keep Journaling! Don't lose your streak of 🔥 \(firebaseViewModel.currentUser?.streaks ?? 0) days"
             await prompt = aiViewModel.getPromptOfTheDay()
             let body = "Write down your answer to this prompt: \(prompt)"
             UserDefaults.standard.set(prompt, forKey: "prompt")

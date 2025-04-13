@@ -129,7 +129,68 @@ class FirebaseViewModel: ObservableObject {
             
         }
     }
-    
+    func getFriends(for userID: String) async -> [String] {
+        let db = Firestore.firestore()
+        let userRef = db.collection("USERS").document(userID)
+        
+        do {
+            let snapshot = try await userRef.getDocument()
+            if let data = snapshot.data(), let friends = data["friends"] as? [String] {
+                return friends
+            }
+        } catch {
+            print("Error fetching friends: \(error)")
+        }
+        
+        return []
+    }
+
+    func scheduleReminderNotifications(for uid: String) {
+            let db = Firestore.firestore()
+            let remindersRef = db.collection("reminders")
+            
+            remindersRef.getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching reminders: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let documents = snapshot?.documents else {
+                    print("No documents found.")
+                    return
+                }
+                for document in documents {
+                    let data = document.data()
+                    
+                    if let userId = data["uid"] as? String, userId == uid {
+                        if let dateTimestamp = data["date"] as? Timestamp {
+                            let date = dateTimestamp.dateValue()
+                            self.scheduleNotification(at: date, identifier: document.documentID)
+                        }
+                    }
+                }
+            }
+        }
+
+        private func scheduleNotification(at date: Date, identifier: String) {
+            let content = UNMutableNotificationContent()
+            content.title = "Journal Reminder"
+            content.body = "Listen to your recording to recollect your thoughts"
+            content.sound = .default
+            content.categoryIdentifier = "PROFILE_REMINDER_CATEGORY"
+            let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+            
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+            
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("didn't work")
+                } else {
+                    print("scheduled reminder yay")
+                }
+            }
+        }
     func deleteAccount() {
         
     }
@@ -193,8 +254,25 @@ class FirebaseViewModel: ObservableObject {
             let username = (data["username"] as? String) ?? "unknown"
             let friends = (data["friends"] as? [String]) ?? []
             let profilePic = await getProfilePic(uid: userID)
-            
+            let streakCount = data["streakCount"] as? Int ?? 0
             return (userID: userID, name: name, username: username, profilePic: profilePic, friends: friends)
+        } catch {
+            print("Error getting user info: \(error)")
+            return nil
+        }
+    }
+    func getUserInfoWithStreaks(userID: String) async -> UserInfoWithStreaks? {
+        let docRef = db.collection("USERS").document(userID)
+        do {
+            let userDoc = try await docRef.getDocument()
+            guard userDoc.exists, let data = userDoc.data() else { return nil }
+            
+            let name = (data["name"] as? String) ?? "Unknown"
+            let username = (data["username"] as? String) ?? "unknown"
+            let friends = (data["friends"] as? [String]) ?? []
+            let profilePic = await getProfilePic(uid: userID)
+            let streakCount = data["streakCount"] as? Int ?? 0
+            return (userID: userID, name: name, username: username, profilePic: profilePic, friends: friends, streakCount: streakCount)
         } catch {
             print("Error getting user info: \(error)")
             return nil

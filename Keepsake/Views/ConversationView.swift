@@ -7,36 +7,6 @@
 
 import SwiftUI
 
-//struct TypingTextView: View {
-//    let fullText: String
-//    @State private var displayedText = ""
-//
-//    var body: some View {
-//        Text(displayedText)
-//            .font(.custom("Noteworthy", size: 20)) // Typewriter Font for AI
-//            .foregroundColor(.black.opacity(0.8))
-//            .padding(.vertical, 5)
-//            .onAppear {
-//                startTypingAnimation()
-//            }
-//    }
-//
-//    func startTypingAnimation() {
-//        displayedText = ""
-//        let characters = Array(fullText)
-//        var index = 0
-//
-//        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
-//            if index < characters.count {
-//                displayedText.append(characters[index])
-//                index += 1
-//            } else {
-//                timer.invalidate() // Stop when done
-//            }
-//        }
-//    }
-//}
-
 struct ConversationView: View {
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var aiVM: AIViewModel
@@ -47,147 +17,178 @@ struct ConversationView: View {
     var journalIndex: Int
     var entryIndex: Int
     var pageIndex: Int
+    @State var title: String = ""
+    @State var date: String = ""
+    var textfieldPrompt: String = "Untitled Conversation"
+    @State private var isSaving: Bool = false
+
+    
+    
+    @State private var displayedMessages: [String] = []
 
     var body: some View {
         NavigationStack {
-            VStack {
-                HStack {
-                    Button {
-                        Task {
-                            await MainActor.run {
-                                inEntry = .openJournal
+            ZStack {
+                VStack {
+                    HStack {
+                        Button {
+                            Task {
+                                await MainActor.run {
+                                    inEntry = .openJournal
+                                }
                             }
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .foregroundStyle(.black)
                         }
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .foregroundStyle(.black)
-                    }
-                    .padding(UIScreen.main.bounds.width * 0.025)
-                    
-                    HStack(spacing: 8) {
-                        Text("Echo 🌐")
-                            .font(.title)
-                            .fontWeight(.bold)
-                    }
-                    
-                    Spacer()
-                    
-                    Button {
-                        Task {
-                            var updatedEntry = convoEntry
-                            updatedEntry.conversationLog = aiVM.conversationHistory
-                            
-                            userVM.updateJournalEntry(
-                                shelfIndex: shelfIndex,
-                                bookIndex: journalIndex,
-                                pageNum: pageIndex,
-                                entryIndex: entryIndex,
-                                newEntry: updatedEntry
-                            )
-                            
-                            await fbVM.updateJournalPage(entries: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex].entries, journalID: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).id, pageNumber: pageIndex)
-                            
-                            await MainActor.run {
-                                inEntry = .openJournal
+                        .padding(UIScreen.main.bounds.width * 0.025)
+                        
+                        
+                        Spacer()
+                        
+                        Button {
+                            Task {
+                                isSaving = true
+                                var updatedEntry = convoEntry
+                                updatedEntry.conversationLog = aiVM.conversationHistory
+                                updatedEntry.title = title
+                                
+                                userVM.updateJournalEntry(
+                                    shelfIndex: shelfIndex,
+                                    bookIndex: journalIndex,
+                                    pageNum: pageIndex,
+                                    entryIndex: entryIndex,
+                                    newEntry: updatedEntry
+                                )
+                                
+                                await fbVM.updateJournalPage(entries: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex].entries, journalID: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).id, pageNumber: pageIndex)
+                                
+                                await MainActor.run {
+                                    isSaving = false
+                                    inEntry = .openJournal
+                                }
                             }
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(.black)
                         }
-                    } label: {
-                        Image(systemName: "checkmark")
-                            .foregroundStyle(.black)
+                        .padding(UIScreen.main.bounds.width * 0.025)
                     }
-                    .padding(UIScreen.main.bounds.width * 0.025)
-                }
-
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 30) {
-                            ForEach(Array(aiVM.conversationHistory.enumerated()), id: \.offset) { index, message in
-                                if message.starts(with: "User:") {
-                                    HStack {
-                                        HStack(spacing: 5) {
-                                            Image(systemName: "pencil")
-                                                .foregroundColor(.gray)
-                                                .font(.system(size: 30))
-                                            Text(message.replacingOccurrences(of: "User: ", with: ""))
-                                                .padding()
-                                                .background(Color(hex: "#5abbd1").opacity(0.8))
-                                                .cornerRadius(15)
-                                            Image(systemName: "person.fill")
-                                                .font(.system(size: 30))
-                                                .foregroundColor(.gray)
-                                                .padding(.bottom, 5)
-                                        }
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-                                        .id(index)
-                                    }
-                                } else {
-                                    HStack {
+                    
+                    
+                    TextField(textfieldPrompt, text: $title, axis: .vertical)
+                        .fontWeight(.bold)
+                        .font(.title)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 2)
+                    
+                    Text(date).font(.subheadline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                    
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 30) {
+                                ForEach(Array(displayedMessages.enumerated()), id: \.offset) { index, message in
+                                    if message.starts(with: "User:") {
                                         HStack {
-                                            Text("🌐")
-                                                .font(.system(size: 30))
-                                                .foregroundColor(.gray)
-                                                .padding(.bottom, 5)
-                                            Text(message.replacingOccurrences(of: "GPT: ", with: ""))
-                                                .padding()
-                                                .background(Color.gray.opacity(0.2))
-                                                .cornerRadius(15)
-                                            Spacer()
+                                            HStack(spacing: 5) {
+                                                Text(message.replacingOccurrences(of: "User: ", with: ""))
+                                                    .padding()
+                                                    .background(Color(hex: "#5abbd1").opacity(0.8))
+                                                    .cornerRadius(15)
+                                                Image(systemName: "person.fill")
+                                                    .font(.system(size: 30))
+                                                    .foregroundColor(.gray)
+                                                    .padding(.bottom, 5)
+                                            }
+                                            .frame(maxWidth: .infinity, alignment: .trailing)
+                                            .id(index)
                                         }
-                                        .id(index)
+                                    } else {
+                                        HStack {
+                                            HStack {
+                                                Text("🌐")
+                                                    .font(.system(size: 30))
+                                                    .foregroundColor(.gray)
+                                                    .padding(.bottom, 5)
+                                                Text(message.replacingOccurrences(of: "GPT: ", with: ""))
+                                                    .padding()
+                                                    .background(Color.gray.opacity(0.2))
+                                                    .cornerRadius(15)
+                                                Spacer()
+                                            }
+                                            .id(index)
+                                        }
                                     }
                                 }
                             }
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
+                        .onAppear {
+                            if !aiVM.conversationHistory.isEmpty {
+                                withAnimation {
+                                    proxy.scrollTo(aiVM.conversationHistory.count - 1, anchor: .bottom)
+                                }
+                            }
+                        }
+                        .onChange(of: displayedMessages) { newDisplayed in
+                            if !newDisplayed.isEmpty {
+                                withAnimation {
+                                    proxy.scrollTo(newDisplayed.count - 1, anchor: .bottom)
+                                }
+                            }
+                        }
+                        .onChange(of: aiVM.conversationHistory) { newHistory in
+                            displayedMessages = newHistory
+                            
+                            //                        Task {
+                            //                            let success = await fbVM.addConversationLog(text: newHistory, journalEntry: convoEntry.id)
+                            //                            if !success {
+                            //                                print("Failed to update conversation log in Firestore.")
+                            //                            }
+                            //                        }
+                        }
+                        .background(Color.white)
                     }
-                    .onAppear {
-                        if !aiVM.conversationHistory.isEmpty {
-                            withAnimation {
-                                proxy.scrollTo(aiVM.conversationHistory.count - 1, anchor: .bottom)
+                    
+                    HStack {
+                        TextField("Type to chat...", text: $aiVM.userInput)
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(20)
+                            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+                        
+                        if aiVM.isLoading {
+                            ProgressView()
+                                .padding()
+                        } else {
+                            Button {
+                                Task {
+                                    await aiVM.sendMessage(entry: convoEntry)
+                                }
+                            } label: {
+                                Image(systemName: "paperplane")
+                                    .font(.system(size: 30))
+                                    .foregroundColor(.gray)
                             }
                         }
                     }
-                    .onChange(of: aiVM.conversationHistory) { newHistory in
-                        if !newHistory.isEmpty {
-                            withAnimation {
-                                proxy.scrollTo(newHistory.count - 1, anchor: .bottom)
-                            }
-                        }
-                        Task {
-                            let success = await fbVM.addConversationLog(text: newHistory, journalEntry: convoEntry.id)
-                            if !success {
-                                print("Failed to update conversation log in Firestore.")
-                            }
-                        }
-                    }
+                    .padding()
                     .background(Color.white)
                 }
-
-                HStack {
-                    TextField("Type to chat...", text: $aiVM.userInput)
-                        .textFieldStyle(PlainTextFieldStyle())
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(20)
-                        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
-
-                    if aiVM.isLoading {
-                        ProgressView()
+                
+                if isSaving {
+                    VStack {
+                        ProgressView("Saving...")
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .foregroundColor(.white)
                             .padding()
-                    } else {
-                        Button {
-                            Task {
-                                await aiVM.sendMessage(entry: convoEntry)
-                            }
-                        } label: {
-                            Image(systemName: "paperplane")
-                                .font(.system(size: 30))
-                                .foregroundColor(.gray)
-                        }
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(12)
                     }
                 }
-                .padding()
-                .background(Color.white)
             }
         }
         .onAppear {
@@ -197,12 +198,19 @@ struct ConversationView: View {
                     aiVM: aiVM
                 )
                 
+                title = convoEntry.title
+                date = convoEntry.date
+                
                 if !loaded && !convoEntry.conversationLog.isEmpty {
                     aiVM.conversationHistory = convoEntry.conversationLog
                 }
                 
                 if aiVM.conversationHistory.isEmpty {
                     await aiVM.startConversation(entry: convoEntry)
+                }
+                
+                await MainActor.run {
+                    displayedMessages = aiVM.conversationHistory
                 }
             }
         }

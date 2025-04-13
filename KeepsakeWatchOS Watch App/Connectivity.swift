@@ -12,6 +12,10 @@ import FirebaseFirestore
 import FirebaseStorage
 #endif
 import SwiftUI
+struct TempReminderWithAudio: Codable {
+    let reminder: Reminder
+    let audioUrl: String
+}
 final class Connectivity: NSObject, WCSessionDelegate {
     
     static let shared = Connectivity()
@@ -23,6 +27,7 @@ final class Connectivity: NSObject, WCSessionDelegate {
     @Published var audioFiles: [String] = []
     @Published var audioUniqueId: String?
     @Published var remindersWithAudio: [(reminder: Reminder, audioUrl: String)] = []
+    @Published var watchRemindersWithAudio: [(reminder: Reminder, audioUrl: String)] = []
     override private init() {
         super.init()
         loadReminders()
@@ -69,11 +74,13 @@ final class Connectivity: NSObject, WCSessionDelegate {
     public func requestAudioFiles() {
         print("files requested")
         if WCSession.default.isReachable {
+            print("reachable")
             WCSession.default.sendMessage(["requesting audio files": true], replyHandler: { response in
                 //phone gives response then:
-                if let audioFilesUrl = response["audioFilesUrl"] as? [String] {
+                print("got response")
+                if let audioFilesUrl = response["audio files"] as? [(reminder: Reminder, audioUrl: String)] {
                     DispatchQueue.main.async {
-                        self.audioFiles = audioFilesUrl
+                        self.remindersWithAudio = audioFilesUrl
                     }
                 }
             })
@@ -194,18 +201,23 @@ final class Connectivity: NSObject, WCSessionDelegate {
                 
                 self.remindersWithAudio = self.remindersWithAudio
                 print("in connectivity files doc this is connectviity: \(Connectivity.shared.remindersWithAudio.count)")
+//                self.watchRemindersWithAudio = self.remindersWithAudio.map { (reminder, audioUrl) in
+//                    (reminder, audioUrl)
+//                }
                 if WCSession.default.isReachable {
-                    WCSession.default.sendMessage(["audio files": audioFilesUrl], replyHandler: nil) { error in
-                        print("error: \(error.localizedDescription)")
-                    }
-                    print("sending audio to watch")
-                } else {
-                    print("the watch disappeared ಠ_ಠ")
-                }
-                
-                    
-
-                
+                    do {
+//                        let message: [String: Any] = ["audioFilesUrl": self.audioFiles,"remindersWithAudio": self.remindersWithAudio]
+                        WCSession.default.sendMessage(["audio files": self.remindersWithAudio], replyHandler: nil)
+//                                    WCSession.default.sendMessage([
+//                                        "watchRemindersWithAudio": self.watchRemindersWithAudio
+//                                    ], replyHandler: nil)
+                                    print("Sent reminders with audio to watch")
+                                } catch {
+                                    print("Encoding error: \(error.localizedDescription)")
+                                }
+                            } else {
+                                print("Watch is not reachable ಠ_ಠ")
+                            }
             }
             
             

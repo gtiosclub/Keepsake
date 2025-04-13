@@ -3,6 +3,20 @@
 //
 //class UserLookupViewModel: ObservableObject {
 //    @Published var users: [User] = []
+//    
+//    func getFriends(currentUserID: String) async throws -> [String] {
+//        let db = Firestore.firestore()
+//        let userRef = db.collection("USERS").document(currentUserID)
+//        
+//        let snapshot = try await userRef.getDocument()
+//        
+//        guard let data = snapshot.data(),
+//              let friendIDs = data["friends"] as? [String] else {
+//            return []
+//        }
+//        
+//        return friendIDs
+//    }
 //
 //    func addFriend(currentUserID: String, friendUserID: String) {
 //        let db = Firestore.firestore()
@@ -19,6 +33,7 @@
 //            }
 //        }
 //    }
+//    
 //    func removeFriend(currentUserID: String, friendUserID: String) {
 //        let db = Firestore.firestore()
 //        let userRef = db.collection("USERS").document(currentUserID)
@@ -65,7 +80,7 @@
 //                
 //
 //                if name.lowercased().hasPrefix(searchTextLowercased) && username != currentUserName {
-//                    return User(id: doc.documentID, name: name, username: username, journalShelves: [], scrapbookShelves: [], friends: friends, lastUsedJShelfID: UUID(), lastUsedSShelfID: UUID(), isJournalLastUsed: true)
+//                    return User(id: doc.documentID, name: name, username: username, journalShelves: [], scrapbookShelves: [], friends: friends, lastUsedJShelfID: , isJournalLastUsed: true, lastUsedSShelfID: )
 //                }
 //                return nil
 //            }

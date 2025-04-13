@@ -11,6 +11,7 @@ import PhotosUI
 
 
 typealias UserInfo = (userID: String, name: String,username: String, profilePic: UIImage?, friends: [String])
+typealias UserInfoWithStreaks = (userID: String, name: String,username: String, profilePic: UIImage?, friends: [String], streakCount: Int?)
 
 class User: Identifiable, ObservableObject {
     var id: String
