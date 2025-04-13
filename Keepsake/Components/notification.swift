@@ -51,7 +51,6 @@ class ViewController: UIViewController {
             let isDaily = true
             let notificationCenter = UNUserNotificationCenter.current()
             let content = UNMutableNotificationContent()
-            let title = "Keep Journaling! Don't lose your streak of 🔥 \(firebaseViewModel.currentUser?.streaks ?? 0) days"
             content.title = title
             content.body = body
             content.sound = .default
