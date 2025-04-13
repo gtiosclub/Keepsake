@@ -98,11 +98,11 @@ struct Template {
     
     // Overloaded initializers
     init(coverColor: Color, pageColor: Color, titleColor: Color) {
-        self.init(name: "Default", coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: .leather, journalPages: nil)
+        self.init(name: "Default", coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: .blank, journalPages: nil)
     }
 
     init() {
-        self.init(name: "Default", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .leather, journalPages: nil)
+        self.init(name: "Default", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .blank, journalPages: nil)
     }
 }
 
