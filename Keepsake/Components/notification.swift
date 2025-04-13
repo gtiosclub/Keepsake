@@ -45,7 +45,7 @@ class ViewController: UIViewController {
         Task {
             try await Task.sleep(for: .seconds(10))
             let title = "Keep Journaling! Don't lose your streak of 🔥 \(firebaseViewModel.currentUser?.streaks ?? 0) days"
-            await prompt = aiViewModel.getPromptOfTheDay()
+            // await prompt = aiViewModel.getPromptOfTheDay()
             let body = "Write down your answer to this prompt: \(prompt)"
             UserDefaults.standard.set(prompt, forKey: "prompt")
             let isDaily = true
