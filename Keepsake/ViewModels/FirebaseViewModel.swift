@@ -258,6 +258,7 @@ class FirebaseViewModel: ObservableObject {
                     }
                 }
                 let communityScrapbooks = await getAllSharedScrapbooks(userID: uid)
+                print("communityScrapbooks: \(communityScrapbooks)")
                 let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed, images: imageDict, communityScrapbooks: communityScrapbooks, savedScrapbooks: savedScrapbooks)
                 
                 // Assign the user object to currentUser
@@ -268,6 +269,7 @@ class FirebaseViewModel: ObservableObject {
             }
         }
     }
+    
     
     func storeProfilePic(image: UIImage) {
             guard let uid = currentUser?.id else { return }
@@ -289,8 +291,7 @@ class FirebaseViewModel: ObservableObject {
             }
         }
     
-    func getProfilePic() -> UIImage? {
-        let uid = currentUser?.id
+    func getProfilePic(uid: String?) -> UIImage? {
         
         let storageRef = Storage.storage().reference().child("profile pic").child("\(uid!).jpg")
                 storageRef.getData(maxSize: 3 * 2048 * 2048) { data, error in
@@ -1301,45 +1302,35 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    func getAllSharedScrapbooks(userID: String) async -> [Scrapbook] {
-        print("User ID: \(userID)")
-        var sharedScrapbooks: [Scrapbook] = []
-        var allScrapIDs: [String] = []
-        // Get all scrapIDs
+    func getAllSharedScrapbooks(userID: String) async -> [Scrapbook: [UserInfo]] {
+        var sharedScrapbooks: [Scrapbook : [UserInfo]] = [:]
         do {
-            let snapshot = try await db.collection("SCRAPBOOKS").getDocuments()
-            allScrapIDs = snapshot.documents.map { $0.documentID }
-        } catch {
-            print("Error getting all scrapbook IDs")
-        }
-        // Get all user scrapbook IDs
-        var userScrapIDs: [String] = []
-        do {
-            let document = try await db.collection("USERS").document(userID).getDocument()
-            let shelfIDs = (document.data()?["scrapbookShelves"] as? [String]) ?? []
-            for shelf in shelfIDs {
-                let shelfDocument = try await db.collection("SCRAPBOOK_SHELVES").document(shelf).getDocument()
-                let scrapIDs = (shelfDocument.data()?["scrapbooks"] as? [String]) ?? []
-                for astring in scrapIDs {
-                    userScrapIDs.append(astring)
-                }
-            }
-            print("User scrap IDS: \(userScrapIDs)")
-        } catch {
-            print("Error getting user scrapbooks")
-        }
-        // Get scrapbook from IDs
-        print("all scrap IDs: \(allScrapIDs)")
-        for scrapID in allScrapIDs {
-            if !userScrapIDs.contains(scrapID) && !scrapID.isEmpty {
-                let scrapbook = await loadScrapbook(scrapbookID: scrapID)
-                if let unwrapped = scrapbook {
-                    if unwrapped.isShared {
-                        sharedScrapbooks.append(unwrapped)
+            let snapshot = try await db.collection("USERS").getDocuments()
+            for userDoc in snapshot.documents {
+                let otherUserID = userDoc.documentID
+                let name = (userDoc.data()["name"] as? String) ?? "Unknown"
+                let profilePic = getProfilePic(uid: otherUserID)
+                if otherUserID == userID { continue }
+                let userDoc = try await db.collection("USERS").document(otherUserID).getDocument()
+                let shelfIDs = (userDoc.data()?["scrapbookShelves"] as? [String]) ?? []
+                for shelfID in shelfIDs {
+                    let shelfDoc = try await db.collection("SCRAPBOOK_SHELVES").document(shelfID).getDocument()
+                    let scrapbookIDs = (shelfDoc.data()?["scrapbooks"] as? [String]) ?? []
+                    for scrapbookID in scrapbookIDs {
+                        let scrapbook = await loadScrapbook(scrapbookID: scrapbookID)
+                        if let unwrapped = scrapbook {
+                            if !unwrapped.isShared { continue }
+                            let userInfo = (userID: otherUserID, name: name, profilePic: profilePic)
+                            sharedScrapbooks[unwrapped, default: []].append(userInfo)
+                            
+                        }
                     }
                 }
             }
+        } catch {
+            print("Error in get all shared scrap function")
         }
+        
         return sharedScrapbooks
     }
     

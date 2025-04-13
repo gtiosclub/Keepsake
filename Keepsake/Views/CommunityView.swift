@@ -10,7 +10,7 @@ import SwiftUI
 struct CommunityView: View {
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var fbVM: FirebaseViewModel
-    @State var communityScrapbooks: [Scrapbook] = []
+    @State var communityScrapbooks: [Scrapbook : [UserInfo]] = [:]
     @State var savedScrapbooks: [Scrapbook] = [] {
         didSet {
             userVM.updateSavedScrapbooks(scrapbooks: savedScrapbooks)
@@ -33,7 +33,7 @@ struct CommunityView: View {
         case "Saved":
             return savedScrapbooks
         default:
-            return communityScrapbooks
+            return Array(communityScrapbooks.keys)
         }
     }
     
@@ -101,35 +101,39 @@ struct CommunityView: View {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 25) {
                         ForEach(filteredScrapbooks) { scrapbook in
                             VStack(alignment: .center) {
-                                ZStack {
-                                    JournalCover(
-                                        template: scrapbook.template,
-                                        degrees: 0,
-                                        title: scrapbook.name,
-                                        showOnlyCover: $dummy,
-                                        offset: false
-                                    )
-                                    .transition(.identity)
-                                    .scaleEffect(scaleEffect)
-                                    .frame(
-                                        width: UIScreen.main.bounds.width * 0.4,
-                                        height: UIScreen.main.bounds.height * 0.25
-                                    )
-                                    SharpBookmark()
-                                        .rotationEffect(.degrees(180))
-                                        .frame(width: 20, height: 43)
-                                        .offset(x: 40, y: -77)
-                                        .foregroundStyle(
+                                NavigationLink {
+                                    CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
+                                } label: {
+                                    ZStack {
+                                        JournalCover(
+                                            template: scrapbook.template,
+                                            degrees: 0,
+                                            title: scrapbook.name,
+                                            showOnlyCover: $dummy,
+                                            offset: false
+                                        )
+                                        .transition(.identity)
+                                        .scaleEffect(scaleEffect)
+                                        .frame(
+                                            width: UIScreen.main.bounds.width * 0.4,
+                                            height: UIScreen.main.bounds.height * 0.25
+                                        )
+                                        SharpBookmark()
+                                            .rotationEffect(.degrees(180))
+                                            .frame(width: 20, height: 43)
+                                            .offset(x: 40, y: -77)
+                                            .foregroundStyle(
                                                 savedScrapbooks.contains(where: { $0.id == scrapbook.id }) ?
-                                                .yellow :
-                                                .white)
-                                        .onTapGesture(perform: {
-                                            if let index = savedScrapbooks.firstIndex(where: { $0.id == scrapbook.id }) {
-                                                savedScrapbooks.remove(at: index)
-                                            } else {
-                                                savedScrapbooks.append(scrapbook)
-                                            }
-                                        })
+                                                    .yellow :
+                                                        .white)
+                                            .onTapGesture(perform: {
+                                                if let index = savedScrapbooks.firstIndex(where: { $0.id == scrapbook.id }) {
+                                                    savedScrapbooks.remove(at: index)
+                                                } else {
+                                                    savedScrapbooks.append(scrapbook)
+                                                }
+                                            })
+                                    }
                                 }
                                 
                                 VStack(alignment: .center, spacing: 3) {
@@ -140,13 +144,38 @@ struct CommunityView: View {
                                         .multilineTextAlignment(.center)
                                     
                                     HStack(spacing: 5) {
-                                        Circle()
-                                            .fill(Color.gray.opacity(0.5))
-                                            .frame(width: 15, height: 15)
-                                        
-                                        Text("by User")
-                                            .font(.footnote)
-                                            .foregroundColor(.gray)
+                                        // Safely get user info
+                                        if let users = communityScrapbooks[scrapbook],
+                                           let firstUser = users.first {
+                                            if let profilePic = firstUser.profilePic {
+                                                Image(uiImage: profilePic)
+                                                    .resizable()
+                                                    .scaledToFill()
+                                                    .frame(width: 25, height: 25)
+                                                    .clipShape(Circle())
+                                            } else {
+                                                Image(systemName: "person.circle")
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .frame(width: 25, height: 25)
+                                            }
+                                            
+                                            // User Name
+                                            Text("by \(firstUser.name)")
+                                                .font(.footnote)
+                                                .foregroundColor(.gray)
+                                            
+                                        } else {
+                                            // Fallback when no user info available
+                                            Image(systemName: "person.circle")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 15, height: 15)
+                                            
+                                            Text("by User")
+                                                .font(.footnote)
+                                                .foregroundColor(.gray)
+                                        }
                                     }
                                 }
                                 .frame(maxWidth: .infinity)
@@ -232,8 +261,46 @@ struct SortOptionButton: View {
 
 #Preview {
     CommunityView(userVM: UserViewModel(user: User(id: "iddd", name: "Mr.Hance", username: "username", journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedJShelfID: UUID(), lastUsedSShelfID: UUID(), isJournalLastUsed: false, images: [:], communityScrapbooks: [
-        Scrapbook(name: "Scrap 1", id: UUID(), createdDate: todaysdate(), category: "General", isSaved: false, isShared: true, template: Template(name: "", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather, journalPages: []), pages: [], currentPage: 0),
-        Scrapbook(name: "Scrap 2", id: UUID(), createdDate: todaysdate(), category: "General", isSaved: false, isShared: true, template: Template(name: "", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather, journalPages: []), pages: [], currentPage: 0),
-        Scrapbook(name: "Scrap 3", id: UUID(), createdDate: todaysdate(), category: "General", isSaved: false, isShared: true, template: Template(name: "", coverColor: .red, pageColor: .white, titleColor: .black, texture: .leather, journalPages: []), pages: [], currentPage: 0)
-    ])), fbVM: FirebaseViewModel())
+        Scrapbook(
+            name: "Scrap 1",
+            id: UUID(),
+            createdDate: todaysdate(),
+            category: "General",
+            isSaved: false,
+            isShared: true,
+            template: Template(
+                name: "",
+                coverColor: .red,
+                pageColor: .white,
+                titleColor: .black,
+                texture: .leather,
+                journalPages: []
+            ),
+            pages: [],
+            currentPage: 0
+        ): [
+            (userID: "user1", name: "Bill", profilePic: UIImage(systemName: "person.cirle")) // String instead of UIImage
+        ],
+        Scrapbook(
+            name: "Scrap 2",
+            id: UUID(),
+            createdDate: todaysdate(),
+            category: "General",
+            isSaved: false,
+            isShared: true,
+            template: Template(
+                name: "",
+                coverColor: .red,
+                pageColor: .white,
+                titleColor: .black,
+                texture: .leather,
+                journalPages: []
+            ),
+            pages: [],
+            currentPage: 0
+        ): [
+            (userID: "user1", name: "Bill", profilePic: UIImage(systemName: "person.cirle")) // String instead of UIImage
+        ]
+    ]
+)), fbVM: FirebaseViewModel())
 }

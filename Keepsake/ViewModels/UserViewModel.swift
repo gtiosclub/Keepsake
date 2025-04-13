@@ -46,7 +46,7 @@ class UserViewModel: ObservableObject {
         self.user = user
     }
     
-    func getCommunityScrapbooks() -> [Scrapbook] {
+    func getCommunityScrapbooks() -> [Scrapbook : [UserInfo]] {
         return user.communityScrapbooks
     }
     
@@ -91,6 +91,8 @@ class UserViewModel: ObservableObject {
     func getSavedScrapbooks() -> [Scrapbook] {
         return user.savedScrapbooks
     }
+    
+    
     
     func getJournalIndex(journal: Journal, shelfIndex: Int) -> Int {
         var journals = getJournalShelves()[shelfIndex].journals

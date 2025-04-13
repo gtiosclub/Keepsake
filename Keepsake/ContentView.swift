@@ -32,7 +32,7 @@ struct ContentView: View {
                     }
                 }
                 .onAppear() {
-                    fbVM.getProfilePic()
+                    fbVM.getProfilePic(uid: userVM.user.id)
                     Task {
                         await fbVM.checkIfStreaksRestarted()
                     }
