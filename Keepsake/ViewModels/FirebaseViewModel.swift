@@ -355,9 +355,8 @@ class FirebaseViewModel: ObservableObject {
                         savedScrapbooks.append(unwrapped)
                     }
                 }
-                let communityScrapbooks = await getAllSharedScrapbooks(userID: uid)
-                print("communityScrapbooks: \(communityScrapbooks)")
-                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed, images: imageDict, communityScrapbooks: communityScrapbooks, savedScrapbooks: savedScrapbooks)
+                //let communityScrapbooks = await getAllSharedScrapbooks(userID: uid)
+                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed, images: imageDict, communityScrapbooks: [:], savedScrapbooks: savedScrapbooks)
                 
                 // Assign the user object to currentUser
                 await MainActor.run {
@@ -1387,6 +1386,47 @@ class FirebaseViewModel: ObservableObject {
         } catch {
             print("Error removing document: \(error)")
         }
+    }
+    
+    func getAllUserIDs() async -> [String] {
+        do {
+            let snapshot = try await db.collection("USERS").getDocuments()
+            return snapshot.documents.map { $0.documentID }
+        } catch {
+            return []
+        }
+    }
+    
+    func getUserSharedScrapbooks(userID: String) async -> [Scrapbook: [UserInfo]] {
+        var sharedScrapbooks: [Scrapbook : [UserInfo]] = [:]
+        do {
+            let docRef =  db.collection("USERS").document(userID)
+            let userDoc = try await docRef.getDocument()
+            guard userDoc.exists, let data = userDoc.data() else {
+                return [:]
+            }
+            let name = (data["name"] as? String) ?? "Unknown"
+            let profilePic = await getProfilePic(uid: userID)
+            let username = (data["username"] as? String) ?? "unknown"
+            let friends = (data["friends"] as? [String]) ?? []
+            let shelfIDs = (data["scrapbookShelves"] as? [String]) ?? []
+            for shelfID in shelfIDs {
+                let shelfDoc = try await db.collection("SCRAPBOOK_SHELVES").document(shelfID).getDocument()
+                let scrapbookIDs = (shelfDoc.data()?["scrapbooks"] as? [String]) ?? []
+                for scrapbookID in scrapbookIDs {
+                    let scrapbook = await loadScrapbook(scrapbookID: scrapbookID)
+                    if let unwrapped = scrapbook {
+                        if !unwrapped.isShared { continue }
+                        let userInfo = (userID: userID, name: name, username: username, profilePic: profilePic, friends: friends)
+                        sharedScrapbooks[unwrapped, default: []].append(userInfo)
+                        
+                    }
+                }
+            }
+        } catch {
+            print("error getting a shared scrapbook")
+        }
+        return sharedScrapbooks
     }
     
     func getAllSharedScrapbooks(userID: String) async -> [Scrapbook: [UserInfo]] {

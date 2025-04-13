@@ -69,6 +69,10 @@ struct CreateScrapbookView: View {
     @State var polaroidFrameSelected: Bool = false
     @State var flowerFrameSelected: Bool = false
     
+    @State var isPublished: Bool = false
+    @State var isShareShowing: Bool = false
+    @State var isCollaborating: Bool = false
+    
     @StateObject private var multipeerSession: MultipeerSession
     
     init(fbVM: FirebaseViewModel, userVM: UserViewModel, scrapbook: Scrapbook) {
@@ -113,13 +117,18 @@ struct CreateScrapbookView: View {
                 .gesture(magnificationGesture)
             
             VStack {
-                Spacer()
+                //Spacer()
                 if isEditing {
                     TextEditView
-                    Spacer()
+                    // Spacer()
                 } else if isCustomizingImage {
+                    Spacer()
                     ImageCustomizationView
+                } else if isShareShowing {
+                    Spacer()
+                    ShareView
                 } else {
+                    Spacer()
                     ToolBarView
                         .padding()
                         .padding(.bottom, 20)
@@ -132,14 +141,15 @@ struct CreateScrapbookView: View {
                 if let anchor = anchor {  // Replace `self.anchor` with your actual anchor
                     for entity in anchor.children {
                         if let textEntity = entity as? TextBoxEntity {
-                            let entry = ScrapbookEntry(id: UUID(), type: "text", position: [textEntity.position.x, textEntity.position.y, textEntity.position.z], scale: textEntity.scale.x, rotation: [textEntity.transform.rotation.vector.x, textEntity.transform.rotation.vector.y, textEntity.transform.rotation.vector.z, textEntity.transform.rotation.vector.w], text: textEntity.getText(), imageURL: "nil")
+                            print("text color \(textEntity.getText()) \(textEntity.currentTextColor)")
+                            let entry = ScrapbookEntry(id: UUID(), type: "text", position: [textEntity.position.x, textEntity.position.y, textEntity.position.z], scale: textEntity.scale.x, rotation: [textEntity.transform.rotation.vector.x, textEntity.transform.rotation.vector.y, textEntity.transform.rotation.vector.z, textEntity.transform.rotation.vector.w], text: textEntity.getText(), imageURL: "nil", font: textEntity.currentFont, fontSize: Int(textEntity.currentSize), isBold: textEntity.currentIsBold, isItalic: textEntity.currentIsItalic, textColor: colorToFloatArray(textEntity.currentTextColor), backgroundColor: cgColorToFloatArray(textEntity.currentBackgroundColor))
                             
                             userVM.updateScrapbookEntry(scrapbook: scrapbook, pageNum: 0, newEntry: entry)
-                        } else if let imageEntity = entity as? ImageEntity {
+                        } else if let imageEntity = entity as? FramedImageEntity {
                             let url = await fbVM.convertImageToURL(image: imageEntity.image)
                         
                             
-                            let entry = ScrapbookEntry(id: UUID(), type: "image", position: [imageEntity.position.x, imageEntity.position.y, imageEntity.position.z], scale: imageEntity.scale.x, rotation: [imageEntity.transform.rotation.vector.x, imageEntity.transform.rotation.vector.y, imageEntity.transform.rotation.vector.z, imageEntity.transform.rotation.vector.w], text: "", imageURL: url)
+                            let entry = ScrapbookEntry(id: UUID(), type: "image", position: [imageEntity.position.x, imageEntity.position.y, imageEntity.position.z], scale: imageEntity.scale.x, rotation: [imageEntity.transform.rotation.vector.x, imageEntity.transform.rotation.vector.y, imageEntity.transform.rotation.vector.z, imageEntity.transform.rotation.vector.w], text: "", imageURL: url, frame: (imageEntity.frameType == .classic) ? "classic" : "polaroid")
                             
                             userVM.updateScrapbookEntry(scrapbook: scrapbook, pageNum: 0, newEntry: entry)
                         }
@@ -169,9 +179,10 @@ struct CreateScrapbookView: View {
             for entry in scrapbookPage.entries {
                 var entity = Entity()
                 if entry.type == "text" {
-                    entity = await TextBoxEntity(text: entry.text ?? "[Blank]")
+                    entity = await TextBoxEntity(text: entry.text ?? "[Blank]", font: entry.font, size: CGFloat(entry.fontSize), isBold: entry.isBold, isItalic: entry.isItalic, isUnderlined: false, textColor: Color(red: Double(entry.textColor[0]), green: Double(entry.textColor[1]), blue: Double(entry.textColor[2])), backgroundColor: CGColor(red: Double(entry.backgroundColor[0]), green: Double(entry.backgroundColor[1]), blue: Double(entry.backgroundColor[2]), alpha: 1.0))
+                    
                 } else if entry.type == "image" {
-                    entity = await ImageEntity(image: fbVM.getImageFromURL(urlString: entry.imageURL ?? "") ?? UIImage())
+                    entity = await FramedImageEntity(image: fbVM.getImageFromURL(urlString: entry.imageURL ?? "") ?? UIImage(), frameType: (entry.frame == "classic") ? FrameType.classic : FrameType.polaroid)
                 }
                 
                 entity.name = "\(counter)"
@@ -291,7 +302,7 @@ struct CreateScrapbookView: View {
                     }.disabled(selectedEntity == nil)
                     
                     Button {
-                        
+                        isShareShowing = true
                     } label : {
                         ZStack {
                             Circle()
@@ -590,6 +601,53 @@ struct CreateScrapbookView: View {
         .padding()
     }
     
+    private var ShareView: some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .cornerRadius(20, corners: [.topLeft, .topRight])
+            VStack {
+                Text("Share")
+                    .font(.system(size: 30, weight: .bold))
+                Spacer()
+                Toggle(isOn: $isPublished) {
+                    Text("Publish to Community")
+                        .font(.system(size: 20))
+                }
+                HStack {
+                    Text("Anyone will be able to view this Scrapbook if published")
+                        .font(.system(size: 12, weight: .bold))
+                        .italic()
+                    Spacer()
+                }.padding(.vertical, 3)
+                Spacer()
+                Toggle(isOn: $isCollaborating) {
+                    Text("Enable Real-time Collaboration")
+                        .font(.system(size: 20))
+                }
+                HStack {
+                    Text("People around you will be able to work on this Scrapbook")
+                        .font(.system(size: 12, weight: .bold))
+                        .italic()
+                    Spacer()
+                }.padding(.vertical, 3)
+                Spacer()
+            }.padding()
+            VStack {
+                HStack {
+                    Spacer()
+                    Button {
+                        isShareShowing = false
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.title2)
+                    }
+                }.padding()
+                Spacer()
+            }.padding(10)
+            
+        }.frame(maxWidth: .infinity, maxHeight: 300)
+    }
     
     // drag gesture to move the entities around in a sphere-like shape
     // gets change in 2D drag distance and converts that into 3D transformations
@@ -704,6 +762,30 @@ struct CreateScrapbookView: View {
         }
     }
     
+    func colorToFloatArray(_ color: Color) -> [Float] {
+        let uiColor = UIColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        return [Float(red), Float(green), Float(blue)]
+    }
+    
+    func cgColorToFloatArray(_ color: CGColor) -> [Float] {
+        // Convert the color to a compatible RGB color space
+        guard let rgbColor = color.converted(to: CGColorSpace(name: CGColorSpace.sRGB)!, intent: .defaultIntent, options: nil),
+              let components = rgbColor.components else {
+            return [0, 0, 0, 1]
+        }
+
+        // Handle both RGB and RGBA (e.g., RGB = 3 components, RGBA = 4 components)
+        if components.count == 4 {
+            return components.map { Float($0) }
+        } else if components.count == 3 {
+            return components.map { Float($0) } + [1.0] // Assume alpha = 1.0
+        } else {
+            return [0, 0, 0, 1]
+        }
+    }
+    
     func updateCollisionShape(for entity: Entity, scale: Float) {
         // Create new appropriately sized collision component
         if let textEntity = entity as? TextBoxEntity {
@@ -757,22 +839,3 @@ struct RoundedCorner: Shape {
         return Path(path.cgPath)
     }
 }
-
-//struct ShareView: View {
-//    var body: some View {
-//        VStack {
-//            Spacer()
-//            ZStack {
-//                Rectangle()
-//                    .fill(.ultraThinMaterial)
-//                    .cornerRadius(20, corners: [.topLeft, .topRight])
-//                
-//            }
-//        }
-//    }
-//}
-//
-//#Preview {
-//    ShareView()
-//        .frame(maxWidth: .infinity, maxHeight: 600)
-//}

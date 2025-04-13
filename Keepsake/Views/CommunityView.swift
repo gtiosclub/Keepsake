@@ -19,6 +19,9 @@ struct CommunityView: View {
             }
         }
     }
+    @State var indexedScrapbooks: [Scrapbook] = []
+    @State private var isLoading = false
+    @State private var error: Error?
     @State var scaleEffect = 0.4
     @State private var searchText = ""
     //@StateObject private var viewModel = UserLookupViewModel()
@@ -28,12 +31,13 @@ struct CommunityView: View {
     
     let viewTypes = ["Public Works", "Saved"] // Picker options
     
+    
     var filteredScrapbooks: [Scrapbook] {
         switch selectedViewType {
         case "Saved":
             return savedScrapbooks
         default:
-            return Array(communityScrapbooks.keys)
+            return indexedScrapbooks
         }
     }
     
@@ -182,6 +186,14 @@ struct CommunityView: View {
                             }
                             .padding(.bottom, 20)
                         }
+                        if isLoading {
+                            ProgressView()
+                                .frame(
+                                    width: UIScreen.main.bounds.width * 0.4,
+                                    height: UIScreen.main.bounds.height * 0.25
+                                )
+                                .padding(.bottom, 20)
+                        }
                     }
                     .padding(.horizontal, 20)
                 }
@@ -192,7 +204,64 @@ struct CommunityView: View {
         .onAppear() {
             communityScrapbooks = userVM.getCommunityScrapbooks()
             savedScrapbooks = userVM.getSavedScrapbooks()
+            Task {
+                await loadCommunityScrapbooks()
+            }
         }
+        
+        
+    }
+    
+    private func loadCommunityScrapbooks() async {
+        isLoading = true
+        error = nil
+        
+        do {
+            // Get all user IDs
+            let userIDs = try await fbVM.getAllUserIDs()
+            print("UserIDs: \(userIDs)")
+            
+            // Process each user to get their shared scrapbooks
+            for userID in userIDs {
+                do {
+                    let scrapbooks = try await fbVM.getUserSharedScrapbooks(userID: userID)
+                    
+                    // Merge the new scrapbooks into our existing dictionary
+                    await MainActor.run {
+                        for (scrapbook, userInfos) in scrapbooks {
+                            if !indexedScrapbooks.contains(where: { $0.id == scrapbook.id }) {
+                                indexedScrapbooks.append(scrapbook)
+                            }
+                            if var existingUsers = communityScrapbooks[scrapbook] {
+                                let newUserInfos = userInfos.filter { newUser in
+                                    !existingUsers.contains { $0.userID == newUser.userID }
+                                }
+                                existingUsers.append(contentsOf: newUserInfos)
+                                communityScrapbooks[scrapbook] = existingUsers
+                            } else {
+                                communityScrapbooks[scrapbook] = userInfos
+                            }
+                        }
+                    }
+                    
+                } catch {
+                    print("Error fetching scrapbooks for user \(userID): \(error)")
+                    // Continue with next user even if one fails
+                }
+            }
+            
+            // Update the userVM with the final collection
+            await MainActor.run {
+                userVM.setCommunityScrapbooks(scrapbooks: communityScrapbooks)
+            }
+            
+        } catch {
+            await MainActor.run {
+                self.error = error
+            }
+        }
+        
+        isLoading = false
     }
     
     var profileImage: some View {

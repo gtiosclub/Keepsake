@@ -39,6 +39,7 @@ enum Texture: String {
     case green
     case snoopy
     case stars
+    case blank
     
     func toDictionary() -> [String: Any] {
         switch self {
@@ -60,6 +61,8 @@ enum Texture: String {
             return ["type": "snoopy"]
         case .stars:
             return ["type": "stars"]
+        case .blank:
+            return ["type": "blank"]
         }
     }
 
@@ -95,11 +98,11 @@ struct Template {
     
     // Overloaded initializers
     init(coverColor: Color, pageColor: Color, titleColor: Color) {
-        self.init(name: "Default", coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: .leather, journalPages: nil)
+        self.init(name: "Default", coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: .blank, journalPages: nil)
     }
 
     init() {
-        self.init(name: "Default", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .leather, journalPages: nil)
+        self.init(name: "Default", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .blank, journalPages: nil)
     }
 }
 

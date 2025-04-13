@@ -10,7 +10,7 @@ struct JournalFormView: View {
     @State var colorArr: [Double] = [1.0, 0.7686, 0.7294]
     @State private var pageColor: Color = .white
     @State private var selectedTemplate: Template? = nil
-    @State private var selectedTexture: Texture = .leather
+    @State private var selectedTexture: Texture = .blank
     @State private var journalPages: [JournalPage]? = nil
     @State private var selectedTab: String = "cover"
     @State private var showOnlyCover: Bool = false
