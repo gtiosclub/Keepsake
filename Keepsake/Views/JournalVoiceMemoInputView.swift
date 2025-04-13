@@ -19,6 +19,7 @@ struct JournalVoiceMemoInputView: View {
     var entryIndex: Int
     var pageIndex: Int
     @State var title: String = ""
+    var textfieldPrompt: String = "Enter Title"
     @State var date: String = ""
     @Binding var inEntry: EntryType
     @ObservedObject var audioRecording: AudioRecording
@@ -26,79 +27,101 @@ struct JournalVoiceMemoInputView: View {
     var entry: VoiceEntry
     @State var showPromptSheet: Bool = false
     @State var selectedPrompt: String? = ""
+    @State private var isSaving: Bool = false
+    
+    
     var body: some View {
         NavigationStack {
-            HStack {
-                Button {
-                    Task {
-                        await MainActor.run {
-                            inEntry = .openJournal
+            ZStack {
+                VStack {
+                    HStack {
+                        Button {
+                            Task {
+                                await MainActor.run {
+                                    inEntry = .openJournal
+                                }
+                            }
+                        }
+                        label: {
+                            Image(systemName: "chevron.left")
+                                .foregroundStyle(.black)
+                        }.padding(UIScreen.main.bounds.width * 0.025)
+                        Spacer()
+                        Button {
+                            Task {
+                                isSaving = true
+                                let newEntry: VoiceEntry = VoiceEntry(date: date, title: title, audio: audioRecording.getAudioData(), transcription: audioRecording.transcript, width: entry.width, height: entry.height, isFake: false, color: entry.color)
+                                userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
+                                
+                                await fbVM.updateJournalPage(entries: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex].entries, journalID: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).id, pageNumber: pageIndex)
+                                
+                                await MainActor.run {
+                                    isSaving = false
+                                    inEntry = .openJournal
+                                }
+                            }
+                        }
+                        label: {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(.black)
+                        }.padding(UIScreen.main.bounds.width * 0.025)
+                    }
+                    
+                    TextField(textfieldPrompt, text: $title, axis: .vertical)
+                        .fontWeight(.bold)
+                        .font(.title)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 2)
+                    Text(date).font(.subheadline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                    
+                    VoiceRecordingView(audioRecording: audioRecording)
+                    //                .frame(width: UIScreen.main.bounds.width / 5)
+                        .font(.title)
+                    
+                    if selectedPrompt != nil {
+                        if !selectedPrompt!.isEmpty {
+                            let trimmedPrompt: String = selectedPrompt!.trimmingCharacters(in: .whitespacesAndNewlines)
+                            Text(trimmedPrompt)
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                                .padding()
+                                .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.1)))
+                                .padding()
                         }
                     }
-                }
-                label: {
-                    Image(systemName: "chevron.left")
-                        .foregroundStyle(.black)
-                }.padding(UIScreen.main.bounds.width * 0.025)
-                Spacer()
-                Button {
-                    Task {
-                        let newEntry: VoiceEntry = VoiceEntry(date: date, title: title, audio: audioRecording.getAudioData(), transcription: audioRecording.transcript, width: entry.width, height: entry.height, isFake: false, color: entry.color)
-                        userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
-                        
-                        await fbVM.updateJournalPage(entries: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex].entries, journalID: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).id, pageNumber: pageIndex)
-                        
-                        await MainActor.run {
-                            inEntry = .openJournal
+                    ScrollView {
+                        let transcript = audioRecording.transcript == "" ? (transcription == "" ? "Tap the microphone to start transcribing" : transcription) : audioRecording.transcript
+                        Text(transcript)
+                            .padding()
+                            .font(.body)
+                            .foregroundColor(.gray)
+                            .lineLimit(nil)
+                    }
+                    HStack() {
+                        Button {
+                            showPromptSheet = true
+                        } label: {
+                            Label("need suggestions?", systemImage: "lightbulb.max")
+                                .foregroundColor(Color(red: 127/255, green: 210/255, blue: 231/255))
                         }
+                        .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                        .padding(.bottom, 20)
+                        Spacer()
                     }
                 }
-                label: {
-                    Image(systemName: "checkmark")
-                        .foregroundStyle(.black)
-                }.padding(UIScreen.main.bounds.width * 0.025)
-            }
-            HStack {
-                Text("voice memo")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-                    .padding()
-                Spacer()
-            }
-            VoiceRecordingView(audioRecording: audioRecording)
-//                .frame(width: UIScreen.main.bounds.width / 5)
-                .font(.title)
-            
-            if selectedPrompt != nil {
-                if !selectedPrompt!.isEmpty {
-                    let trimmedPrompt: String = selectedPrompt!.trimmingCharacters(in: .whitespacesAndNewlines)
-                    Text(trimmedPrompt)
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                        .padding()
-                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.1)))
-                        .padding()
+                
+                if isSaving {
+                    VStack {
+                        ProgressView("Saving...")
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(12)
+                    }
                 }
-            }
-            ScrollView {
-                let transcript = audioRecording.transcript == "" ? (transcription == "" ? "Tap the microphone to start transcribing" : transcription) : audioRecording.transcript
-                Text(transcript)
-                    .padding()
-                    .font(.body)
-                    .foregroundColor(.gray)
-                    .lineLimit(nil)
-            }
-            HStack() {
-                Button {
-                    showPromptSheet = true
-                } label: {
-                    Label("need suggestions?", systemImage: "lightbulb.max")
-                        .foregroundColor(Color(red: 127/255, green: 210/255, blue: 231/255))
-                }
-                .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-                .padding(.bottom, 20)
-                Spacer()
             }
         }.onAppear() {
             title = entry.title
