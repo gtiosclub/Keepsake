@@ -178,7 +178,7 @@ struct AddEntryButtonView: View {
                         Button {
                             if journal.pages[journal.currentPage].entries.count <= 8 {
                                 
-                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: ConversationEntry(date: todaysdate(), title: "Echo 🌐", conversationLog: [], width: 1, height: 1, color: randomColorOffset(
+                                selectedEntry = userVM.newAddJournalEntry(journal: journal, pageNum: displayPage, entry: ConversationEntry(date: todaysdate(), title: "", conversationLog: [], width: 1, height: 1, color: randomColorOffset(
                                     from: journal.template.coverColor.toRGBArray().map(Double.init)
                                 )))
                                 

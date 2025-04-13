@@ -8,7 +8,8 @@ import SwiftUI
 
 struct AudioFilesView: View {
     @State var remindersWithAudio: [(reminder: Reminder, audioUrl: String)]
-    @State private var isChecked: Bool = false
+    @State private var checkedStates: [String: Bool] = [:]
+
     
 
     var body: some View {
@@ -26,12 +27,19 @@ struct AudioFilesView: View {
                         }) {
                             HStack {
                                 Button(action: {
-                                    isChecked.toggle()
-                                    Connectivity.shared.updateIsCheckedInFirestore(reminderId: reminderWithAudio.reminder.id ?? "BHvWzK2PF7YBA0cyiyYwOPUbzof2/", isChecked: isChecked)
+                                    let id = reminderWithAudio.reminder.id ?? "defaultID"
+                                    checkedStates[id] = !(checkedStates[id] ?? false)
+
+                                    Connectivity.shared.updateIsCheckedInFirestore(
+                                        reminderId: id,
+                                        isChecked: checkedStates[id] ?? false
+                                    )
                                 }) {
-                                    Image(systemName: isChecked ? "checkmark.circle.fill" : "circle")
-                                        .foregroundColor(isChecked ? Color.pink : Color.gray)
-                                        .font(.title2)
+                                    Image(systemName: (checkedStates[reminderWithAudio.reminder.id ?? "defaultID"] ?? false)
+                                          ? "checkmark.circle.fill"
+                                          : "circle")
+                                    .foregroundColor((checkedStates[reminderWithAudio.reminder.id ?? "defaultID"] ?? false) ? Color.pink : Color.gray)
+                                    .font(.title2)
                                 }
 
                                 Image(systemName: "play.circle.fill")
@@ -47,9 +55,7 @@ struct AudioFilesView: View {
                                     Text("Reminder Date: \(reminderWithAudio.reminder.date, style: .date)")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
-                                    Text("Prompt: \(reminderWithAudio.reminder.prompt)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
+                                    
                                 }
                                 Button(action: {
                                     Connectivity.shared.deleteReminder(reminderId: reminderWithAudio.reminder.id ?? "BHvWzK2PF7YBA0cyiyYwOPUbzof2/")
