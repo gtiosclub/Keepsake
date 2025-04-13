@@ -830,7 +830,7 @@ class FirebaseViewModel: ObservableObject {
                 let streaks = data?["streaks"] as? Int ?? 0
                 let lastJournaledTimestamp = data?["lastJournaled"] as? Timestamp
                 let lastJournaledDate = lastJournaledTimestamp?.dateValue() ?? Date.distantPast
-                if streaks != 0 && Date().timeIntervalSince(lastJournaledDate) > 24 * 60 * 60 {
+                if streaks != 0 && Date().timeIntervalSince(lastJournaledDate) > 48 * 60 * 60 {
                     currentUser?.lastJournaled = Date().timeIntervalSince1970
                     try await userRef.updateData([
                         "streaks": 0
