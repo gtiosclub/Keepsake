@@ -537,13 +537,14 @@ class AIViewModel: ObservableObject {
         do {
             let firstResponse = try await openAIAPIKey.sendMessage(text: startPrompt, model: gptModel!)
             conversationHistory.append("GPT: \(firstResponse)")
+            isLoading = false
             
             await FirebaseVM.addConversationLog(text: conversationHistory, journalEntry: entry.id)
             
         } catch {
             print("Error: \(error.localizedDescription)")
         }
-        isLoading = false
+        
     }
     
     func sendMessage(entry: JournalEntry) async {
@@ -569,12 +570,13 @@ class AIViewModel: ObservableObject {
         do {
             let gptResponse = try await openAIAPIKey.sendMessage(text: chatPrompt, model: gptModel!)
             conversationHistory.append("GPT: \(gptResponse)")
+            isLoading = false
             
             await FirebaseVM.addConversationLog(text: conversationHistory, journalEntry: entry.id)
         } catch {
             print("Error: \(error.localizedDescription)")
         }
-        isLoading = false
+        
     }
     
 }
