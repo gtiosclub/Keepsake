@@ -12,12 +12,15 @@ struct isLoggedInView: View {
     @EnvironmentObject var reminderViewModel: RemindersViewModel
     @EnvironmentObject var aiViewModel: AIViewModel
     @State private var navigateToHomeFromNotification = false
+    @State private var navigateToProfile = false
     var body: some View {
         NavigationStack {
             Group {
                 if let user = viewModel.currentUser {
                     if navigateToHomeFromNotification {
                         HomeView(userVM: UserViewModel(user: user), aiVM: aiViewModel, fbVM: viewModel)
+                    } else if navigateToProfile {
+                        ProfileView()
                     } else {
                         ZStack {
                             ContentView(userVM: UserViewModel(user: user), aiVM: aiViewModel, fbVM: viewModel)
@@ -31,9 +34,12 @@ struct isLoggedInView: View {
                     LoginView()
                 }
             }
-            .onReceive(NotificationCenter.default.publisher(for: .navigateToHome)) { _ in
-                navigateToHomeFromNotification = true
-            }
+//            .onReceive(NotificationCenter.default.publisher(for: .navigateToHome)) { _ in
+//                navigateToHomeFromNotification = true
+//            }
+//            .onReceive(NotificationCenter.default.publisher(for: .navigateToHome)) { _ in
+//                navigateToProfile = true
+//            }
         }
     }
 }

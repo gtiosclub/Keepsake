@@ -23,8 +23,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                     willPresent notification: UNNotification,
                                     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-            completionHandler([.banner, .sound]) // Show notification even in foreground
+            completionHandler([.banner, .list, .sound, .badge])
     }
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+
+        
+            let category = response.notification.request.content.categoryIdentifier
+            DispatchQueue.main.async {
+                switch category {
+                        case "JOURNAL_CATEGORY":
+                            NotificationCenter.default.post(name: .navigateToHome, object: nil)
+                        case "PROFILE_REMINDER_CATEGORY":
+                            NotificationCenter.default.post(name: .navigateToProfile, object: nil)
+                        default:
+                            break
+                        }
+            }
+        
+        completionHandler()
+    }
+    
+
 
 }
 func registerNotificationActions() {
@@ -36,8 +57,12 @@ func registerNotificationActions() {
                                           actions: [recordAction],
                                           intentIdentifiers: [],
                                           options: [])
+    let profileReminderCategory = UNNotificationCategory(identifier: "PROFILE_REMINDER_CATEGORY",
+                                                             actions: [],
+                                                             intentIdentifiers: [],
+                                                             options: [])
 
-    UNUserNotificationCenter.current().setNotificationCategories([category])
+    UNUserNotificationCenter.current().setNotificationCategories([category, profileReminderCategory])
 }
 func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
@@ -60,6 +85,7 @@ struct KeepsakeApp: App {
     @StateObject private var aiViewModel = AIViewModel()
       init() {
           requestNotificationPermission()
+          
       }
     var body: some Scene {
         WindowGroup {
@@ -69,5 +95,7 @@ struct KeepsakeApp: App {
                  .environmentObject(aiViewModel)
 
         }
+        
     }
+        
 }
