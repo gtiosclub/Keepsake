@@ -17,8 +17,15 @@ struct ScrapbookEntry: Codable {
     let rotation: [Float]
     let text: String?
     let imageURL: String?
+    let frame: String
+    let font: String
+    let fontSize: Int
+    let isBold: Bool
+    let isItalic: Bool
+    let textColor: [Float]
+    let backgroundColor: [Float]
 
-    init(id: UUID, type: String, position: [Float], scale: Float, rotation: [Float], text: String?, imageURL: String?) {
+    init(id: UUID, type: String, position: [Float], scale: Float, rotation: [Float], text: String?, imageURL: String?, frame: String = "classic", font: String = "Helvetica", fontSize: Int = 200, isBold: Bool = false, isItalic: Bool = false, textColor: [Float] = [0, 0, 0], backgroundColor: [Float] = [1, 1, 1]) {
         self.id = id
         self.type = type
         self.position = position
@@ -26,19 +33,15 @@ struct ScrapbookEntry: Codable {
         self.rotation = rotation
         self.text = text
         self.imageURL = imageURL
+        self.frame = frame
+        self.font = font
+        self.fontSize = fontSize
+        self.isBold = isBold
+        self.isItalic = isItalic
+        self.textColor = textColor
+        self.backgroundColor = backgroundColor
     }
 }
-//struct CodableQuaternion: Codable {
-//    let vector: SIMD4<Float> // simd_quatf is stored as a SIMD4
-//
-//    init(_ quaternion: simd_quatf) {
-//        self.vector = quaternion.vector
-//    }
-//
-//    var quaternion: simd_quatf {
-//        return simd_quatf(vector: vector)
-//    }
-//}
 
 extension ScrapbookEntry: CustomStringConvertible {
     func toDictionary(scrapbookID: UUID) -> [String: Any] {
@@ -50,7 +53,14 @@ extension ScrapbookEntry: CustomStringConvertible {
             "scale": scale,
             "rotation": rotation,
             "text": text as Any,
-            "imageURL": imageURL as Any
+            "imageURL": imageURL as Any,
+            "frame": frame,
+            "font": font,
+            "fontSize": fontSize,
+            "isBold": isBold,
+            "isItalic": isItalic,
+            "textColor": textColor,
+            "backgroundColor": backgroundColor
         ]
     }
     
@@ -62,7 +72,14 @@ extension ScrapbookEntry: CustomStringConvertible {
             "scale": scale,
             "rotation": rotation,
             "text": text as Any,
-            "imageURL": imageURL as Any
+            "imageURL": imageURL as Any,
+            "frame": frame,
+            "font": font,
+            "fontSize": fontSize,
+            "isBold": isBold,
+            "isItalic": isItalic,
+            "textColor": textColor,
+            "backgroundColor": backgroundColor
         ]
     }
     
@@ -104,7 +121,31 @@ extension ScrapbookEntry: CustomStringConvertible {
         let text = dict["text"] as? String
         let imageURL = dict["imageURL"] as? String
         
-        return ScrapbookEntry(id: id, type: type, position: floatPosition, scale: scale, rotation: floatRotation, text: text, imageURL: imageURL)
+        guard let frame = dict["frame"] as? String,
+              let font = dict["font"] as? String,
+              let fontSize = dict["fontSize"] as? Int,
+              let isBold = dict["isBold"] as? Bool,
+              let isItalic = dict["isItalic"] as? Bool else {
+            return nil
+        }
+        
+        guard let rawTextColor = dict["textColor"] as? [Any],
+              let textColor = rawTextColor as? [NSNumber] else {
+            return nil
+        }
+        
+        let floatTextColor = textColor.map { $0.floatValue }
+        
+        guard let rawBackgroundColor = dict["backgroundColor"] as? [Any],
+              let backgroundColor = rawBackgroundColor as? [NSNumber] else {
+            return nil
+        }
+        
+        let floatBackgroundColor = backgroundColor.map { $0.floatValue }
+        
+        
+        
+        return ScrapbookEntry(id: id, type: type, position: floatPosition, scale: scale, rotation: floatRotation, text: text, imageURL: imageURL, frame: frame, font: font, fontSize: fontSize, isBold: isBold, isItalic: isItalic, textColor: floatTextColor, backgroundColor: floatBackgroundColor)
     }
     
     var description: String {

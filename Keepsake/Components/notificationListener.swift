@@ -35,6 +35,7 @@ struct NotificationView: View {
     
 
 }
+
 //func scheduleReminderNotification(for reminder: Reminder) {
 //    let content = UNMutableNotificationContent()
 //    content.title = "Reminder to Journal"

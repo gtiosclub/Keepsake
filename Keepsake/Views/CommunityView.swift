@@ -6,109 +6,239 @@
 //
 import SwiftUI
 
-var journals: [any Book] = [
-    Journal(name: "Journal 1", createdDate: "2/2/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .red, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 2),
-//    Scrapbook(name: "Scrapbook 1", createdDate: "5/7/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .cyan, pageColor: .white, titleColor: .black)),
-    Journal(name: "Journal 2", createdDate: "2/3/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .blue, pageColor: .yellow, titleColor: .black), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
-//    Scrapbook(name: "Scarpbook 2", createdDate: "5/4/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .orange, pageColor: .white, titleColor: .black)),
-    Journal(name: "Journal 3", createdDate: "2/4/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .gray, pageColor: .brown, titleColor: .yellow), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
-    Journal(name: "Journal 4", createdDate: "2/5/25", entries: [], category: "entry2", isSaved: true, isShared: true, template: Template(coverColor: .green, pageColor: .white, titleColor: .black), pages: [JournalPage(number: 1), JournalPage(number: 2), JournalPage(number: 3), JournalPage(number: 4), JournalPage(number: 5)], currentPage: 0),
-//    Scrapbook(name: "Scarpbook 3", createdDate: "5/9/25", entries: [], category: "category", isSaved: true, isShared: true, template: Template(coverColor: .black, pageColor: .white, titleColor: .white))
-]
-
-var sortOptions: [String] = ["↑↓", "Your Friends", "Travel", "Near You"]
 
 struct CommunityView: View {
+    @ObservedObject var userVM: UserViewModel
+    @ObservedObject var fbVM: FirebaseViewModel
+    @State var communityScrapbooks: [Scrapbook : [UserInfo]] = [:]
+    @State var savedScrapbooks: [Scrapbook] = [] {
+        didSet {
+            userVM.updateSavedScrapbooks(scrapbooks: savedScrapbooks)
+            Task {
+                await fbVM.updateSavedScrapbooks(userID: userVM.user.id, newScrapbooks: savedScrapbooks)
+            }
+        }
+    }
     @State var scaleEffect = 0.4
     @State private var searchText = ""
-    @StateObject private var viewModel = UserLookupViewModel()
+    //@StateObject private var viewModel = UserLookupViewModel()
     @State var dummy: Bool = false
+    @State var retrievedImage: UIImage?
+    @State private var selectedViewType = "Public Works" // New state for picker
+    
+    let viewTypes = ["Public Works", "Saved"] // Picker options
+    
+    var filteredScrapbooks: [Scrapbook] {
+        switch selectedViewType {
+        case "Saved":
+            return savedScrapbooks
+        default:
+            return Array(communityScrapbooks.keys)
+        }
+    }
+    
     var body: some View {
         NavigationStack {
-            ScrollView (.vertical, showsIndicators: false) {
-                VStack (alignment: .leading) {
-                    HStack {
-                        Text("Your Community")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .padding()
-                    }
-                    NavigationLink(destination: UserSearchView()) {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 20) {
+                    // Header
+                    VStack {
                         HStack {
-                            
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.gray)
-                            
-
-                            Text("Search for users...")
-                                .foregroundColor(.gray)
-                                
+                            Text("Community")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             Spacer()
-                            
-                            
+                            profileImage
+                        }.padding(.horizontal, 20)
+                        
+                        // Search bar
+                        NavigationLink(destination: UserSearchView(viewModel: fbVM, userVM: userVM)) {
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundColor(.gray)
+                                Text("Search for users...")
+                                    .foregroundColor(.gray)
+                                Spacer()
+                            }
+                            .padding(12)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(25)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(Color.black, lineWidth: 0.5)
+                            )
+                            .padding(.horizontal, 20)
                         }
-                        .padding(12)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(25)
-                        .overlay( // Adding a black outline
-                            RoundedRectangle(cornerRadius: 25)
-                                .stroke(Color.black, lineWidth: 0.5)
-                        )
-                        .padding(.horizontal)
                     }
-                    .padding(.bottom)
-
+                    .padding(.top, 10)
                     
-                    
-                    // Sorting buttons
-                    HStack (spacing: 10){
-                        ForEach(sortOptions, id:\.self) { option in
-                            SortOptionButton(label: option) {print("option")}}
+                    // Picker for view type
+                    HStack(spacing: 15) {  // Reduced from 30 to 20
+                        ForEach(viewTypes, id: \.self) { type in
+                            Button(action: {
+                                selectedViewType = type
+                            }) {
+                                VStack(spacing: 4) {
+                                    Text(type)
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(selectedViewType == type ? .primary : .gray)
+                                    
+                                    Capsule()
+                                        .frame(height: 2)
+                                        .foregroundColor(selectedViewType == type ? .primary : .clear)
+                                        .frame(width: type == "Public Works" ? 100 : 70)  // Custom width for each underline
+                                }
+                                .frame(width: 100)  // Fixed width for each option
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 8)
                     
-                    ForEach(0..<(journals.count / 2) + (journals.count % 2), id: \.self) { row in
-                        // logic because Journals are not currently from db
-                        HStack(spacing: 25) {
-                            ForEach(0..<2, id: \.self) { column in
-                                let index = row * 2 + column
-                                if index < journals.count {
-                                    VStack(alignment: .leading) {
-                                        //                                    Rectangle()
-                                        //                                        .fill(Color.gray.opacity(0.5))
-                                        //                                        .frame(width: 150, height: 200)
-                                        //                                        .cornerRadius(10)
-                                        JournalCover(template: journals[index].template, degrees: 0, title: journals[index].name, showOnlyCover: $dummy, offset: false)
-                                            .scaleEffect(scaleEffect)
-                                            .frame(width: UIScreen.main.bounds.width * 0.92 * scaleEffect, height: UIScreen.main.bounds.height * 0.56 * scaleEffect)
-                                        VStack(alignment: .leading, spacing: 3) {
-                                            Text(journals[index].name)
-                                                .font(.headline)
-                                                .fontWeight(.medium)
-                                                .foregroundColor(.primary)
-                                            HStack(spacing: 5) {
-                                                Circle()
-                                                    .fill(Color.gray.opacity(0.5))
-                                                    .frame(width: 15, height: 15)
-                                                
-                                                Text("by User")
-                                                    .font(.footnote)
-                                                    .foregroundColor(.gray)
+                    // Scrapbooks grid
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 25) {
+                        ForEach(filteredScrapbooks) { scrapbook in
+                            VStack(alignment: .center) {
+                                NavigationLink {
+                                    CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
+                                } label: {
+                                    ZStack {
+                                        JournalCover(
+                                            template: scrapbook.template,
+                                            degrees: 0,
+                                            title: scrapbook.name,
+                                            showOnlyCover: $dummy,
+                                            offset: false
+                                        )
+                                        .transition(.identity)
+                                        .scaleEffect(scaleEffect)
+                                        .frame(
+                                            width: UIScreen.main.bounds.width * 0.4,
+                                            height: UIScreen.main.bounds.height * 0.25
+                                        )
+                                        SharpBookmark()
+                                            .rotationEffect(.degrees(180))
+                                            .frame(width: 20, height: 43)
+                                            .offset(x: 40, y: -77)
+                                            .foregroundStyle(
+                                                savedScrapbooks.contains(where: { $0.id == scrapbook.id }) ?
+                                                    .yellow :
+                                                        .white)
+                                            .onTapGesture(perform: {
+                                                if let index = savedScrapbooks.firstIndex(where: { $0.id == scrapbook.id }) {
+                                                    savedScrapbooks.remove(at: index)
+                                                } else {
+                                                    savedScrapbooks.append(scrapbook)
+                                                }
+                                            })
+                                    }
+                                }
+                                
+                                VStack(alignment: .center, spacing: 3) {
+                                    Text(scrapbook.name)
+                                        .font(.headline)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.primary)
+                                        .multilineTextAlignment(.center)
+                                    
+                                    HStack(spacing: 5) {
+                                        // Safely get user info
+                                        if let users = communityScrapbooks[scrapbook],
+                                           let firstUser = users.first {
+                                            if let profilePic = firstUser.profilePic {
+                                                Image(uiImage: profilePic)
+                                                    .resizable()
+                                                    .scaledToFill()
+                                                    .frame(width: 25, height: 25)
+                                                    .clipShape(Circle())
+                                            } else {
+                                                Image(systemName: "person.circle")
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .frame(width: 25, height: 25)
                                             }
+                                            
+                                            // User Name
+                                            Text("by \(firstUser.name)")
+                                                .font(.footnote)
+                                                .foregroundColor(.gray)
+                                            
+                                        } else {
+                                            // Fallback when no user info available
+                                            Image(systemName: "person.circle")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 15, height: 15)
+                                            
+                                            Text("by User")
+                                                .font(.footnote)
+                                                .foregroundColor(.gray)
                                         }
                                     }
-                                } else {
-                                    Spacer()
-                                        .frame(width: 150, height: 200)
                                 }
+                                .frame(maxWidth: .infinity)
                             }
+                            .padding(.bottom, 20)
                         }
-                        .padding()
                     }
+                    .padding(.horizontal, 20)
                 }
+                .frame(maxWidth: .infinity)
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .onAppear() {
+            communityScrapbooks = userVM.getCommunityScrapbooks()
+            savedScrapbooks = userVM.getSavedScrapbooks()
+        }
+    }
+    
+    var profileImage: some View {
+        HStack(alignment: .center, spacing: 16) {
+            if let profileImage = retrievedImage {
+                Image(uiImage: profileImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 50, height: 50)
+                    .clipShape(Circle())
+            } else {
+                Image(systemName: "person.crop.circle.fill")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 50, height: 50)
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding()
+    }
+}
+
+struct SharpBookmark: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let creviceDepth: CGFloat = 8 // Adjust this value to change crevice depth
+        
+        // Start at bottom-left corner
+        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+        
+        // Left side up to mid-left point
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+        
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.midY - creviceDepth))
+        
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        
+        // Right side down to bottom-right corner
+
+        
+        // Close path back to starting point
+        path.closeSubpath()
+        
+        return path
     }
 }
 
@@ -130,5 +260,47 @@ struct SortOptionButton: View {
 }
 
 #Preview {
-    CommunityView()
+    CommunityView(userVM: UserViewModel(user: User(id: "iddd", name: "Mr.Hance", username: "username", journalShelves: [], scrapbookShelves: [], savedTemplates: [], friends: [], lastUsedJShelfID: UUID(), lastUsedSShelfID: UUID(), isJournalLastUsed: false, images: [:], communityScrapbooks: [
+        Scrapbook(
+            name: "Scrap 1",
+            id: UUID(),
+            createdDate: todaysdate(),
+            category: "General",
+            isSaved: false,
+            isShared: true,
+            template: Template(
+                name: "",
+                coverColor: .red,
+                pageColor: .white,
+                titleColor: .black,
+                texture: .leather,
+                journalPages: []
+            ),
+            pages: [],
+            currentPage: 0
+        ): [
+            (userID: "user1", name: "Bill", username: "username", profilePic: UIImage(systemName: "person.cirle"), friends: [])
+        ],
+        Scrapbook(
+            name: "Scrap 2",
+            id: UUID(),
+            createdDate: todaysdate(),
+            category: "General",
+            isSaved: false,
+            isShared: true,
+            template: Template(
+                name: "",
+                coverColor: .red,
+                pageColor: .white,
+                titleColor: .black,
+                texture: .leather,
+                journalPages: []
+            ),
+            pages: [],
+            currentPage: 0
+        ): [
+            (userID: "user1", name: "Bill", username: "username", profilePic: UIImage(systemName: "person.cirle"), friends: [])
+        ]
+    ]
+)), fbVM: FirebaseViewModel())
 }

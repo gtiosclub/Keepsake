@@ -7,6 +7,9 @@
 
 import Foundation
 import SwiftUI
+import PhotosUI
+
+typealias UserInfo = (userID: String, name: String,username: String, profilePic: UIImage?, friends: [String])
 
 class User: Identifiable, ObservableObject {
     var id: String
@@ -24,8 +27,10 @@ class User: Identifiable, ObservableObject {
     @Published var images: [String:UIImage] = [:]
     @Published var streaks: Int = 0
     @Published var lastJournaled: TimeInterval?
+    @Published var communityScrapbooks: [Scrapbook : [UserInfo]] = [:]
+    @Published var savedScrapbooks: [Scrapbook] = []
     
-    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String], lastUsedJShelfID: UUID, lastUsedSShelfID: UUID, isJournalLastUsed: Bool, images: [String: UIImage] = [:]) {
+    init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String], lastUsedJShelfID: UUID, lastUsedSShelfID: UUID, isJournalLastUsed: Bool, images: [String: UIImage] = [:], communityScrapbooks: [Scrapbook : [UserInfo]] = [:], savedScrapbooks: [Scrapbook] = []) {
         self.id = id
         self.name = name
         self.username = username
@@ -38,6 +43,8 @@ class User: Identifiable, ObservableObject {
         self.lastUsedSShelfID = lastUsedSShelfID
         self.isJournalLastUsed = isJournalLastUsed
         self.images = images
+        self.communityScrapbooks = communityScrapbooks
+        self.savedScrapbooks = savedScrapbooks
     }
     init(id: String, name: String, username: String, journalShelves: [JournalShelf], scrapbookShelves: [ScrapbookShelf], savedTemplates: [Template] = [], friends: [String]) {
         self.id = id

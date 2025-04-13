@@ -14,12 +14,30 @@ struct LoginView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                //Keepsake Logo?
-                Image("Dog Image")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 100, height: 120)
-                    .padding(.vertical, 32)
+                VStack{
+                    HStack{
+                        //Keepsake Logo?
+                        Image(systemName: "book.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 100, height: 120)
+                            .padding(.vertical, 32)
+                        
+                        Text("KeepSake")
+                            .font(.title)
+                            .bold()
+                            .padding()
+                    }
+                    
+                    Text("KeepSake catch phrase")
+                        .font(.body)
+                        .padding()
+                }.padding()
+                
+                
+                
+                
+        
                 
                 
                 //form fields
@@ -37,6 +55,7 @@ struct LoginView: View {
                 }
                 .padding(.horizontal)
                 .padding(.top, 12)
+                .padding(.bottom)
                 
                 //sign in button
                 Button {
@@ -44,24 +63,19 @@ struct LoginView: View {
                         try await viewModel.signIn(withEmail: email, password: password)
                     }
                 } label: {
-                    HStack {
-                        Text("SIGN IN")
-                            .fontWeight(.semibold)
-                    }
-                    .foregroundColor(.white)
-                    .frame(width: UIScreen.main.bounds.width - 32, height: 40)
-                    
+                    Text("Continue")
+                        .fontWeight(.semibold)
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity, minHeight: 50)
                 }
-                .background(Color(.systemPink))
+                .background(Color(.systemGreen).opacity(0.5))
+                .cornerRadius(25)
+                .padding(.horizontal, 16)
                 .disabled(!formIsValid)
-                .opacity(formIsValid  ? 1.0 : 0.5)
-                .cornerRadius(10)
-                .padding(.top, 24)
-                
+                .opacity(formIsValid ? 1.0 : 0.5)
                 
                 Spacer()
                 
-                //sign up button
                 
                 NavigationLink {
                     RegistrationView()

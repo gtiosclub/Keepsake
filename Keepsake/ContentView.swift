@@ -6,36 +6,56 @@
 //
 
 import SwiftUI
-
+enum TabType: Hashable {
+    case home
+    case community
+    case profile
+}
 struct ContentView: View {
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var aiVM: AIViewModel
     @ObservedObject var fbVM: FirebaseViewModel
     @EnvironmentObject var reminderViewModel: RemindersViewModel
+
+    @State var selectedTab: TabType = .home
+
+    @State var image: UIImage?
     
+
     var body: some View {
         
             
             
             NavigationView {
-                TabView {
-                    Tab("Home", systemImage: "house") {
-                        HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: .journal_shelf)
-                    }
-                    
-                    
-                    Tab("Community", systemImage: "person.2") {
-                        CommunityView()
-                    }
-                    Tab("Profile", systemImage:"person.crop.circle") {
-                        ProfileView(retrievedImage: fbVM.retrievedImage)
-                    }
+
+                
+                TabView(selection: $selectedTab) {
+                    HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: .journal_shelf)
+                        .tabItem {
+                            Label("Home", systemImage: "house")
+                        }
+                        .tag(TabType.home)
+
+                    CommunityView(userVM: userVM, fbVM: fbVM)
+                        .tabItem {
+                            Label("Community", systemImage: "person.2")
+                        }
+                        .tag(TabType.community)
+
+                    ProfileView(retrievedImage: fbVM.retrievedImage)
+                        .tabItem {
+                            Label("Profile", systemImage: "person.crop.circle")
+                        }
+                        .tag(TabType.profile)
                 }
                 .onAppear() {
-                    fbVM.getProfilePic()
                     Task {
+                        image = await fbVM.getProfilePic(uid: userVM.user.id)
                         await fbVM.checkIfStreaksRestarted()
                     }
+                        if let uid = fbVM.currentUser?.id {
+                            fbVM.scheduleReminderNotifications(for: uid)
+                        }
                 }
                 
             }

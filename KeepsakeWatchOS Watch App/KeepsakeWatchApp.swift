@@ -17,7 +17,9 @@ struct KeepsakeWatch_Watch_AppApp: App {
     
     var body: some Scene {
         WindowGroup {
-            RemindersListView()
+//            RemindersListView()
+//                .environmentObject(viewModel)
+            ContentView()
                 .environmentObject(viewModel)
         }
     }
