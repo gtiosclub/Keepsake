@@ -339,11 +339,21 @@ struct JournalDisplayView: View {
                 .foregroundStyle(userVM.getJournal(shelfIndex: shelfIndex, bookIndex: bookIndex).template.pageColor)
                 .offset(x: UIScreen.main.bounds.height * 0.002, y: 0)
             VStack {
-                if displayPageIndex < journal.pages.count && displayPageIndex > -1 {
+                if displayPageIndex < journal.pages.count && displayPageIndex > -1 && journal.pages[displayPageIndex].realEntryCount != 0 {
                     WidgetView(width: UIScreen.main.bounds.width * 0.38, height: UIScreen.main.bounds.height * 0.12, padding: UIScreen.main.bounds.width * 0.02, pageNum: displayPageIndex, page: journal.pages[displayPageIndex], isDisplay: true, inEntry: $inEntry, selectedEntry: $selectedEntry, userVM: userVM, showDeleteButton: $showDeleteButton, journal: journal, fbVM: fbVM, frontDegrees: $frontDegrees)
                         .frame(width: UIScreen.main.bounds.width * 0.87)
                         .padding(.top, 10)
                         .opacity(displayIsHidden ? 0 : 1)
+                }
+                if (journal.pages[displayPageIndex].realEntryCount == 0) {
+                    addAnEntryView
+                        .frame(maxHeight: .infinity)
+                        .transition(
+                            .asymmetric(
+                                insertion: .opacity.animation(.easeInOut(duration: 1.0)), // Animate only on appear
+                                removal: .opacity // No animation on disappear
+                            )
+                        )
                 }
                 Spacer()
                 HStack {
@@ -415,6 +425,19 @@ struct JournalDisplayView: View {
                         }
                     })
             )
+    }
+    
+    var addAnEntryView: some View {
+        VStack {
+            Image(systemName: "plus.bubble")
+                .font(.system(size: 50))
+                .foregroundStyle(journal.template.coverColor)
+                .frame(maxWidth: .infinity, alignment: .center)
+            Text("add an entry!")
+                .font(.system(size: 20))
+                .foregroundStyle(journal.template.coverColor)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }.opacity(0.8)
     }
 }
 

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 class JournalPage: ObservableObject {
     var number: Int
@@ -67,30 +68,44 @@ extension JournalPage: CustomStringConvertible {
         return "JournalPage(number: \(number), entries: \(entries), realEntryCount: \(realEntryCount))"
     }
     
+    static func randomColorOffset(from baseColor: [Double], maxOffset: Double = 0.1) -> [Double] {
+        return baseColor.map { component in
+            // Generate a random offset between -maxOffset and +maxOffset
+            let offset = Double.random(in: -maxOffset...maxOffset)
+            // Apply the offset and clamp between 0 and 1
+            return max(0, min(1, component + offset))
+        }
+    }
+    
     // Widget Templates
     // Template #1
-    static func dailyReflectionTemplate(pageNumber: Int) -> JournalPage {
+    static func dailyReflectionTemplate(pageNumber: Int, color: Color) -> JournalPage {
         var entries: [JournalEntry] = []
         
-        func color(_ r: Double, _ g: Double, _ b: Double) -> [Double] {
-            return [r, g, b]
-        }
         
         // Image
-        let image = PictureEntry(date: todaysdate(), title: "Pics of the Day", images: [], width: 1, height: 2, isFake: false, color: color(0.7, 0.6, 0.8))
+        let image = PictureEntry(date: todaysdate(), title: "Pics of the Day", images: [], width: 1, height: 2, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(image)
         
         // Prompt
-        let prompt = WrittenEntry(date: todaysdate(), title: "Prompt of the Day", text: "", summary: "Imagine that you’re a famous inventor. What would you invent and why?", width: 1, height: 1, isFake: false, color: color(0.8, 1.0, 1.0))
+        let prompt = WrittenEntry(date: todaysdate(), title: "Prompt of the Day", text: "", summary: "Imagine that you’re a famous inventor. What would you invent and why?", width: 1, height: 1, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(prompt)
         entries += Array(repeating: WrittenEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: true, color: [0.5, 0.5, 0.5]), count: 1)
         
         // Memo
-        let memo = VoiceEntry(date: todaysdate(), title: "Memo 1", audio: nil, width: 1, height: 1, isFake: false, color: color(0.9, 1.0, 0.9))
+        let memo = VoiceEntry(date: todaysdate(), title: "Memo 1", audio: nil, width: 1, height: 1, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(memo)
         
         // Daily Reflection
-        let reflection = WrittenEntry(date: todaysdate(), title: "Daily Reflection", text: "", summary: "How was your day today?", width: 2, height: 2, isFake: false, color: color(0.9, 0.85, 1.0))
+        let reflection = WrittenEntry(date: todaysdate(), title: "Daily Reflection", text: "", summary: "How was your day today?", width: 2, height: 2, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(reflection)
         entries.append(JournalEntry())
         entries.append(JournalEntry())
@@ -101,63 +116,73 @@ extension JournalPage: CustomStringConvertible {
     }
     
     // Template #2
-    static func tripTemplate(pageNumber: Int) -> JournalPage {
+    static func tripTemplate(pageNumber: Int, color: Color) -> JournalPage {
         var entries: [JournalEntry] = []
         
-        func color(_ r: Double, _ g: Double, _ b: Double) -> [Double] {
-            return [r, g, b]
-        }
-        
         // Image 1
-        let image = PictureEntry(date: todaysdate(), title: "Pics of the Trip", images: [], width: 1, height: 2, isFake: false, color: color(0.5, 0.7, 0.8))
+        let image = PictureEntry(date: todaysdate(), title: "Pics of the Trip", images: [], width: 1, height: 2, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(image)
         
         // Prompt
-        let prompt = WrittenEntry(date: todaysdate(), title: "Summarize your trip", text: "", summary: "Give a summary of your trip here", width: 1, height: 1, isFake: false, color: color(0.8, 1.0, 1.0))
+        let prompt = WrittenEntry(date: todaysdate(), title: "Summarize your trip", text: "", summary: "Give a summary of your trip here", width: 1, height: 1, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(prompt)
         entries += Array(repeating: WrittenEntry(date: "", title: "", text: "", summary: "", width: 1, height: 1, isFake: true, color: [0.5, 0.5, 0.5]), count: 1)
         
         // Memo
-        let memo = VoiceEntry(date: todaysdate(), title: "Memo 1", audio: nil, width: 1, height: 1, isFake: false, color: color(0.9, 1.0, 0.9))
+        let memo = VoiceEntry(date: todaysdate(), title: "Memo 1", audio: nil, width: 1, height: 1, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(memo)
         
         // Daily Reflection
-        let reflection = WrittenEntry(date: todaysdate(), title: "Daily Reflections of Trip", text: "", summary: "How was each day?", width: 2, height: 1, isFake: false, color: color(0.9, 0.85, 1.0))
+        let reflection = WrittenEntry(date: todaysdate(), title: "Daily Reflections of Trip", text: "", summary: "How was each day?", width: 2, height: 1, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(reflection)
         entries += Array(repeating: WrittenEntry(date: todaysdate(), title: "", text: "", summary: "", width: 1, height: 1, isFake: true, color: [0.5, 0.8, 0.5]), count: 1)
         
         // Image 2
-        let image2 = PictureEntry(date: todaysdate(), title: "Pics of the Trip", images: [], width: 1, height: 1, isFake: false, color: color(0.8, 0.7, 1.0))
+        let image2 = PictureEntry(date: todaysdate(), title: "Pics of the Trip", images: [], width: 1, height: 1, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(image2)
         
         // Image 3
-        let image3 = PictureEntry(date: todaysdate(), title: "Pics of the Trip", images: [], width: 1, height: 1, isFake: false, color: color(0.5, 0.9, 0.6))
+        let image3 = PictureEntry(date: todaysdate(), title: "Pics of the Trip", images: [], width: 1, height: 1, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(image3)
         
         return JournalPage(number: pageNumber, entries: entries, realEntryCount: 6)
     }
     
     // Template #2
-    static func defaultTemplate(pageNumber: Int) -> JournalPage {
+    static func defaultTemplate(pageNumber: Int, color: Color) -> JournalPage {
         var entries: [JournalEntry] = []
         
-        func color(_ r: Double, _ g: Double, _ b: Double) -> [Double] {
-            return [r, g, b]
-        }
-        
         // Daily Reflection
-        let text = WrittenEntry(date: todaysdate(), title: "Text", text: "", summary: "Default Summary", width: 1, height: 2, isFake: false, color: color(0.9, 0.85, 1.0))
+        let text = WrittenEntry(date: todaysdate(), title: "Text", text: "", summary: "Default Summary", width: 1, height: 2, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(text)
         
         // Memo
-        let memo = VoiceEntry(date: todaysdate(), title: "Memo 1", audio: nil, width: 1, height: 2, isFake: false, color: color(0.9, 1.0, 0.9))
+        let memo = VoiceEntry(date: todaysdate(), title: "Memo 1", audio: nil, width: 1, height: 2, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(memo)
         
         entries.append(JournalEntry())
         entries.append(JournalEntry())
         
         // Image 1
-        let image = PictureEntry(date: todaysdate(), title: "Default Pics", images: [], width: 2, height: 2, isFake: false, color: color(0.5, 0.7, 0.8))
+        let image = PictureEntry(date: todaysdate(), title: "Default Pics", images: [], width: 2, height: 2, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ))
         entries.append(image)
         
         entries.append(JournalEntry())
@@ -167,24 +192,28 @@ extension JournalPage: CustomStringConvertible {
         return JournalPage(number: pageNumber, entries: entries, realEntryCount: 3)
     }
     
-    static func previewTemplate(pageNumber: Int, colorArr: [Double]) -> JournalPage {
+    static func previewTemplate(pageNumber: Int, color: Color) -> JournalPage {
         var entries: [JournalEntry] = []
         
-        func color(_ r: Double, _ g: Double, _ b: Double) -> [Double] {
-            return [r, g, b]
-        }
-        
-        let entry1 = JournalEntry(date: "", title: "", entryContents: "", width: 1, height: 2, isFake: false, color: colorArr, type: .blank)
+        let entry1 = JournalEntry(date: "", title: "", entryContents: "", width: 1, height: 2, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ), type: .blank)
         entries.append(entry1)
         
-        let entry2 = JournalEntry(date: "", title: "", entryContents: "", width: 1, height: 1, isFake: false, color: colorArr, type: .blank)
+        let entry2 = JournalEntry(date: "", title: "", entryContents: "", width: 1, height: 1, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ), type: .blank)
         entries.append(entry2)
         entries.append(JournalEntry())
         
-        let entry3 = JournalEntry(date: "", title: "", entryContents: "", width: 1, height: 1, isFake: false, color: colorArr, type: .blank)
+        let entry3 = JournalEntry(date: "", title: "", entryContents: "", width: 1, height: 1, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ), type: .blank)
         entries.append(entry3)
         
-        let entry4 = JournalEntry(date: "", title: "", entryContents: "", width: 2, height: 2, isFake: false, color: colorArr, type: .blank)
+        let entry4 = JournalEntry(date: "", title: "", entryContents: "", width: 2, height: 2, isFake: false, color: randomColorOffset(
+            from: color.toRGBArray().map(Double.init)
+        ), type: .blank)
         entries.append(entry4)
         entries.append(JournalEntry())
         entries.append(JournalEntry())
