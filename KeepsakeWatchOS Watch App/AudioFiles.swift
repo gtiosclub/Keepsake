@@ -55,9 +55,7 @@ struct AudioFilesView: View {
                                     Text("Reminder Date: \(reminderWithAudio.reminder.date, style: .date)")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
-                                    Text("Prompt: \(reminderWithAudio.reminder.prompt)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
+                                    
                                 }
                                 Button(action: {
                                     Connectivity.shared.deleteReminder(reminderId: reminderWithAudio.reminder.id ?? "BHvWzK2PF7YBA0cyiyYwOPUbzof2/")
