@@ -36,7 +36,7 @@ struct ContentView: View {
                         }
                         .tag(TabType.home)
 
-                    CommunityView(userVM: userVM, fbVM: fbVM)
+                    CommunityView(userVM: userVM, fbVM: fbVM, retrievedImage: image)
                         .tabItem {
                             Label("Community", systemImage: "person.2")
                         }
