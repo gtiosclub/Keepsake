@@ -9,7 +9,18 @@ import Foundation
 
 
 
-class Scrapbook: Book, ObservableObject, Identifiable {
+class Scrapbook: Book, ObservableObject, Identifiable, Hashable, Equatable {
+    static func == (lhs: Scrapbook, rhs: Scrapbook) -> Bool {
+        return lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id) // Most important property
+        hasher.combine(name)
+        hasher.combine(createdDate)
+        // Add other properties that affect equality if needed
+    }
+    
     var name: String
     var id: UUID
     var createdDate: String

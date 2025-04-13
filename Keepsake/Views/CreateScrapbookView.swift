@@ -9,6 +9,7 @@ import SwiftUI
 import RealityKit
 import PhotosUI
 import UIKit
+import MultipeerConnectivity
 
 struct CreateScrapbookView: View {
     @ObservedObject var fbVM: FirebaseViewModel
@@ -46,7 +47,8 @@ struct CreateScrapbookView: View {
     @State var isEditing: Bool = false
     @State private var selectedFont: String = "Helvetica"
     @State private var fontSize: CGFloat = 200
-    @State private var backgroundColor: Color = .white
+    @State private var backgroundColorUI: Color = Color(.sRGB, red: 0.5, green: 0.5, blue: 0.5, opacity: 0.8)
+//    @State private var backgroundColor: CGColor = CGColor(gray: 0.5, alpha: 0.8)
     @State private var textColor: Color = .black
     @State private var textAlignment: NSTextAlignment = .center
     @State private var isBold: Bool = false
@@ -66,6 +68,41 @@ struct CreateScrapbookView: View {
     @State var noFrameSelected: Bool = true
     @State var polaroidFrameSelected: Bool = false
     @State var flowerFrameSelected: Bool = false
+    
+    @StateObject private var multipeerSession: MultipeerSession
+    
+    init(fbVM: FirebaseViewModel, userVM: UserViewModel, scrapbook: Scrapbook) {
+        self.fbVM = fbVM
+        self.userVM = userVM
+        self.scrapbook = scrapbook
+        
+        let receivedDataHandler: (Data, MCPeerID) -> Void = { data, peerID in
+            print("yoooo")
+        }
+
+        let peerJoinedHandler: (MCPeerID) -> Void = { peerID in
+            print("Peer joined: \(peerID.displayName)")
+        }
+
+        let peerLeftHandler: (MCPeerID) -> Void = { peerID in
+            print("Peer left: \(peerID.displayName)")
+        }
+
+        let peerDiscoveredHandler: (MCPeerID) -> Bool = { peerID in
+            print("Peer discovered: \(peerID.displayName)")
+            return false
+        }
+
+        _multipeerSession = StateObject(
+            wrappedValue: MultipeerSession(
+                username: UIDevice.current.name,
+                receivedDataHandler: receivedDataHandler,
+                peerJoinedHandler: peerJoinedHandler,
+                peerLeftHandler: peerLeftHandler,
+                peerDiscoveredHandler: peerDiscoveredHandler
+            )
+        )
+    }
 
     var body: some View {
         ZStack {
@@ -150,44 +187,6 @@ struct CreateScrapbookView: View {
                 
                 self.anchor?.addChild(entity)
             }
-            
-        } update: { content in
-            // creates a new textbox when the button in toolbar is pressed
-            if isTextClicked {
-                Task {
-                    let newTextbox = await TextBoxEntity(text: "[Enter text]")
-                    newTextbox.name = "\(counter)"
-                    entityPos.append(.zero)
-                    counter += 1
-                    self.anchor?.addChild(newTextbox)
-                    
-                }
-            }
-            // creates a new image when the button in toolbar is pressed
-            if isImageClicked {
-                Task {
-                    if let validImage = currImage {
-//                        let newImage = await FramedImageEntity(image: validImage, frameType: .polaroid)
-                        var frameType = FrameType.classic
-                        if polaroidFrameSelected {
-                            frameType = FrameType.polaroid
-                        }
-                        let newImage = await FramedImageEntity(image: validImage, frameType: frameType)
-                        newImage.name = "\(counter)"
-                        entityPos.append(.zero)
-                        counter += 1
-                        self.anchor?.addChild(newImage)
-                        
-                        // MAKE SURE THIS ISNT BUGGY
-                        noFrameSelected = true
-                        polaroidFrameSelected = false
-                        flowerFrameSelected = false
-                        isImageClicked = false
-                    } else {
-                        print("No image loaded")
-                    }
-                }
-            }
         }
     }
     
@@ -209,18 +208,19 @@ struct CreateScrapbookView: View {
                                 .foregroundColor(.black)
                         }
                     }.onChange(of: selectedItem) { _, _ in
-                        isCustomizingImage = true
                         Task {
                             await loadImage()
                         }
-//                        isImageClicked = true
+                        isCustomizingImage = true
                     }
         
                     Button {
-                        isTextClicked = true
                         Task {
-                            try await Task.sleep(nanoseconds: 10_000)
-                            isTextClicked = false
+                            let newTextbox = await TextBoxEntity(text: "[Enter text]")
+                            newTextbox.name = "\(counter)"
+                            entityPos.append(.zero)
+                            counter += 1
+                            self.anchor?.addChild(newTextbox)
                         }
                     } label: {
                         ZStack {
@@ -232,12 +232,36 @@ struct CreateScrapbookView: View {
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.black)
                         }
-                        
                     }
                     
                     Button {
+                        if let selectedTextEntity = selectedEntity as? TextBoxEntity {
+                            // Populate state variables with current attributes from the entity
+                            textInput = selectedTextEntity.getText()
+                            selectedFont = selectedTextEntity.currentFont
+                            fontSize = selectedTextEntity.currentSize
+                            isBold = selectedTextEntity.currentIsBold
+                            isItalic = selectedTextEntity.currentIsItalic
+                            isUnderlined = selectedTextEntity.currentIsUnderlined
+                            textColor = selectedTextEntity.currentTextColor
+//                            backgroundColor = selectedTextEntity.currentBackgroundColor
+                            if let components = selectedTextEntity.currentBackgroundColor.components {
+                                if components.count >= 4 {
+                                    backgroundColorUI = Color(.sRGB,
+                                                            red: Double(components[0]),
+                                                            green: Double(components[1]),
+                                                            blue: Double(components[2]),
+                                                            opacity: Double(components[3]))
+                                } else if components.count >= 2 {  // Handle grayscale
+                                    backgroundColorUI = Color(.sRGB,
+                                                            red: Double(components[0]),
+                                                            green: Double(components[0]),
+                                                            blue: Double(components[0]),
+                                                            opacity: Double(components[1]))
+                                }
+                            }
+                        }
                         isEditing = true
-                        print("edit button pressed")
                     } label : {
                         ZStack {
                             Circle()
@@ -251,7 +275,9 @@ struct CreateScrapbookView: View {
                     }.disabled(selectedEntity == nil)
                     
                     Button {
-
+                        if let selected = selectedEntity{
+                            anchor?.removeChild(selected)
+                        }
                     } label : {
                         ZStack {
                             Circle()
@@ -265,7 +291,7 @@ struct CreateScrapbookView: View {
                     }.disabled(selectedEntity == nil)
                     
                     Button {
-
+                        
                     } label : {
                         ZStack {
                             Circle()
@@ -330,6 +356,7 @@ struct CreateScrapbookView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 200)
+                        .cornerRadius(10)
                         .padding(.bottom, 20)
                 } else {
                     Rectangle()
@@ -390,12 +417,33 @@ struct CreateScrapbookView: View {
                     Spacer()
                     Button {
                         isCustomizingImage = false
-                        isImageClicked = true
+                        
+                        Task {
+                            if let validImage = currImage {
+                                var frameType = FrameType.classic
+                                if polaroidFrameSelected {
+                                    frameType = FrameType.polaroid
+                                }
+                                let newImage = await FramedImageEntity(image: validImage, frameType: frameType)
+                                newImage.name = "\(counter)"
+                                entityPos.append(.zero)
+                                counter += 1
+                                self.anchor?.addChild(newImage)
+                                
+                                // MAKE SURE THIS ISNT BUGGY
+                                noFrameSelected = true
+                                polaroidFrameSelected = false
+                                flowerFrameSelected = false
+                                isImageClicked = false
+                            } else {
+                                print("No image loaded")
+                            }
+                        }
                     } label: {
                         Text("Done")
                             .font(.title2)
-                            .foregroundStyle(.white)
-                            .padding(25)
+                            .foregroundStyle(.black)
+                            .padding(20)
                     }
                 }
                 Spacer()
@@ -518,7 +566,7 @@ struct CreateScrapbookView: View {
                           .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.8)))
                   }
                   .background(
-                    ColorPicker("", selection: $backgroundColor, supportsOpacity: true)
+                    ColorPicker("", selection: $backgroundColorUI, supportsOpacity: true)
                           .labelsHidden().opacity(0)
                   )
               }.padding(.horizontal, 30)
@@ -628,7 +676,10 @@ struct CreateScrapbookView: View {
     
     private func updateTextBox() {
         if let editingTextEntity = selectedEntity as? TextBoxEntity {
-            editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, isBold: isBold, isItalic: isItalic, isUnderlined: isUnderlined, textColor: textColor, backgroundColor: backgroundColor)
+            let uiColor = UIColor(backgroundColorUI)
+            let cgColor = uiColor.cgColor
+            
+            editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, isBold: isBold, isItalic: isItalic, isUnderlined: isUnderlined, textColor: textColor, backgroundColor: cgColor)
         }
     }
 }
@@ -671,3 +722,22 @@ struct RoundedCorner: Shape {
         return Path(path.cgPath)
     }
 }
+
+//struct ShareView: View {
+//    var body: some View {
+//        VStack {
+//            Spacer()
+//            ZStack {
+//                Rectangle()
+//                    .fill(.ultraThinMaterial)
+//                    .cornerRadius(20, corners: [.topLeft, .topRight])
+//                
+//            }
+//        }
+//    }
+//}
+//
+//#Preview {
+//    ShareView()
+//        .frame(maxWidth: .infinity, maxHeight: 600)
+//}

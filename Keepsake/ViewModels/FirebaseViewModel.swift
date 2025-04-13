@@ -32,6 +32,8 @@ class FirebaseViewModel: ObservableObject {
     }
     
     @Published var initializedUser: Bool = false
+        
+    @Published var users: [User] = []
     
     private struct QueryRequest: Codable {
       var query: String
@@ -105,7 +107,8 @@ class FirebaseViewModel: ObservableObject {
 
                 "lastUsedJShelfID": "\(initialShelf.id)",
                 "lastUsedSShelfID": "\(initialScrapbookShelf.id)",
-                "isJournalLastUsed": true
+                "isJournalLastUsed": true,
+                "savedScrapbookIDs": []
 
             ]
             try await Firestore.firestore().collection("USERS").document(user.id).setData(userData)
@@ -176,53 +179,71 @@ class FirebaseViewModel: ObservableObject {
         
     }
     
-    func fetchOtherUser(newUserID: String) async -> User? {
-        
+//    func fetchOtherUser(newUserID: String) async -> UserInfo {
+//        
+//        do {
+//            guard let snapshot = try? await Firestore.firestore().collection("USERS").document(newUserID).getDocument() else { return nil}
+//            if snapshot.exists {
+//                // Manually extract data from the snapshot
+//                if let uid = snapshot.get("uid") as? String,
+//                   let name = snapshot.get("name") as? String,
+//                   let username = snapshot.get("username") as? String,
+//                   let journalShelfIds = snapshot.get("journalShelves") as? [String],
+//                   let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
+//                   let templates = snapshot.get("templates") as? [String],
+//                   let friends = snapshot.get("friends") as? [String],
+//                   let lastUsedJ = snapshot.get("lastUsedJShelfID") as? String,
+//                   let lastUsedS = snapshot.get("lastUsedSShelfID") as? String,
+//                   let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
+//                {
+//                    var journalShelves: [JournalShelf] = []
+//                    for astr in journalShelfIds {
+//                        let shelf = await getJournalShelfFromID(id: astr)!
+//                        journalShelves.append(shelf)
+//                    }
+//                    let lastUsedJID: UUID
+//                    if let temp = UUID(uuidString: lastUsedJ) {
+//                        lastUsedJID = temp
+//                    } else {
+//                        print("Error getting last used journal ID")
+//                        lastUsedJID = UUID()
+//                    }
+//                    
+//                    let lastUsedSID: UUID
+//                    if let temp = UUID(uuidString: lastUsedS) {
+//                        lastUsedSID = temp
+//                    } else {
+//                        print("Error getting last used scrapbook shelf ID")
+//                        lastUsedSID = UUID()
+//                    }
+//                    let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed)
+//                    
+//                    return user
+//                    
+//                }
+//            }
+//        }
+//        
+//        return nil
+//        
+//    }
+    
+    func getUserInfo(userID: String) async -> UserInfo? {
+        let docRef = db.collection("USERS").document(userID)
         do {
-            guard let snapshot = try? await Firestore.firestore().collection("USERS").document(newUserID).getDocument() else { return nil}
-            if snapshot.exists {
-                // Manually extract data from the snapshot
-                if let uid = snapshot.get("uid") as? String,
-                   let name = snapshot.get("name") as? String,
-                   let username = snapshot.get("username") as? String,
-                   let journalShelfIds = snapshot.get("journalShelves") as? [String],
-                   let scrapbookShelfIds = snapshot.get("scrapbookShelves") as? [String],
-                   let templates = snapshot.get("templates") as? [String],
-                   let friends = snapshot.get("friends") as? [String],
-                   let lastUsedJ = snapshot.get("lastUsedJShelfID") as? String,
-                   let lastUsedS = snapshot.get("lastUsedSShelfID") as? String,
-                   let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
-                {
-                    var journalShelves: [JournalShelf] = []
-                    for astr in journalShelfIds {
-                        let shelf = await getJournalShelfFromID(id: astr)!
-                        journalShelves.append(shelf)
-                    }
-                    let lastUsedJID: UUID
-                    if let temp = UUID(uuidString: lastUsedJ) {
-                        lastUsedJID = temp
-                    } else {
-                        print("Error getting last used journal ID")
-                        lastUsedJID = UUID()
-                    }
-                    
-                    let lastUsedSID: UUID
-                    if let temp = UUID(uuidString: lastUsedS) {
-                        lastUsedSID = temp
-                    } else {
-                        print("Error getting last used scrapbook shelf ID")
-                        lastUsedSID = UUID()
-                    }
-                    let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: [], savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed)
-                    
-                    return user
-                    
-                }
-            }
+            let userDoc = try await docRef.getDocument()
+            guard userDoc.exists, let data = userDoc.data() else { return nil }
+            
+            let name = (data["name"] as? String) ?? "Unknown"
+            let username = (data["username"] as? String) ?? "unknown"
+            let friends = (data["friends"] as? [String]) ?? []
+            let profilePic = await getProfilePic(uid: userID)
+            
+            return (userID: userID, name: name, username: username, profilePic: profilePic, friends: friends)
+        } catch {
+            print("Error getting user info: \(error)")
+            return nil
         }
-        
-        return nil
-        
     }
     
     func fetchUser() async {
@@ -242,7 +263,8 @@ class FirebaseViewModel: ObservableObject {
                let friends = snapshot.get("friends") as? [String],
                let lastUsedJ = snapshot.get("lastUsedJShelfID") as? String,
                let lastUsedS = snapshot.get("lastUsedSShelfID") as? String,
-               let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool
+               let isJournalLastUsed = snapshot.get("isJournalLastUsed") as? Bool,
+               let savedScrapbookIDs = snapshot.get("savedScrapbookIDs") as? [String]
             {
                 var scrapbookShelves: [ScrapbookShelf] = []
                 for scrapbookShelfId in scrapbookShelfIds {
@@ -292,7 +314,17 @@ class FirebaseViewModel: ObservableObject {
                     }
                 }
                 print("is journal: \(isJournalLastUsed)")
-                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed, images: imageDict)
+                var savedScrapbooks: [Scrapbook] = []
+                for scrapbookID in savedScrapbookIDs {
+                    if scrapbookID.isEmpty { continue }
+                    let scrapbook = await loadScrapbook(scrapbookID: scrapbookID)
+                    if let unwrapped = scrapbook {
+                        savedScrapbooks.append(unwrapped)
+                    }
+                }
+                let communityScrapbooks = await getAllSharedScrapbooks(userID: uid)
+                print("communityScrapbooks: \(communityScrapbooks)")
+                let user = User(id: uid, name: name, username: username, journalShelves: journalShelves, scrapbookShelves: scrapbookShelves, savedTemplates: [], friends: friends, lastUsedJShelfID: lastUsedJID, lastUsedSShelfID: lastUsedSID, isJournalLastUsed: isJournalLastUsed, images: imageDict, communityScrapbooks: communityScrapbooks, savedScrapbooks: savedScrapbooks)
                 
                 // Assign the user object to currentUser
                 await MainActor.run {
@@ -302,6 +334,7 @@ class FirebaseViewModel: ObservableObject {
             }
         }
     }
+    
     
     func storeProfilePic(image: UIImage) {
             guard let uid = currentUser?.id else { return }
@@ -323,30 +356,18 @@ class FirebaseViewModel: ObservableObject {
             }
         }
     
-    func getProfilePic() -> UIImage? {
-        let uid = currentUser?.id
+    func getProfilePic(uid: String) async -> UIImage? {
+        guard !uid.isEmpty else { return nil }
         
-        let storageRef = Storage.storage().reference().child("profile pic").child("\(uid!).jpg")
-                storageRef.getData(maxSize: 3 * 2048 * 2048) { data, error in
-                    if let error = error {
-                        print("Error fetching image data: \(error)")
-                        return
-                    }
-                    guard let data = data else {
-                                            print("No data returned")
-                                            return
-                                        }
-                    if let image = UIImage(data: data) {
-                        DispatchQueue.main.async {
-                            self.retrievedImage = image
-                            print("Image successfully retrieved and set")
-                        }
-                    } else {
-                        print("Error creating image from data")
-                    }
-                }
-        return retrievedImage
+        let storageRef = Storage.storage().reference().child("profile pic").child("\(uid).jpg")
         
+        do {
+            let data = try await storageRef.data(maxSize: 3 * 2048 * 2048)
+            return UIImage(data: data)
+        } catch {
+            print("Error fetching profile picture: \(error.localizedDescription)")
+            return nil
+        }
     }
     
     func testRead() async -> Int {
@@ -919,8 +940,8 @@ class FirebaseViewModel: ObservableObject {
         do {
             let document = try await journalEntryReference.getDocument()
             if let dict = document.data() {
-                var x = JournalEntry.fromDictionary(dict)
-                print(x)
+//                let je: JournalEntry = (JournalEntry.fromDictionary(dict) as JournalEntry?)!
+//                print(je.id)
                 return JournalEntry.fromDictionary(dict)
             } else {
                 print("fake entry improperly returned")
@@ -1159,6 +1180,7 @@ class FirebaseViewModel: ObservableObject {
                 var arrScrapbooks: [Scrapbook] = []
                 
                 for scrapbookID in scrapbookIDs {
+                    if scrapbookID.isEmpty { continue }
                     let scrapbook = await loadScrapbook(scrapbookID: scrapbookID)
                     if let scrapbook = scrapbook {
                         arrScrapbooks.append(scrapbook)
@@ -1334,6 +1356,55 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func getAllSharedScrapbooks(userID: String) async -> [Scrapbook: [UserInfo]] {
+        var sharedScrapbooks: [Scrapbook : [UserInfo]] = [:]
+        do {
+            let snapshot = try await db.collection("USERS").getDocuments()
+            for userDoc in snapshot.documents {
+                let otherUserID = userDoc.documentID
+                let name = (userDoc.data()["name"] as? String) ?? "Unknown"
+                let profilePic = await getProfilePic(uid: otherUserID)
+                let username = (userDoc.data()["username"] as? String) ?? "unknown"
+                let friends = (userDoc.data()["friends"] as? [String]) ?? []
+                if otherUserID == userID { continue }
+                let userDoc = try await db.collection("USERS").document(otherUserID).getDocument()
+                let shelfIDs = (userDoc.data()?["scrapbookShelves"] as? [String]) ?? []
+                for shelfID in shelfIDs {
+                    let shelfDoc = try await db.collection("SCRAPBOOK_SHELVES").document(shelfID).getDocument()
+                    let scrapbookIDs = (shelfDoc.data()?["scrapbooks"] as? [String]) ?? []
+                    for scrapbookID in scrapbookIDs {
+                        let scrapbook = await loadScrapbook(scrapbookID: scrapbookID)
+                        if let unwrapped = scrapbook {
+                            if !unwrapped.isShared { continue }
+                            let userInfo = (userID: otherUserID, name: name, username: username, profilePic: profilePic, friends: friends)
+                            sharedScrapbooks[unwrapped, default: []].append(userInfo)
+                            
+                        }
+                    }
+                }
+            }
+        } catch {
+            print("Error in get all shared scrap function")
+        }
+        
+        return sharedScrapbooks
+    }
+    
+    func updateSavedScrapbooks(userID: String, newScrapbooks: [Scrapbook]) async {
+        var scrapbookIDs: [String] = []
+        for scrapbook in newScrapbooks {
+            scrapbookIDs.append(scrapbook.id.uuidString)
+        }
+        let journal_reference = db.collection("USERS").document(userID)
+        do {
+            try await journal_reference.updateData([
+                "savedScrapbookIDs": scrapbookIDs
+            ])
+        } catch {
+            print("Error updating pages: \(error.localizedDescription)")
+        }
+    }
+    
     //#########################################################################################
     
     /****######################################################################################
@@ -1436,6 +1507,84 @@ class FirebaseViewModel: ObservableObject {
             return nil
         }
     }
+    
+    //#########################################################################################
+    
+    /****######################################################################################
+    FRIENDS
+     #########################################################################################**/
+    func addFriend(currentUserID: String, friendUserID: String) {
+        let userRef = db.collection("USERS").document(currentUserID)
+        
+        userRef.updateData(["friends": FieldValue.arrayUnion([friendUserID])]) { error in
+            if let error = error {
+                print("Error adding friend: \(error)")
+            } else {
+                if let index = self.users.firstIndex(where: { $0.id == friendUserID }) {
+                    self.users[index].friends.append(currentUserID)
+                    self.objectWillChange.send()
+                }
+            }
+        }
+    }
+    func removeFriend(currentUserID: String, friendUserID: String) {
+        let userRef = db.collection("USERS").document(currentUserID)
+        
+        userRef.updateData(["friends": FieldValue.arrayRemove([friendUserID])]) { error in
+            if let error = error {
+                print("Error removing friend: \(error)")
+            } else {
+                if let index = self.users.firstIndex(where: { $0.id == friendUserID }) {
+                    self.users[index].friends.removeAll { $0 == currentUserID }
+                    self.objectWillChange.send()
+                }
+            }
+        }
+    }
+    
+    func searchUsers(searchText: String, currentUserName: String) {
+        guard !searchText.isEmpty else {
+            self.users = []
+            return
+        }
+        
+        let searchTextLowercased = searchText.lowercased()
+
+        db.collection("USERS").getDocuments { (snapshot, error) in
+            if let error = error {
+                print("Error fetching users: \(error)")
+                return
+            }
+            
+            guard let documents = snapshot?.documents else {
+                DispatchQueue.main.async {
+                    self.users = []
+                }
+                return
+            }
+
+            let filteredUsers = documents.compactMap { doc -> User? in
+                let data = doc.data()
+                guard let name = data["name"] as? String,
+                      let username = data["username"] as? String,
+                      let friends = data["friends"] as? [String] else { return nil }
+                
+
+                if name.lowercased().hasPrefix(searchTextLowercased) && username != currentUserName {
+                    return User(id: doc.documentID, name: name, username: username, journalShelves: [], scrapbookShelves: [], friends: friends, lastUsedJShelfID: UUID(), lastUsedSShelfID: UUID(), isJournalLastUsed: true)
+                }
+                return nil
+            }
+            
+            DispatchQueue.main.async {
+                self.users = filteredUsers
+            }
+        }
+    }
+    
+    
+    
+    
     
     //#########################################################################################
     

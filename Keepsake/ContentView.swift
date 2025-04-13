@@ -16,12 +16,18 @@ struct ContentView: View {
     @ObservedObject var aiVM: AIViewModel
     @ObservedObject var fbVM: FirebaseViewModel
     @EnvironmentObject var reminderViewModel: RemindersViewModel
+
     @State var selectedTab: TabType = .home
+
+    @State var image: UIImage?
+    
+
     var body: some View {
         
             
             
             NavigationView {
+
                 
                 TabView(selection: $selectedTab) {
                     HomeView(userVM: userVM, aiVM: aiVM, fbVM: fbVM, selectedOption: .journal_shelf)
@@ -41,10 +47,12 @@ struct ContentView: View {
                             Label("Profile", systemImage: "person.crop.circle")
                         }
                         .tag(TabType.profile)
+
+              
                 }
                 .onAppear() {
-                    fbVM.getProfilePic()
                     Task {
+                        image = await fbVM.getProfilePic(uid: userVM.user.id)
                         await fbVM.checkIfStreaksRestarted()
                     }
                         if let uid = fbVM.currentUser?.id {
