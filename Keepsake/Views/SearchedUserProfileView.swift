@@ -49,24 +49,21 @@ struct SearchedUserProfileView: View {
                         .accentColor(.pink)
                     
                     Button(action: {
-                        if selectUserInfo.friends.contains(currentUserID) {
-                            // Remove friend locally
-                            //                        if let index = viewModel.users.firstIndex(where: { $0.id == user.id }) {
-                            //                            viewModel.users[index].friends.removeAll { $0 == currentUserID }
-                            //                        }
-                            //                        selectedUser?.friends.removeAll { $0 == currentUserID }
+                        if isFriend {
+                            // Remove from both Firebase and local state
                             viewModel.removeFriend(currentUserID: currentUserID, friendUserID: selectUserInfo.userID)
+                            if let index = selectUserInfo.friends.firstIndex(of: currentUserID) {
+                                selectUserInfo.friends.remove(at: index)
+                            }
+                            isFriend = false
                         } else {
-                            // Add friend locally
-                            //                        if let index = viewModel.users.firstIndex(where: { $0.id == user.id }) {
-                            //                            viewModel.users[index].friends.append(currentUserID)
-                            //                        }
-                            //                        selectedUser?.friends.append(currentUserID)
                             userVM.addFriend(friendID: selectUserInfo.userID)
                             viewModel.addFriend(currentUserID: currentUserID, friendUserID: selectUserInfo.userID)
+                            selectUserInfo.friends.append(currentUserID)
+                            isFriend = true
                         }
                     }) {
-                        Text(selectUserInfo.friends.contains(currentUserID) ? "Remove Friend" : "Add Friend")
+                        Text(isFriend ? "Remove Friend" : "Add Friend")
                             .foregroundStyle(Color(hex: "#4CA5C0"))
                             .padding(.horizontal, 20)
                             .padding(.vertical, 10)
@@ -76,6 +73,7 @@ struct SearchedUserProfileView: View {
                         RoundedRectangle(cornerRadius: 20)
                             .fill(Color(hex: "#7FD2E7").opacity(0.4))
                     )
+
                     
                 }
                 
@@ -90,10 +88,11 @@ struct SearchedUserProfileView: View {
             .onAppear() {
                 Task {
                     selectUserInfo = await viewModel.getUserInfo(userID: selectedUserID) ?? selectUserInfo
+                    let currentFriends = await viewModel.getFriends(for: currentUserID)
+                            isFriend = currentFriends.contains(selectedUserID)
                 }
                 communityScrapbooks = userVM.getCommunityScrapbooks()
                 savedScrapbooks = userVM.getSavedScrapbooks()
-                
             }
             .navigationBarBackButtonHidden(true)
             .navigationBarItems(leading:

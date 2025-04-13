@@ -129,6 +129,22 @@ class FirebaseViewModel: ObservableObject {
             
         }
     }
+    func getFriends(for userID: String) async -> [String] {
+        let db = Firestore.firestore()
+        let userRef = db.collection("USERS").document(userID)
+        
+        do {
+            let snapshot = try await userRef.getDocument()
+            if let data = snapshot.data(), let friends = data["friends"] as? [String] {
+                return friends
+            }
+        } catch {
+            print("Error fetching friends: \(error)")
+        }
+        
+        return []
+    }
+
     func scheduleReminderNotifications(for uid: String) {
             let db = Firestore.firestore()
             let remindersRef = db.collection("reminders")
