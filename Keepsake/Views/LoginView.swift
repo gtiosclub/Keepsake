@@ -14,32 +14,21 @@ struct LoginView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                VStack{
-                    HStack{
-                        //Keepsake Logo?
-                        Image(systemName: "book.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 120)
-                            .padding(.vertical, 32)
-                        
-                        Text("KeepSake")
-                            .font(.title)
-                            .bold()
-                            .padding()
-                    }
+
+                Spacer()
+                
+                HStack{
+                    //Keepsake Logo?
+                    Image("KeepsakeIcon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 80, height: 80)
+                        .padding(.vertical, 12)
                     
-                    Text("KeepSake catch phrase")
-                        .font(.body)
-                        .padding()
-                }.padding()
-                
-                
-                
-                
-        
-                
-                
+                    Text("Keepsake")
+                        .font(.system(size: 50, weight: .semibold))
+                }
+
                 //form fields
                 VStack(spacing: 24) {
                     InputView(text: $email,
