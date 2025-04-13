@@ -108,9 +108,18 @@ class TextBoxEntity: Entity {
         self.addChild(textEntity)
     }
     
-    init(text: String, font: String, size: CGFloat, isBold: Bool, isItalic: Bool, isUnderlined: Bool, textColor: Color, backgroundColor: CGColor?) {
+    init(text: String, font: String, size: CGFloat, isBold: Bool, isItalic: Bool, isUnderlined: Bool, textColor: Color, backgroundColor: CGColor?) async {
         // Creates the text box entity
         textEntity = Entity()
+        
+        self.currentFont = font
+        self.currentSize = size
+        self.currentIsBold = isBold
+        self.currentIsItalic = isItalic
+        self.currentIsUnderlined = false
+        self.currentTextColor = textColor
+        self.currentBackgroundColor = backgroundColor ?? CGColor(gray: 0.5, alpha: 0.8)
+        
         
         // Create the TextComponent component (built-in component that includes a mesh background)
         textComponent = TextComponent()
