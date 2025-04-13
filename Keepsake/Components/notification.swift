@@ -50,6 +50,7 @@ class ViewController: UIViewController {
             let isDaily = true
             let notificationCenter = UNUserNotificationCenter.current()
             let content = UNMutableNotificationContent()
+            let title = "Keep Journaling! Don't lose your streak of 🔥 \(firebaseViewModel.currentUser?.streaks ?? 0) days"
             content.title = title
             content.body = body
             content.sound = .default
@@ -57,8 +58,8 @@ class ViewController: UIViewController {
             
             let calendar = Calendar.current
             var dateComponents = DateComponents(calendar: calendar, timeZone: TimeZone.current)
-            let hour = 20
-            let minute = 57
+            let hour = 16
+            let minute = 28
             dateComponents.hour = hour
             dateComponents.minute = minute
             print("Notification will trigger at: \(calendar.date(from: dateComponents) ?? Date())")
