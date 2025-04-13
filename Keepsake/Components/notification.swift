@@ -14,6 +14,7 @@ import SwiftUI
 
 extension Notification.Name {
     static let navigateToHome = Notification.Name("navigateToHome")
+    static let navigateToProfile = Notification.Name("navigateToProfile")
 }
 class ViewController: UIViewController {
     @ObservedObject var aiViewModel = AIViewModel()

@@ -7,18 +7,44 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct SplashView: View {
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Image("KeepsakeIcon")
+                .resizable()
+                .frame(width: 50, height: 50)
+            Text("Keepsake")
+                .font(.system(size: 30, weight: .semibold))
+                .foregroundColor(Color(hex: "FFADF4"))
+            
+            //Spacer().frame(height: 40)
         }
-        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.white)
+        .ignoresSafeArea()
+
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView: View {
+    @State var isActive = false
+    @EnvironmentObject private var viewModel: RemindersViewModel
+    var body: some View {
+        Group {
+            if isActive {
+//                RemindersListView()
+//                    .environmentObject(viewModel)
+                VoiceRecordingView(onRecordingComplete: { _ in })
+            } else {
+                SplashView()
+            }
+        }
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+                withAnimation {
+                    isActive = true
+                }
+            }
+        }
+    }
 }
