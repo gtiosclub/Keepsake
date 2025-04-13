@@ -6,7 +6,6 @@ struct FriendsView: View {
     @State private var friendsList: [User] = []
     @State private var selectedUserID: String?
     private let db = Firestore.firestore()
-
     func fetchFriends() {
         guard let userID = viewModel.currentUser?.id else { return }
 
@@ -29,7 +28,6 @@ struct FriendsView: View {
                                 lastUsedSShelfID: friendData["lastUsedSShelfID"] as? UUID ?? UUID(),
                                 isJournalLastUsed: true
                             )
-
                             DispatchQueue.main.async {
                                 self.friendsList.append(friend)
                             }
@@ -39,7 +37,7 @@ struct FriendsView: View {
             }
         }
     }
-
+    
     var body: some View {
         NavigationView {
             ScrollView {
@@ -57,13 +55,6 @@ struct FriendsView: View {
                                 )
                             ) {
                                 HStack {
-                                    Image("firebase image")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .clipped()
-                                        .clipShape(Circle())
-                                        .frame(width: 80, height: 80)
-
                                     VStack(alignment: .leading, spacing: 10) {
                                         Text(friend.name)
                                             .padding(.bottom, -7)
