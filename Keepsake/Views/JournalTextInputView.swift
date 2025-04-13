@@ -26,96 +26,111 @@ struct JournalTextInputView: View {
     @State var selectedPrompt: String? = ""
     @State private var shouldNavigate = false
     @Binding var dailyPrompt: String?
+    @State private var isSaving: Bool = false
     
     var body: some View {
         NavigationStack {
-            VStack {
-                HStack {
-                    Button {
-                        Task {
-                            if entry.summary == "***" {
-                                userVM.removeJournalEntry(page: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex], index: entryIndex)
-                            }
-                            await MainActor.run {
-                                inEntry = .openJournal
-                            }
-                        }
-                    }
-                    label: {
-                        Image(systemName: "chevron.left")
-                            .foregroundStyle(.black)
-                    }.padding(UIScreen.main.bounds.width * 0.025)
-                    Spacer()
-                    Button {
-                        Task {
-                            print(entry.width, entry.title)
-                            var newEntry = WrittenEntry(date: date, title: title, text: inputText, summary: entry.summary, width: entry.width, height: entry.height, isFake: false, color: entry.color, selectedPrompt: selectedPrompt ?? "")
-                            if entry.text != inputText {
-                                newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
-                            }
-                            
-                            userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
-                            for entry in userVM.user.journalShelves[shelfIndex].journals[journalIndex].pages[pageIndex].entries {
-                                print(entry.width, entry.height, entry.title, entry.id)
-                            }
-                            await fbVM.updateJournalPage(entries: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex].entries, journalID: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).id, pageNumber: pageIndex)
-                            
-                            await MainActor.run {
-                                inEntry = .openJournal
+            ZStack {
+                VStack {
+                    HStack {
+                        Button {
+                            Task {
+                                if entry.summary == "***" {
+                                    userVM.removeJournalEntry(page: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex], index: entryIndex)
+                                }
+                                await MainActor.run {
+                                    inEntry = .openJournal
+                                }
                             }
                         }
+                        label: {
+                            Image(systemName: "chevron.left")
+                                .foregroundStyle(.black)
+                        }.padding(UIScreen.main.bounds.width * 0.025)
+                        Spacer()
+                        Button {
+                            Task {
+                                isSaving = true
+                                print(entry.width, entry.title)
+                                var newEntry = WrittenEntry(date: date, title: title, text: inputText, summary: entry.summary, width: entry.width, height: entry.height, isFake: false, color: entry.color, selectedPrompt: selectedPrompt ?? "")
+                                if entry.text != inputText {
+                                    newEntry.summary = await aiVM.summarize(entry: newEntry) ?? String(inputText.prefix(15))
+                                }
+                                
+                                userVM.updateJournalEntry(shelfIndex: shelfIndex, bookIndex: journalIndex, pageNum: pageIndex, entryIndex: entryIndex, newEntry: newEntry)
+                                for entry in userVM.user.journalShelves[shelfIndex].journals[journalIndex].pages[pageIndex].entries {
+                                    print(entry.width, entry.height, entry.title, entry.id)
+                                }
+                                await fbVM.updateJournalPage(entries: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).pages[pageIndex].entries, journalID: userVM.getJournal(shelfIndex: shelfIndex, bookIndex: journalIndex).id, pageNumber: pageIndex)
+                                
+                                await MainActor.run {
+                                    isSaving = false
+                                    inEntry = .openJournal
+                                }
+                            }
+                        }
+                        label: {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(.black)
+                        }.padding(UIScreen.main.bounds.width * 0.025)
                     }
-                    label: {
-                        Image(systemName: "checkmark")
-                            .foregroundStyle(.black)
-                    }.padding(UIScreen.main.bounds.width * 0.025)
-                }
-                TextField(textfieldPrompt, text: $title, axis: .vertical)
-                    .fontWeight(.bold)
-                    .font(.title)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 2)
-                Text(date).font(.subheadline)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-                if let selectedPrompt = selectedPrompt, !selectedPrompt.isEmpty {
-                    let trimmedPrompt = selectedPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
-
-                    HStack(spacing: 8) {
-                        // Vertical bar
-                        Rectangle()
-                            .frame(width: 4, height: 40) // Adjust width for the vertical bar thickness
-                            .foregroundColor(.blue) // Bar color
-
-                        // Prompt text
-                        Text(trimmedPrompt)
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    TextField(textfieldPrompt, text: $title, axis: .vertical)
+                        .fontWeight(.bold)
+                        .font(.title)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, UIScreen.main.bounds.width * 0.05 - 2)
+                    Text(date).font(.subheadline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                    if let selectedPrompt = selectedPrompt, !selectedPrompt.isEmpty {
+                        let trimmedPrompt = selectedPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+                        
+                        HStack(spacing: 8) {
+                            // Vertical bar
+                            Rectangle()
+                                .frame(width: 4, height: 40) // Adjust width for the vertical bar thickness
+                                .foregroundColor(.blue) // Bar color
+                            
+                            // Prompt text
+                            Text(trimmedPrompt)
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .background(Color.clear) // No need for a background box, just the bar
+                        .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
                     }
-                    .background(Color.clear) // No need for a background box, just the bar
-                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-                }
-                DebounceTextField(inputText: $inputText, aiVM: aiVM)
-                Spacer()
-                HStack() {
-                    Button {
-                        showPromptSheet = true
-                    } label: {
-                        Label("need suggestions?", systemImage: "lightbulb.max")
-                            .foregroundColor(Color(red: 127/255, green: 210/255, blue: 231/255))
-                    }
-                    .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
-                    .padding(.bottom, 20)
+                    DebounceTextField(inputText: $inputText, aiVM: aiVM)
                     Spacer()
+                    HStack() {
+                        Button {
+                            showPromptSheet = true
+                        } label: {
+                            Label("need suggestions?", systemImage: "lightbulb.max")
+                                .foregroundColor(Color(red: 127/255, green: 210/255, blue: 231/255))
+                        }
+                        .padding(.horizontal, UIScreen.main.bounds.width * 0.05)
+                        .padding(.bottom, 20)
+                        Spacer()
+                    }
+                }.onAppear() {
+                    title = entry.title
+                    inputText = entry.text
+                    date = entry.date
                 }
-            }.onAppear() {
-                title = entry.title
-                inputText = entry.text
-                date = entry.date
-            }
-            .sheet(isPresented: $showPromptSheet) {
-                SuggestedPromptsView(aiVM: aiVM, selectedPrompt: $selectedPrompt, isPresented: $showPromptSheet)
+                .sheet(isPresented: $showPromptSheet) {
+                    SuggestedPromptsView(aiVM: aiVM, selectedPrompt: $selectedPrompt, isPresented: $showPromptSheet)
+                }
+                if isSaving {
+                    VStack {
+                        ProgressView("Saving...")
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(12)
+                    }
+                }
             }
         }
         .onAppear {
