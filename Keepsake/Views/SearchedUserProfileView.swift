@@ -8,7 +8,7 @@ struct SearchedUserProfileView: View {
     let selectedUserID: String
     
     @Environment(\.presentationMode) var presentationMode
-    @State private var selectUserInfo: UserInfo = UserInfo(userID: "", name: "Name", username: "Username", profilePic: UIImage(systemName: "person.circle"), friends: [])
+    @State private var selectUserInfo: UserInfoWithStreaks = UserInfoWithStreaks(userID: "", name: "Name", username: "Username", profilePic: UIImage(systemName: "person.circle"), friends: [], streakCount: 0)
     @State private var isFriend: Bool = false
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var viewModel: FirebaseViewModel
@@ -47,10 +47,17 @@ struct SearchedUserProfileView: View {
                     Text(selectUserInfo.username)
                         .font(.title3)
                         .accentColor(.pink)
-                    
+                    if let streak = selectUserInfo.streakCount {
+                        HStack(spacing: 6) {
+                            Image(systemName: "flame.fill")
+                                .foregroundColor(.orange)
+                            Text("Streak: \(streak)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                     Button(action: {
                         if isFriend {
-                            // Remove from both Firebase and local state
                             viewModel.removeFriend(currentUserID: currentUserID, friendUserID: selectUserInfo.userID)
                             if let index = selectUserInfo.friends.firstIndex(of: currentUserID) {
                                 selectUserInfo.friends.remove(at: index)
@@ -87,7 +94,7 @@ struct SearchedUserProfileView: View {
         }.padding(.horizontal, 30)
             .onAppear() {
                 Task {
-                    selectUserInfo = await viewModel.getUserInfo(userID: selectedUserID) ?? selectUserInfo
+                    selectUserInfo = await viewModel.getUserInfoWithStreaks(userID: selectedUserID) ?? selectUserInfo
                     let currentFriends = await viewModel.getFriends(for: currentUserID)
                             isFriend = currentFriends.contains(selectedUserID)
                 }

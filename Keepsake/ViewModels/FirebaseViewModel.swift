@@ -254,8 +254,25 @@ class FirebaseViewModel: ObservableObject {
             let username = (data["username"] as? String) ?? "unknown"
             let friends = (data["friends"] as? [String]) ?? []
             let profilePic = await getProfilePic(uid: userID)
-            
+            let streakCount = data["streakCount"] as? Int ?? 0
             return (userID: userID, name: name, username: username, profilePic: profilePic, friends: friends)
+        } catch {
+            print("Error getting user info: \(error)")
+            return nil
+        }
+    }
+    func getUserInfoWithStreaks(userID: String) async -> UserInfoWithStreaks? {
+        let docRef = db.collection("USERS").document(userID)
+        do {
+            let userDoc = try await docRef.getDocument()
+            guard userDoc.exists, let data = userDoc.data() else { return nil }
+            
+            let name = (data["name"] as? String) ?? "Unknown"
+            let username = (data["username"] as? String) ?? "unknown"
+            let friends = (data["friends"] as? [String]) ?? []
+            let profilePic = await getProfilePic(uid: userID)
+            let streakCount = data["streakCount"] as? Int ?? 0
+            return (userID: userID, name: name, username: username, profilePic: profilePic, friends: friends, streakCount: streakCount)
         } catch {
             print("Error getting user info: \(error)")
             return nil
