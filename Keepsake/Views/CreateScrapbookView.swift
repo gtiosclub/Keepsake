@@ -171,6 +171,33 @@ struct CreateScrapbookView: View {
             self.anchor = newAnchor
             content.add(newAnchor)
             
+            let titleMesh = MeshResource.generateText(
+                scrapbook.name, // Text content
+                extrusionDepth: 0.03, // Depth of the extrusion
+                font: .systemFont(ofSize: 0.4), // Font and size
+                containerFrame: .zero, // Automatically size the frame
+                alignment: .center, // Text alignment
+                lineBreakMode: .byWordWrapping // Line break mode
+            )
+            
+            let titleMaterial = SimpleMaterial(color: .white, isMetallic: false)
+            
+            let titleEntity = ModelEntity(mesh: titleMesh, materials: [titleMaterial])
+
+            let bounds = titleMesh.bounds
+
+            // Offset the position by negative half of the bounds size to center it
+            titleEntity.position = SIMD3<Float>(
+                0 - bounds.extents.x / 2,  // Center horizontally
+                1,                     // Keep vertical position
+                0 - bounds.extents.z   // Center depth-wise
+            )
+            
+            let angle = Float(30.0 * .pi / 180.0)  // Convert degrees to radians
+            titleEntity.orientation = simd_quatf(angle: angle, axis: SIMD3<Float>(1, 0, 0))
+            
+            self.anchor?.addChild(titleEntity)
+            
             let scrapbookPage = scrapbook.pages[0]
             
             print(scrapbookPage.entries)
