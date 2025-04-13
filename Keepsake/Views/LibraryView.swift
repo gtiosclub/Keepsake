@@ -43,52 +43,34 @@ struct LibraryBookshelfView: View {
     @ObservedObject var fbVM: FirebaseViewModel
     @Binding var selectedOption: ViewOption
 
-    @State private var longPressedShelfIndex: Int? = nil
-
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                ForEach(user.journalShelves.indices, id: \.self) { index in
-                    ZStack(alignment: index.isMultiple(of: 2) ? .topTrailing : .topLeading) {
-                        BookshelfView(shelf: user.journalShelves[index], isEven: index.isMultiple(of: 2), fbVM: fbVM)
-                            .onTapGesture {
-                                if longPressedShelfIndex == nil {
-                                    userVM.setJournalShelfIndex(index: index, shelfID: user.journalShelves[index].id)
-                                    Task {
-                                        await fbVM.updateUserLastUsedJShelf(user: user)
-                                    }
-                                    selectedOption = .journal_shelf
-                                } else {
-                                    longPressedShelfIndex = nil
-                                }
+        List {
+            ForEach(user.journalShelves.indices, id: \.self) { index in
+                BookshelfView(shelf: user.journalShelves[index], isEven: index.isMultiple(of: 2), fbVM: fbVM)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button {
+                            let shelfID = user.journalShelves[index].id
+                            Task {
+                                await fbVM.deleteShelf(shelfID: shelfID, userID: user.id)
                             }
-                            .onLongPressGesture {
-                                longPressedShelfIndex = index
-                            }
-                        if longPressedShelfIndex == index {
-                            Button {
-                                let shelfID = user.journalShelves[index].id
-                                Task {
-                                    await fbVM.deleteShelf(shelfID: shelfID, userID: user.id)
-                                }
-                                userVM.removeJournalShelf(index: index)
-                                longPressedShelfIndex = nil
-                            } label: {
-                                Image(systemName: "minus.circle.fill")
-                                    .foregroundColor(.red)
-                                    .background(Circle().fill(Color.white))
-                            }
-                            .offset(x: index.isMultiple(of: 2) ? -10 : 10, y: 10)
+                            userVM.removeJournalShelf(index: index)
+                        } label: {
+                            Image(systemName: "xmark")
                         }
-
+                        .tint(.red)
                     }
-                }
+                    .onTapGesture {
+                        userVM.setJournalShelfIndex(index: index, shelfID: user.journalShelves[index].id)
+                        Task {
+                            await fbVM.updateUserLastUsedJShelf(user: user)
+                        }
+                        selectedOption = .journal_shelf
+                    }
+                    .listRowSeparator(.hidden)
             }
-            .padding()
-            .frame(maxWidth: .infinity)
-        }.onTapGesture {
-            longPressedShelfIndex = nil
         }
+        .scrollContentBackground(.hidden)
+        .listStyle(.plain)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Your Journals")
         .toolbar {
@@ -113,61 +95,41 @@ struct LibraryScrapbookView: View {
     @ObservedObject var fbVM: FirebaseViewModel
     @Binding var selectedOption: ViewOption
 
-    @State private var longPressedShelfIndex: Int? = nil
-
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                ForEach(user.scrapbookShelves.indices, id: \.self) { index in
-                    ZStack(alignment: index.isMultiple(of: 2) ? .topTrailing : .topLeading) {
-                        BookshelfForScrapbookView(
-                            shelf: user.scrapbookShelves[index],
-                            isEven: index.isMultiple(of: 2),
-                            fbVM: fbVM
-                        )
-                        .onTapGesture {
-                            if longPressedShelfIndex == nil {
-                                userVM.setScrapbookShelfIndex(
-                                    index: index,
-                                    shelfID: user.scrapbookShelves[index].id
-                                )
-                                Task {
-                                    await fbVM.updateUserLastUsedSShelf(user: user)
-                                }
-                                selectedOption = .scrapbook_shelf
-                            } else {
-                                longPressedShelfIndex = nil
-                            }
+        List {
+            ForEach(user.scrapbookShelves.indices, id: \.self) { index in
+                BookshelfForScrapbookView(
+                    shelf: user.scrapbookShelves[index],
+                    isEven: index.isMultiple(of: 2),
+                    fbVM: fbVM
+                )
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    Button {
+                        let shelfID = user.scrapbookShelves[index].id
+                        Task {
+                            await fbVM.deleteScrapbookShelf(shelfID: shelfID, userID: user.id)
                         }
-                        .onLongPressGesture {
-                            longPressedShelfIndex = index
-                        }
-
-                        if longPressedShelfIndex == index {
-                            Button {
-                                let shelfID = user.scrapbookShelves[index].id
-                                
-                                Task {
-                                    await fbVM.deleteScrapbookShelf(shelfID: shelfID, userID: user.id)
-                                }
-                                userVM.removeScrapbookShelf(index: index)
-                                longPressedShelfIndex = nil
-                            } label: {
-                                Image(systemName: "minus.circle.fill")
-                                    .foregroundColor(.red)
-                                    .background(Circle().fill(Color.white))
-                            }
-                            .offset(x: index.isMultiple(of: 2) ? -10 : 10, y: 10)
-                        }
+                        userVM.removeScrapbookShelf(index: index)
+                    } label: {
+                        Image(systemName: "xmark")
                     }
+                    .tint(.red)
                 }
+                .onTapGesture {
+                    userVM.setScrapbookShelfIndex(
+                        index: index,
+                        shelfID: user.scrapbookShelves[index].id
+                    )
+                    Task {
+                        await fbVM.updateUserLastUsedSShelf(user: user)
+                    }
+                    selectedOption = .scrapbook_shelf
+                }
+                .listRowSeparator(.hidden)
             }
-            .padding()
-            .frame(maxWidth: .infinity)
         }
-        .onTapGesture {
-            longPressedShelfIndex = nil
-        }
+        .scrollContentBackground(.hidden)
+    .listStyle(.plain)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Your Scrapbooks")
         .toolbar {
