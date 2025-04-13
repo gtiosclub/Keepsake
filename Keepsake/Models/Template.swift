@@ -39,6 +39,7 @@ enum Texture: String {
     case green
     case snoopy
     case stars
+    case blank
     
     func toDictionary() -> [String: Any] {
         switch self {
@@ -60,6 +61,8 @@ enum Texture: String {
             return ["type": "snoopy"]
         case .stars:
             return ["type": "stars"]
+        case .blank:
+            return ["type": "blank"]
         }
     }
 

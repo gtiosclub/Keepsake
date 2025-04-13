@@ -68,10 +68,10 @@ extension JournalPage: CustomStringConvertible {
         return "JournalPage(number: \(number), entries: \(entries), realEntryCount: \(realEntryCount))"
     }
     
-    static func randomColorOffset(from baseColor: [Double], maxOffset: Double = 0.1) -> [Double] {
+    static func randomColorOffset(from baseColor: [Double], maxOffset: Double = 0.15) -> [Double] {
         return baseColor.map { component in
-            // Generate a random offset between -maxOffset and +maxOffset
-            let offset = Double.random(in: -maxOffset...maxOffset)
+            // Skewed offset: more likely to be negative (darker)
+            let offset = Double.random(in: 0...1) * -maxOffset + Double.random(in: 0...1) * maxOffset * 0.1
             // Apply the offset and clamp between 0 and 1
             return max(0, min(1, component + offset))
         }
