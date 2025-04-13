@@ -290,11 +290,13 @@ class ConversationEntry: JournalEntry {
               let id = UUID(uuidString: idString),
               let date = dict["date"] as? String,
               let title = dict["title"] as? String,
+              let width = dict["width"] as? Int,
+              let height = dict["height"] as? Int,
               let conversationLog = dict["conversationLog"] as? [String],
               let color = dict["color"] as? [Double]
         else { return nil }
 
-        return ConversationEntry(id: id, date: date, title: title, conversationLog: conversationLog, color: color)
+        return ConversationEntry(id: id, date: date, title: title, conversationLog: conversationLog, width: width, height: height, color: color)
     }
     
     required init(from decoder: Decoder) throws {
