@@ -18,10 +18,13 @@ enum FrameType {
 
 class FramedImageEntity: Entity {
     
+    
+    var fbVM: FirebaseViewModel = FirebaseViewModel()
     var image: UIImage
     var frameType: FrameType
     var imageEntity: ModelEntity = ModelEntity()
     var frameEntity: ModelEntity = ModelEntity()
+    var imageURL: String?
     
     init(image: UIImage, frameType: FrameType) async {
         self.image = image
@@ -62,6 +65,8 @@ class FramedImageEntity: Entity {
         
         imageEntity.components.set([InputTargetComponent(),
                                       CollisionComponent(shapes: [ShapeResource.generateBox(width: width, height: imageHeight, depth: 0.2)])])
+        
+        self.imageURL = await fbVM.convertImageToURL(image: image)
         
         // Add it as a child.
         imageEntity.transform.translation = [0, 0, 0.01]

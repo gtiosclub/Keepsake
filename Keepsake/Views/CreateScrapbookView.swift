@@ -94,7 +94,7 @@ struct CreateScrapbookView: View {
 
         let peerDiscoveredHandler: (MCPeerID) -> Bool = { peerID in
             print("Peer discovered: \(peerID.displayName)")
-            return false
+            return true
         }
 
         _multipeerSession = StateObject(
@@ -212,7 +212,7 @@ struct CreateScrapbookView: View {
                     entity = await FramedImageEntity(image: fbVM.getImageFromURL(urlString: entry.imageURL ?? "") ?? UIImage(), frameType: (entry.frame == "classic") ? FrameType.classic : FrameType.polaroid)
                 }
                 
-                entity.name = "\(counter)"
+                entity.name = UUID().uuidString
                 counter += 1
                 entityPos.append(.zero)
                 entity.position = SIMD3<Float>(x: entry.position[0], y: entry.position[1], z: entry.position[2])
@@ -255,10 +255,12 @@ struct CreateScrapbookView: View {
                     Button {
                         Task {
                             let newTextbox = await TextBoxEntity(text: "[Enter text]")
-                            newTextbox.name = "\(counter)"
+                            newTextbox.name = UUID().uuidString
                             entityPos.append(.zero)
                             counter += 1
                             self.anchor?.addChild(newTextbox)
+                            
+                            await self.sendEntityUpdate(newTextbox)
                         }
                     } label: {
                         ZStack {
@@ -315,7 +317,10 @@ struct CreateScrapbookView: View {
                     Button {
                         if let selected = selectedEntity{
                             anchor?.removeChild(selected)
+                            
+                            sendEntityUpdate(selected)
                         }
+
                     } label : {
                         ZStack {
                             Circle()
@@ -463,10 +468,12 @@ struct CreateScrapbookView: View {
                                     frameType = FrameType.polaroid
                                 }
                                 let newImage = await FramedImageEntity(image: validImage, frameType: frameType)
-                                newImage.name = "\(counter)"
+                                newImage.name = UUID().uuidString
                                 entityPos.append(.zero)
                                 counter += 1
                                 self.anchor?.addChild(newImage)
+                                
+                                await self.sendEntityUpdate(newImage)
                                 
                                 // MAKE SURE THIS ISNT BUGGY
                                 noFrameSelected = true
@@ -665,6 +672,17 @@ struct CreateScrapbookView: View {
                     Spacer()
                     Button {
                         isShareShowing = false
+                        
+                        if isCollaborating {
+                            print("yooo we collaborating now")
+                            multipeerSession.receivedDataHandler = { data, peerID in
+                                if let entityUpdate = try? JSONDecoder().decode(ScrapbookEntry.self, from: data) {
+                                    DispatchQueue.main.async {
+                                        self.updateEntity(with: entityUpdate)
+                                    }
+                                }
+                            }
+                        }
                     } label: {
                         Image(systemName: "xmark")
                             .font(.title2)
@@ -701,6 +719,10 @@ struct CreateScrapbookView: View {
                 
                 // Combine rotations (order matters)
                 selectedEntity?.transform.rotation = horizontalRotation * verticalRotation
+                
+                if let selectedEntity = selectedEntity {
+                    sendEntityUpdate(selectedEntity)
+                }
             }
             .onEnded { value in
                 // Store final translation offsets
@@ -757,6 +779,9 @@ struct CreateScrapbookView: View {
                 entity.scale = SIMD3<Float>(repeating: Float(currentScale))
                 // Update collision shape to match new scale
                 updateCollisionShape(for: entity, scale: Float(currentScale))
+                
+                sendEntityUpdate(entity)
+                
             }
         }
         .onEnded { value in
@@ -786,6 +811,95 @@ struct CreateScrapbookView: View {
             let cgColor = uiColor.cgColor
             
             editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, isBold: isBold, isItalic: isItalic, isUnderlined: isUnderlined, textColor: textColor, backgroundColor: cgColor)
+            
+            sendEntityUpdate(editingTextEntity)
+        }
+    }
+    
+    private func sendEntityUpdate(_ entity: Entity) {
+        print("sending new entity")
+        var text: String? = nil
+        var imageURL: String? = nil
+
+        if let textEntity = entity as? TextBoxEntity {
+            text = textEntity.getText()
+        } else if let imageEntity = entity as? FramedImageEntity  {
+            imageURL = imageEntity.imageURL
+        }
+        
+        let entityUpdate = ScrapbookEntry(
+            id: UUID(uuidString: entity.name) ?? UUID(),
+            type: entity is TextBoxEntity ? "text" : "image",
+            position: [entity.position.x, entity.position.y, entity.position.z],
+            scale: entity.scale.x,
+            rotation: [entity.transform.rotation.vector.x, entity.transform.rotation.vector.y, entity.transform.rotation.vector.z, entity.transform.rotation.vector.w],
+            text: text,
+            imageURL: imageURL,
+            frame: entity is FramedImageEntity ? ((entity as! FramedImageEntity).frameType == FrameType.classic ? "classic": "polaroid") : "classic"
+        )
+
+        if let data = try? JSONEncoder().encode(entityUpdate) {
+            print("sent to all")
+            multipeerSession.sendToAllPeers(data, reliably: true)
+        }
+    }
+
+    private func compressImage(_ image: UIImage, compressionQuality: CGFloat) -> Data? {
+        return image.jpegData(compressionQuality: compressionQuality)
+    }
+
+
+    private func updateEntity(with update: ScrapbookEntry) {
+        if let existingEntity = anchor?.children.first(where: { $0.name == update.id.uuidString }) {
+            print("fsadfj")
+            // Update existing entity
+            existingEntity.position = SIMD3<Float>(x: update.position[0], y: update.position[1], z: update.position[2])
+            existingEntity.scale = SIMD3<Float>(repeating: Float(update.scale))
+            
+            let rotation = simd_quatf(ix: update.rotation[0], iy: update.rotation[1], iz: update.rotation[2], r: update.rotation[3])
+            existingEntity.transform.rotation = rotation
+
+            if let textEntity = existingEntity as? TextBoxEntity, let text = update.text {
+                textEntity.updateText(text, font: update.font, size: CGFloat(update.fontSize), isBold: update.isBold, isItalic: update.isItalic, isUnderlined: false, textColor: Color(red: Double(update.textColor[0]), green: Double(update.textColor[1]), blue: Double(update.textColor[2])), backgroundColor: CGColor(red: Double(update.backgroundColor[0]), green: Double(update.backgroundColor[1]), blue: Double(update.backgroundColor[2]), alpha: 1.0))
+            }
+
+        } else {
+            Task {
+                if update.type == "text", let text = update.text {
+                    // Create a new text box
+                    print("made new textbox")
+                    let newTextbox = await TextBoxEntity(text: text)
+                    newTextbox.name = update.id.uuidString
+                    newTextbox.position = SIMD3<Float>(x: update.position[0], y: update.position[1], z: update.position[2])
+                    newTextbox.scale = SIMD3<Float>(repeating: Float(update.scale))
+                    let rotation = simd_quatf(ix: update.rotation[0], iy: update.rotation[1], iz: update.rotation[2], r: update.rotation[3])
+                    newTextbox.transform.rotation = rotation
+
+                    entityPos.append(.zero)
+                    counter += 1
+
+
+                    DispatchQueue.main.async {
+                        self.anchor?.addChild(newTextbox)
+                    }
+                } else if update.type == "image", let imageData = update.imageURL, let uiImage = await fbVM.getImageFromURL(urlString: imageData) {
+                    // Create a new image entity
+                    print("transfer here")
+                    let newImage = await FramedImageEntity(image: uiImage, frameType: update.frame == "classic" ? FrameType.classic : FrameType.polaroid)
+                    newImage.name = update.id.uuidString
+                    newImage.position = SIMD3<Float>(x: update.position[0], y: update.position[1], z: update.position[2])
+                    newImage.scale = SIMD3<Float>(repeating: Float(update.scale))
+                    let rotation = simd_quatf(ix: update.rotation[0], iy: update.rotation[1], iz: update.rotation[2], r: update.rotation[3])
+                    newImage.transform.rotation = rotation
+
+                    entityPos.append(.zero)
+                    counter += 1
+
+                    DispatchQueue.main.async {
+                        self.anchor?.addChild(newImage)
+                    }
+                }
+            }
         }
     }
     
