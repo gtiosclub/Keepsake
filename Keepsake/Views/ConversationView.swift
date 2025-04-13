@@ -47,6 +47,9 @@ struct ConversationView: View {
     var journalIndex: Int
     var entryIndex: Int
     var pageIndex: Int
+    
+    
+    @State private var displayedMessages: [String] = []
 
     var body: some View {
         NavigationStack {
@@ -101,13 +104,10 @@ struct ConversationView: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         VStack(alignment: .leading, spacing: 30) {
-                            ForEach(Array(aiVM.conversationHistory.enumerated()), id: \.offset) { index, message in
+                            ForEach(Array(displayedMessages.enumerated()), id: \.offset) { index, message in
                                 if message.starts(with: "User:") {
                                     HStack {
                                         HStack(spacing: 5) {
-                                            Image(systemName: "pencil")
-                                                .foregroundColor(.gray)
-                                                .font(.system(size: 30))
                                             Text(message.replacingOccurrences(of: "User: ", with: ""))
                                                 .padding()
                                                 .background(Color(hex: "#5abbd1").opacity(0.8))
@@ -147,12 +147,16 @@ struct ConversationView: View {
                             }
                         }
                     }
-                    .onChange(of: aiVM.conversationHistory) { newHistory in
-                        if !newHistory.isEmpty {
+                    .onChange(of: displayedMessages) { newDisplayed in
+                        if !newDisplayed.isEmpty {
                             withAnimation {
-                                proxy.scrollTo(newHistory.count - 1, anchor: .bottom)
+                                proxy.scrollTo(newDisplayed.count - 1, anchor: .bottom)
                             }
                         }
+                    }
+                    .onChange(of: aiVM.conversationHistory) { newHistory in
+                        displayedMessages = newHistory
+                    
                         Task {
                             let success = await fbVM.addConversationLog(text: newHistory, journalEntry: convoEntry.id)
                             if !success {
@@ -203,6 +207,10 @@ struct ConversationView: View {
                 
                 if aiVM.conversationHistory.isEmpty {
                     await aiVM.startConversation(entry: convoEntry)
+                }
+                
+                await MainActor.run {
+                    displayedMessages = aiVM.conversationHistory
                 }
             }
         }

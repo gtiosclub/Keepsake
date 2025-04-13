@@ -63,10 +63,11 @@ struct SearchOverlayView: View {
                                     print(entryIndex)
                                     selectedEntry = entryIndex
                                     displayPageIndex = pageIndex
+                                    inEntry = journalEntry.type
                                     break
                                 }
                             }
-                            inEntry = journalEntry.type
+                            
                         }
                 }
             }
