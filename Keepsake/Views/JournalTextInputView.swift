@@ -20,7 +20,7 @@ struct JournalTextInputView: View {
     @State var date: String = ""
     @State var inputText: String = ""
     @Binding var inEntry: EntryType
-    var textfieldPrompt: String = "Enter Prompt"
+    var textfieldPrompt: String = "Enter Title"
     var entry: WrittenEntry
     @State var showPromptSheet: Bool = false
     @State var selectedPrompt: String? = ""

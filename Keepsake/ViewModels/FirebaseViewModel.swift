@@ -874,8 +874,8 @@ class FirebaseViewModel: ObservableObject {
         do {
             let document = try await journalEntryReference.getDocument()
             if let dict = document.data() {
-                var x = JournalEntry.fromDictionary(dict)
-                print(x)
+//                let je: JournalEntry = (JournalEntry.fromDictionary(dict) as JournalEntry?)!
+//                print(je.id)
                 return JournalEntry.fromDictionary(dict)
             } else {
                 print("fake entry improperly returned")
