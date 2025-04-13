@@ -9,6 +9,8 @@ import SwiftUI
 struct AudioFilesView: View {
     @State var remindersWithAudio: [(reminder: Reminder, audioUrl: String)]
     @State private var isChecked: Bool = false
+    
+
     var body: some View {
         VStack {
             if remindersWithAudio.isEmpty {
@@ -69,16 +71,16 @@ struct AudioFilesView: View {
                 }
             }
         }
+        
         .onAppear {
             print("View appeared, current count: \(remindersWithAudio.count)")
             if remindersWithAudio.count == 0 {
                 fetchAllAudioFiles()
             }
-            
             print("View appeared, current count: \(remindersWithAudio.count)")
         }
     }
-
+    
     func fetchAllAudioFiles() {
         #if os(iOS)
         Task {
@@ -89,6 +91,8 @@ struct AudioFilesView: View {
         #endif
         #if os(watchOS)
         Connectivity.shared.requestAudioFiles()
+        print(Connectivity.shared.watchRemindersWithAudio.count)
+        print(Connectivity.shared.remindersWithAudio.count)
         #endif
     }
 }

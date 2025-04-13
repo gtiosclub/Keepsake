@@ -12,20 +12,44 @@ struct SplashView: View {
     @EnvironmentObject var reminderViewModel: RemindersViewModel
     @State private var isActive = false
     @State private var navigateToHomeFromNotification = false
-
+    @State private var navigateToAudioFiles = false
+    @State private var navigateToProfile = false
+    let aiVM = AIViewModel()
         var body: some View {
             Group {
                 if isActive {
                     NavigationStack {
                         if let user = viewModel.currentUser {
                             if navigateToHomeFromNotification {
-                                HomeView(
-                                    userVM: UserViewModel(user: user),
-                                    aiVM: AIViewModel(),
-                                    fbVM: viewModel
-                                )
+                                ZStack {
+                                    ContentView(
+                                        userVM: UserViewModel(user: user),
+                                        aiVM: aiVM,
+                                        fbVM: viewModel,
+                                        selectedTab: .home
+                                    )
+                                    .environmentObject(reminderViewModel)
+
+                                    ViewControllerWrapper(aiViewModel: aiVM)
+                                        .frame(width: 0, height: 0)
+                                        .hidden()
+                                }
+                            } else if navigateToProfile {
+                                ZStack {
+                                    ContentView(
+                                        userVM: UserViewModel(user: user),
+                                        aiVM: aiVM,
+                                        fbVM: viewModel,
+                                        selectedTab: .profile
+                                    )
+                                    .environmentObject(reminderViewModel)
+
+                                    ViewControllerWrapper(aiViewModel: aiVM)
+                                        .frame(width: 0, height: 0)
+                                        .hidden()
+                                }
                             } else {
-                                let aiVM = AIViewModel()
+                                
                                 ZStack {
                                     ContentView(
                                         userVM: UserViewModel(user: user),
@@ -46,6 +70,10 @@ struct SplashView: View {
                     .onReceive(NotificationCenter.default.publisher(for: .navigateToHome)) { _ in
                         navigateToHomeFromNotification = true
                     }
+                    .onReceive(NotificationCenter.default.publisher(for: .navigateToProfile)) { _ in
+                          navigateToProfile = true
+                    }
+                    
                 } else {
                     VStack(spacing: 8) {
                         Image("KeepsakeIcon")
@@ -68,11 +96,11 @@ struct SplashView: View {
                 }
             }
             .onAppear {
-                // If initializedUser is already true (from previous runs)
                 if viewModel.initializedUser {
                     isActive = true
                 }
             }
+            
         }
     }
 
