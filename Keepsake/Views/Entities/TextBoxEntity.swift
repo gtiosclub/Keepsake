@@ -10,8 +10,8 @@ import RealityKit
 
 class TextBoxEntity: Entity {
     
-    private var textEntity: Entity
-    private var textComponent: TextComponent
+    var textEntity: Entity
+    var textComponent: TextComponent
     
     var currentFont: String = "Helvetica"
     var currentSize: CGFloat = 200
@@ -78,6 +78,92 @@ class TextBoxEntity: Entity {
         attributedtext.font = newFont
         
         attributedtext.foregroundColor = currentTextColor
+        textComponent.text = attributedtext
+        
+        
+        
+        let maxSize = CGSize(width: 2000, height: CGFloat.greatestFiniteMagnitude)
+        let nsString = NSAttributedString(string: text, attributes: [.font: newFont])
+        let boundingRect = nsString.boundingRect(with: maxSize, options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
+        let textSize = CGSize(width: ceil(boundingRect.width), height: ceil(boundingRect.height))
+        
+        let horizontalPadding: CGFloat = 100  // more than enough
+        let verticalPadding: CGFloat = 50
+        let totalWidth = ceil(textSize.width + 2 * horizontalPadding)
+        let totalHeight = ceil(textSize.height + 2 * verticalPadding)
+        textComponent.size = CGSize(width: Int(totalWidth), height: Int(totalHeight))
+        textComponent.edgeInsets = UIEdgeInsets(top: verticalPadding, left: horizontalPadding,
+                                                bottom: verticalPadding, right: horizontalPadding)
+        textComponent.cornerRadius = Float(min(totalWidth, totalHeight)) * 0.1
+        
+
+
+        // Adds the component to the entity's set of components (each component gives the entity a different behavior)
+        textEntity.components.set(textComponent)
+        textEntity.components.set([InputTargetComponent(),
+                                   CollisionComponent(shapes: [ShapeResource.generateBox(width: Float(totalWidth), height: Float(totalHeight), depth: 0.01),])])
+        
+        
+        // Adds entity to parent view --> basically the "return" statement if my understanding is correct
+        self.addChild(textEntity)
+    }
+    
+    init(text: String, font: String, size: CGFloat, isBold: Bool, isItalic: Bool, isUnderlined: Bool, textColor: Color, backgroundColor: CGColor?) {
+        // Creates the text box entity
+        textEntity = Entity()
+        
+        // Create the TextComponent component (built-in component that includes a mesh background)
+        textComponent = TextComponent()
+        
+        super.init()
+        textComponent.backgroundColor = backgroundColor
+//        textComponent.backgroundColor = UIColor.white.cgColor
+
+        
+        // TextComponent takes in a Attributed String instead of a normal string so needs extra work to instantiate
+        var attributedtext = AttributedString(text)
+//        let fontToUse = UIFont.boldSystemFont(ofSize: 200)
+        
+        var fontDescriptor: UIFontDescriptor
+        
+        // Try to create font descriptor with the requested font family
+        // Check if the requested font exists
+        if UIFont.fontNames(forFamilyName: font).count > 0 {
+            // Font family exists, try to get the regular font
+            if let font = UIFont(name: font, size: size) {
+                fontDescriptor = font.fontDescriptor
+            } else {
+                // Fall back to system font if exact font name not found
+                fontDescriptor = UIFont.systemFont(ofSize: size).fontDescriptor
+                print("Exact font \(font) not found. Falling back to system font.")
+            }
+        } else {
+            // Font family doesn't exist, use system font
+            fontDescriptor = UIFont.systemFont(ofSize: size).fontDescriptor
+            print("Font family \(font) not found. Falling back to system font.")
+        }
+
+        // Handle font traits
+        var traits = UIFontDescriptor.SymbolicTraits()
+        if isBold {
+            // currentFont = .boldSystemFont(ofSize: size)
+            traits.insert(.traitBold)
+        }
+        if isItalic {
+            // currentFont = .italicSystemFont(ofSize: size)
+            traits.insert(.traitItalic)
+        }
+        
+        // attributedText.font = currentFont
+        
+        if !traits.isEmpty {
+            fontDescriptor = fontDescriptor.withSymbolicTraits(traits) ?? fontDescriptor
+        }
+        
+        let newFont = UIFont(descriptor: fontDescriptor, size: size)
+        attributedtext.font = newFont
+        
+        attributedtext.foregroundColor = textColor
         textComponent.text = attributedtext
         
         

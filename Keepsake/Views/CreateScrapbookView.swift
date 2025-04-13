@@ -634,13 +634,21 @@ struct CreateScrapbookView: View {
                  We get the parent instead of just the entity because
                  the entity will be the collsion shape attached to the entity instead of the entity itself
                  */
-                if let selected = value.hitTest(point: value.location, in: .local).first?.entity.parent {
+                
+                let hits = value.hitTest(point: value.location, in: .local)
+//                if let closestHit = hits.sorted(by: { $0.distance < $1.distance }).first {
+                //   selectedEntity = closestHit.entity.parent
+                //}
+                
+//                if let selected = value.hitTest(point: value.location, in: .local).first?.entity.parent {
+                if let closestHit = hits.sorted(by: { $0.distance < $1.distance }).first {
                     if let previousSelected = selectedEntity as? TextBoxEntity{
                         previousSelected.setSelected(false)
                     } else if let previousSelected = selectedEntity as? FramedImageEntity{
                         previousSelected.setSelected(false)
                     }
-                    selectedEntity = selected
+//                    selectedEntity = selected
+                    selectedEntity = closestHit.entity.parent
                     if let nextSelected = selectedEntity as? TextBoxEntity{
                         nextSelected.setSelected(true)
                         print("changing opacity")
@@ -656,12 +664,25 @@ struct CreateScrapbookView: View {
     var magnificationGesture: some Gesture {
         MagnificationGesture()
             .onChanged { value in
-                currentScale = finalScale * value
-                selectedEntity?.scale = SIMD3<Float>(repeating: Float(currentScale))
+            // Update current scale based on the gesture
+            currentScale = finalScale * value
+            
+            // Apply scale to the entity
+            if let entity = selectedEntity {
+                entity.scale = SIMD3<Float>(repeating: Float(currentScale))
+                // Update collision shape to match new scale
+                updateCollisionShape(for: entity, scale: Float(currentScale))
             }
-            .onEnded { value in
-                finalScale = currentScale
+        }
+        .onEnded { value in
+            // Store the final scale for next gesture
+            finalScale = currentScale
+            
+            // Ensure collision shape is updated with final scale
+            if let entity = selectedEntity {
+                updateCollisionShape(for: entity, scale: Float(finalScale))
             }
+        }
     }
     
     // function to get a UIImage out of a PhotosPickerItem
@@ -680,6 +701,20 @@ struct CreateScrapbookView: View {
             let cgColor = uiColor.cgColor
             
             editingTextEntity.updateText(textInput, font: selectedFont, size: fontSize, isBold: isBold, isItalic: isItalic, isUnderlined: isUnderlined, textColor: textColor, backgroundColor: cgColor)
+        }
+    }
+    
+    func updateCollisionShape(for entity: Entity, scale: Float) {
+        // Create new appropriately sized collision component
+        if let textEntity = entity as? TextBoxEntity {
+            let scaledWidth = Float(textEntity.textComponent.size.width) * scale
+            let scaledHeight = Float(textEntity.textComponent.size.height) * scale
+            textEntity.textEntity.components[CollisionComponent.self] = CollisionComponent(shapes: [ShapeResource.generateBox(width: scaledWidth, height: scaledHeight, depth: 0.05)])
+        } else if let framedImage = entity as? FramedImageEntity {
+            // Similar logic for framed images
+            let scaledWidth = Float(framedImage.image.size.width) * scale
+            let scaledHeight = Float(framedImage.image.size.height) * scale
+            framedImage.imageEntity.components[CollisionComponent.self] = CollisionComponent(shapes: [ShapeResource.generateBox(width: scaledWidth, height: scaledHeight, depth: 0.05)])
         }
     }
 }
