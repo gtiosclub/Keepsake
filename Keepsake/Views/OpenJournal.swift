@@ -9,6 +9,8 @@ import SwiftUI
 
 
 
+
+
 struct OpenJournal: View {
     @Namespace private var openJournalNamespace
 //    @State var book: any Book
@@ -174,6 +176,21 @@ struct OpenJournal: View {
         }
     }
     
+}
+
+extension Color {
+    func darker(by percentage: Double) -> Color {
+        let uiColor = UIColor(self)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(
+            red: Double(max(red - CGFloat(percentage), 0)),
+            green: Double(max(green - CGFloat(percentage), 0)),
+            blue: Double(max(blue - CGFloat(percentage), 0))
+        )
+    }
 }
 
 
@@ -428,16 +445,23 @@ struct JournalDisplayView: View {
     }
     
     var addAnEntryView: some View {
-        VStack {
+        let darkerCoverColor = journal.template.coverColor.darker(by: 0.2)
+
+        return VStack {
             Image(systemName: "plus.bubble")
                 .font(.system(size: 50))
-                .foregroundStyle(journal.template.coverColor)
+                .foregroundStyle(darkerCoverColor)
                 .frame(maxWidth: .infinity, alignment: .center)
             Text("add an entry!")
                 .font(.system(size: 20))
-                .foregroundStyle(journal.template.coverColor)
+                .foregroundStyle(darkerCoverColor)
                 .frame(maxWidth: .infinity, alignment: .center)
-        }.opacity(0.8)
+        }
+        .opacity(0.8)
+    }
+    
+    private var darkerCoverColor: Color {
+        journal.template.coverColor.opacity(0.8).brightness(-0.2) as! Color
     }
 }
 

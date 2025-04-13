@@ -69,6 +69,10 @@ struct CreateScrapbookView: View {
     @State var polaroidFrameSelected: Bool = false
     @State var flowerFrameSelected: Bool = false
     
+    @State var isPublished: Bool = false
+    @State var isShareShowing: Bool = false
+    @State var isCollaborating: Bool = false
+    
     @StateObject private var multipeerSession: MultipeerSession
     
     init(fbVM: FirebaseViewModel, userVM: UserViewModel, scrapbook: Scrapbook) {
@@ -113,13 +117,18 @@ struct CreateScrapbookView: View {
                 .gesture(magnificationGesture)
             
             VStack {
-                Spacer()
+                //Spacer()
                 if isEditing {
                     TextEditView
-                    Spacer()
+                    // Spacer()
                 } else if isCustomizingImage {
+                    Spacer()
                     ImageCustomizationView
+                } else if isShareShowing {
+                    Spacer()
+                    ShareView
                 } else {
+                    Spacer()
                     ToolBarView
                         .padding()
                         .padding(.bottom, 20)
@@ -293,7 +302,7 @@ struct CreateScrapbookView: View {
                     }.disabled(selectedEntity == nil)
                     
                     Button {
-                        
+                        isShareShowing = true
                     } label : {
                         ZStack {
                             Circle()
@@ -592,6 +601,53 @@ struct CreateScrapbookView: View {
         .padding()
     }
     
+    private var ShareView: some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .cornerRadius(20, corners: [.topLeft, .topRight])
+            VStack {
+                Text("Share")
+                    .font(.system(size: 30, weight: .bold))
+                Spacer()
+                Toggle(isOn: $isPublished) {
+                    Text("Publish to Community")
+                        .font(.system(size: 20))
+                }
+                HStack {
+                    Text("Anyone will be able to view this Scrapbook if published")
+                        .font(.system(size: 12, weight: .bold))
+                        .italic()
+                    Spacer()
+                }.padding(.vertical, 3)
+                Spacer()
+                Toggle(isOn: $isCollaborating) {
+                    Text("Enable Real-time Collaboration")
+                        .font(.system(size: 20))
+                }
+                HStack {
+                    Text("People around you will be able to work on this Scrapbook")
+                        .font(.system(size: 12, weight: .bold))
+                        .italic()
+                    Spacer()
+                }.padding(.vertical, 3)
+                Spacer()
+            }.padding()
+            VStack {
+                HStack {
+                    Spacer()
+                    Button {
+                        isShareShowing = false
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.title2)
+                    }
+                }.padding()
+                Spacer()
+            }.padding(10)
+            
+        }.frame(maxWidth: .infinity, maxHeight: 300)
+    }
     
     // drag gesture to move the entities around in a sphere-like shape
     // gets change in 2D drag distance and converts that into 3D transformations
@@ -783,22 +839,3 @@ struct RoundedCorner: Shape {
         return Path(path.cgPath)
     }
 }
-
-//struct ShareView: View {
-//    var body: some View {
-//        VStack {
-//            Spacer()
-//            ZStack {
-//                Rectangle()
-//                    .fill(.ultraThinMaterial)
-//                    .cornerRadius(20, corners: [.topLeft, .topRight])
-//                
-//            }
-//        }
-//    }
-//}
-//
-//#Preview {
-//    ShareView()
-//        .frame(maxWidth: .infinity, maxHeight: 600)
-//}

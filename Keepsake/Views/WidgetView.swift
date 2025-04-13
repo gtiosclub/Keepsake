@@ -41,6 +41,7 @@ struct WidgetView: View {
                                     showDeleteButton = -1
                                     isWiggling = false
                                 }  else {
+                                    print(widget)
                                     selectedEntry = index
                                     // Disable animations for this specific state change
                                     var transaction = Transaction()

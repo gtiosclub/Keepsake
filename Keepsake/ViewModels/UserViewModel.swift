@@ -50,6 +50,10 @@ class UserViewModel: ObservableObject {
         return user.communityScrapbooks
     }
     
+    func setCommunityScrapbooks(scrapbooks: [Scrapbook: [UserInfo]]) {
+        user.communityScrapbooks = scrapbooks
+    }
+    
     func filterCommunityScrapbooks(userID: String) -> [Scrapbook] {
         return user.communityScrapbooks
             .filter { $0.value.contains { $0.userID == userID } }  // Filter scrapbooks containing the user

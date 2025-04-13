@@ -18,6 +18,7 @@ extension Notification.Name {
 }
 class ViewController: UIViewController {
     @ObservedObject var aiViewModel = AIViewModel()
+    @ObservedObject var firebaseViewModel = FirebaseViewModel()
     override func viewDidLoad() {
         print("hi")
         super.viewDidLoad()
@@ -39,7 +40,7 @@ class ViewController: UIViewController {
     }
     func dispatchNotification() {
         print("Scheduling notification now with prompt")
-        let title = "Keep Journaling!"
+        
         var prompt = ""
         Task {
             try await Task.sleep(for: .seconds(10))
