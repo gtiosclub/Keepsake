@@ -42,6 +42,10 @@ struct ShelfView: View {
             if !show {
                 shelfParent
                     .ignoresSafeArea(.container, edges: .top)
+                    .transition(.asymmetric(
+                        insertion: .opacity.animation(.linear),
+                        removal: .opacity.animation(.linear.delay(0.2))
+                    ))
             } else {
                 switch(inEntry) {
                 case .written:
@@ -55,10 +59,7 @@ struct ShelfView: View {
                         .transition(.identity)
                 default:
                     openJournalView
-                        .transition(.asymmetric(
-                            insertion: .identity,
-                            removal: inEntry == .openJournal ? .identity : .opacity.animation(.easeOut(duration: 2.0))
-                        ))
+                        
                 }
             }
         }
@@ -75,7 +76,6 @@ struct ShelfView: View {
                             .allowsHitTesting(false)
                             .zIndex(-1)
                             .transition(.opacity)
-                            .animation(.easeIn(duration: 0.3).delay(0.5), value: show)
                             .animation(.easeOut(duration: 0.3).delay(0.5), value: show)// <-- delay re-entry
                     }.frame(maxHeight: .infinity, alignment: .top)
                         .ignoresSafeArea(.container, edges: .top)
