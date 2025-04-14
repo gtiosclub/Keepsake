@@ -11,6 +11,7 @@ import PhotosUI
 enum EntrySize {
     case small, medium, large
 }
+//trivial change
 struct WidgetView: View {
     var width: CGFloat
     var height: CGFloat

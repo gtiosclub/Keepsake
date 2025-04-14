@@ -366,7 +366,7 @@ struct JournalDisplayView: View {
                         .padding(.top, 10)
                         .opacity(displayIsHidden ? 0 : 1)
                 }
-                if (journal.pages[displayPageIndex].realEntryCount == 0) {
+                if (displayPageIndex < journal.pages.count && displayPageIndex > -1 && journal.pages[displayPageIndex].realEntryCount == 0) {
                     addAnEntryView
                         .frame(maxHeight: .infinity)
                         .transition(
