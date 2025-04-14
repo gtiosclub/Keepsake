@@ -42,7 +42,7 @@ struct ContentView: View {
                         }
                         .tag(TabType.community)
 
-                    ProfileView(retrievedImage: fbVM.retrievedImage)
+                    ProfileView(retrievedImage: image)
                         .tabItem {
                             Label("Profile", systemImage: "person.crop.circle")
                         }
