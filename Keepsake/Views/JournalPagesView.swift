@@ -42,7 +42,7 @@ struct JournalPagesView: View {
             // Picker for toggling between All and Favorites
             Text("Page Elements")
                 .font(.title)
-                .padding(.top, 20)
+                .padding(.vertical, 8)
             Picker("Filter Pages", selection: $selectedOption) {
                 Text("All").tag(0)
                 Text("Favorites").tag(1)

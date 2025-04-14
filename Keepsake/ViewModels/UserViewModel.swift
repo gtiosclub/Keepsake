@@ -58,9 +58,7 @@ class UserViewModel: ObservableObject {
         return user.communityScrapbooks
             .filter { $0.value.contains { $0.userID == userID } }  // Filter scrapbooks containing the user
             .map { $0.key }  // Extract just the Scrapbook objects
-            .sorted { $0.id.uuidString < $1.id.uuidString }  // Sort by ID for consistent ordering
     }
-    
     
     func removeFriend(friendID: String) {
         if let index = user.friends.firstIndex(of: friendID) {

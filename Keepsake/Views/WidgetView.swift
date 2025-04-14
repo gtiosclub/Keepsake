@@ -417,9 +417,9 @@ struct VoiceMemoEntryView: View {
 
     var iconSize: CGFloat {
         switch entry.entrySize {
-        case .small: return fontSize
-        case .medium: return fontSize * 1.4
-        case .large: return fontSize * 1.8
+        case .small: return 25
+        case .medium: return 35
+        case .large: return 45
         }
     }
 

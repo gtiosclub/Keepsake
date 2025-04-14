@@ -33,7 +33,7 @@ struct JournalCover: View {
                         .opacity(0.4) // Adjust for realism
                 )
             RoundedRectangle(cornerRadius: 10)
-                .fill(.white)
+                .fill(template.coverColor)
                 .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
                 .shadow(color: .black.opacity(0.3), radius: 5, x: 5, y: 5)
             ZStack {
