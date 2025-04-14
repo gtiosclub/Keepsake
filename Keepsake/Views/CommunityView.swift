@@ -8,208 +8,285 @@ import SwiftUI
 
 
 struct CommunityView: View {
+    // MARK: - Properties (keep all your existing properties)
     @ObservedObject var userVM: UserViewModel
     @ObservedObject var fbVM: FirebaseViewModel
-    @State var communityScrapbooks: [Scrapbook : [UserInfo]] = [:]
-    @State var savedScrapbooks: [Scrapbook] = [] {
-        didSet {
-            userVM.updateSavedScrapbooks(scrapbooks: savedScrapbooks)
-            Task {
-                await fbVM.updateSavedScrapbooks(userID: userVM.user.id, newScrapbooks: savedScrapbooks)
-            }
-        }
-    }
+    @State var communityScrapbooks: [Scrapbook: [UserInfo]] = [:]
+    @State var savedScrapbooks: [Scrapbook] = []
     @State var indexedScrapbooks: [Scrapbook] = []
     @State private var isLoading = false
     @State private var error: Error?
-    @State var scaleEffect = 0.4
     @State private var searchText = ""
-    //@StateObject private var viewModel = UserLookupViewModel()
-    @State var dummy: Bool = false
+    @State private var selectedViewType = "Public Works"
+    @State private var layoutMetrics = LayoutMetrics()
     @State var retrievedImage: UIImage?
-    @State private var selectedViewType = "Public Works" // New state for picker
     
-    let viewTypes = ["Public Works", "Saved"] // Picker options
-    
-    
-    var filteredScrapbooks: [Scrapbook] {
-        switch selectedViewType {
-        case "Saved":
-            return savedScrapbooks
-        default:
-            return indexedScrapbooks
+    // MARK: - Adaptive Layout Metrics
+    private struct LayoutMetrics {
+        var coverAspectRatio: CGFloat = 0.7 // Width to height ratio
+        var coverWidthFraction: CGFloat = 0.43 // Fraction of screen width
+        var coverHeight: CGFloat {
+            return coverWidth / coverAspectRatio
         }
+        var coverWidth: CGFloat {
+            return UIScreen.main.bounds.width * coverWidthFraction
+        }
+        var bookmarkSize: CGSize = CGSize(width: 20, height: 43)
+        var profileImageSize: CGFloat = 50
+        var userImageSize: CGFloat = 25
     }
+    
+    // MARK: - Views
     
     var body: some View {
         NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 20) {
-                    // Header
-                    VStack {
-                        HStack {
-                            Text("Community")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Spacer()
-                            profileImage
-                        }.padding(.horizontal, 20)
-                        
-                        // Search bar
-                        NavigationLink(destination: UserSearchView(viewModel: fbVM, userVM: userVM)) {
-                            HStack {
-                                Image(systemName: "magnifyingglass")
-                                    .foregroundColor(.gray)
-                                Text("Search for users...")
-                                    .foregroundColor(.gray)
-                                Spacer()
-                            }
-                            .padding(12)
-                            .background(Color(.systemGray6))
-                            .cornerRadius(25)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color.black, lineWidth: 0.5)
-                            )
-                            .padding(.horizontal, 20)
-                        }
-                    }
-                    .padding(.top, 10)
-                    
-                    // Picker for view type
-                    HStack(spacing: 15) {  // Reduced from 30 to 20
-                        ForEach(viewTypes, id: \.self) { type in
-                            Button(action: {
-                                selectedViewType = type
-                            }) {
-                                VStack(spacing: 4) {
-                                    Text(type)
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(selectedViewType == type ? .primary : .gray)
-                                    
-                                    Capsule()
-                                        .frame(height: 2)
-                                        .foregroundColor(selectedViewType == type ? .primary : .clear)
-                                        .frame(width: type == "Public Works" ? 100 : 70)  // Custom width for each underline
-                                }
-                                .frame(width: 100)  // Fixed width for each option
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    
-                    // Scrapbooks grid
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 25) {
-                        ForEach(filteredScrapbooks) { scrapbook in
-                            VStack(alignment: .center) {
-                                NavigationLink {
-                                    CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
-                                } label: {
-                                    ZStack {
-                                        JournalCover(
-                                            template: scrapbook.template,
-                                            degrees: 0,
-                                            title: scrapbook.name,
-                                            showOnlyCover: $dummy,
-                                            offset: false
-                                        )
-                                        .transition(.identity)
-                                        .scaleEffect(scaleEffect)
-                                        .frame(
-                                            width: UIScreen.main.bounds.width * 0.4,
-                                            height: UIScreen.main.bounds.height * 0.25
-                                        )
-                                        SharpBookmark()
-                                            .rotationEffect(.degrees(180))
-                                            .frame(width: 20, height: 43)
-                                            .offset(x: 40, y: -77)
-                                            .foregroundStyle(
-                                                savedScrapbooks.contains(where: { $0.id == scrapbook.id }) ?
-                                                    .yellow :
-                                                        .white)
-                                            .onTapGesture(perform: {
-                                                if let index = savedScrapbooks.firstIndex(where: { $0.id == scrapbook.id }) {
-                                                    savedScrapbooks.remove(at: index)
-                                                } else {
-                                                    savedScrapbooks.append(scrapbook)
-                                                }
-                                            })
-                                    }
-                                }
-                                
-                                VStack(alignment: .center, spacing: 3) {
-                                    Text(scrapbook.name)
-                                        .font(.headline)
-                                        .fontWeight(.medium)
-                                        .foregroundColor(.primary)
-                                        .multilineTextAlignment(.center)
-                                    
-                                    HStack(spacing: 5) {
-                                        // Safely get user info
-                                        if let users = communityScrapbooks[scrapbook],
-                                           let firstUser = users.first {
-                                            if let profilePic = firstUser.profilePic {
-                                                Image(uiImage: profilePic)
-                                                    .resizable()
-                                                    .scaledToFill()
-                                                    .frame(width: 25, height: 25)
-                                                    .clipShape(Circle())
-                                            } else {
-                                                Image(systemName: "person.circle")
-                                                    .resizable()
-                                                    .scaledToFit()
-                                                    .frame(width: 25, height: 25)
-                                            }
-                                            
-                                            // User Name
-                                            Text("by \(firstUser.name)")
-                                                .font(.footnote)
-                                                .foregroundColor(.gray)
-                                            
-                                        } else {
-                                            // Fallback when no user info available
-                                            Image(systemName: "person.circle")
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(width: 15, height: 15)
-                                            
-                                            Text("by User")
-                                                .font(.footnote)
-                                                .foregroundColor(.gray)
-                                        }
-                                    }
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                            .padding(.bottom, 20)
-                        }
-                        if isLoading {
-                            ProgressView()
-                                .frame(
-                                    width: UIScreen.main.bounds.width * 0.4,
-                                    height: UIScreen.main.bounds.height * 0.25
-                                )
-                                .padding(.bottom, 20)
-                        }
-                    }
-                    .padding(.horizontal, 20)
+                    headerView
+                    searchBarView
+                    viewTypePicker
+                    scrapbooksGrid
                 }
                 .frame(maxWidth: .infinity)
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        .onAppear() {
-            communityScrapbooks = userVM.getCommunityScrapbooks()
-            savedScrapbooks = userVM.getSavedScrapbooks()
-            Task {
-                await loadCommunityScrapbooks()
+        .onAppear(perform: loadInitialData)
+    }
+    
+    private var headerView: some View {
+        VStack {
+            HStack {
+                Text("Community")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                Spacer()
+                profileImage
+            }
+            .padding(.horizontal, 20)
+        }
+        .padding(.top, 10)
+    }
+    
+    private var searchBarView: some View {
+        NavigationLink(destination: UserSearchView(viewModel: fbVM, userVM: userVM)) {
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
+                Text("Search for users...")
+                    .foregroundColor(.gray)
+                Spacer()
+            }
+            .padding(12)
+            .background(Color(.systemGray6))
+            .cornerRadius(25)
+            .overlay(
+                RoundedRectangle(cornerRadius: 25)
+                    .stroke(Color.black, lineWidth: 0.5)
+            )
+            .padding(.horizontal, 20)
+        }
+    }
+    
+    private var viewTypePicker: some View {
+        HStack(spacing: 15) {
+            ForEach(viewTypes, id: \.self) { type in
+                Button(action: { selectedViewType = type }) {
+                    VStack(spacing: 4) {
+                        Text(type)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(selectedViewType == type ? .primary : .gray)
+                        
+                        Capsule()
+                            .frame(height: 2)
+                            .foregroundColor(selectedViewType == type ? .primary : .clear)
+                            .frame(width: type == "Public Works" ? 100 : 70)
+                    }
+                    .frame(width: 100)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 8)
+    }
+    
+    private var scrapbooksGrid: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 200), spacing: 25)]) {
+            ForEach(filteredScrapbooks) { scrapbook in
+                scrapbookCard(scrapbook)
+            }
+            
+            if isLoading {
+                ProgressView()
+                    .frame(width: layoutMetrics.coverWidth,
+                           height: layoutMetrics.coverHeight)
+                    .padding(.bottom, 20)
+            }
+        }
+        .padding(.horizontal, 20)
+    }
+    
+    private func scrapbookCard(_ scrapbook: Scrapbook) -> some View {
+        VStack(alignment: .center) {
+            NavigationLink {
+                CreateScrapbookView(fbVM: fbVM, userVM: userVM, scrapbook: scrapbook)
+            } label: {
+                ZStack {
+                    JournalCover(
+                        template: scrapbook.template,
+                        degrees: 0,
+                        title: scrapbook.name,
+                        showOnlyCover: .constant(false),
+                        offset: false
+                    )
+                    .scaleEffect(scaleEffect)
+                    .frame(width: layoutMetrics.coverWidth,
+                           height: layoutMetrics.coverHeight)
+                    .clipped()
         
+                    
+                    bookmarkView(for: scrapbook)
+                }
+            }
+            
+            scrapbookDetails(for: scrapbook)
+        }
+        .padding(.bottom, 10)
+    }
+    
+    private func bookmarkView(for scrapbook: Scrapbook) -> some View {
+        SharpBookmark()
+            .rotationEffect(.degrees(180))
+            .frame(width: layoutMetrics.bookmarkSize.width,
+                   height: layoutMetrics.bookmarkSize.height)
+            .offset(x: layoutMetrics.coverWidth * 0.3,
+                    y: -layoutMetrics.coverHeight * 0.387)
+            .foregroundStyle(
+                savedScrapbooks.contains { $0.id == scrapbook.id } ? .yellow : .white
+            )
+            .onTapGesture {
+                toggleSaveStatus(for: scrapbook)
+            }
+            
+    }
+    
+    private func scrapbookDetails(for scrapbook: Scrapbook) -> some View {
+        VStack(alignment: .center, spacing: 3) {
+            Text(scrapbook.name)
+                .font(.headline)
+                .fontWeight(.medium)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            
+            if let users = communityScrapbooks[scrapbook],
+               let firstUser = users.first {
+                userInfoView(firstUser)
+            } else {
+                defaultUserInfoView
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    private func userInfoView(_ user: UserInfo) -> some View {
+        HStack(spacing: 5) {
+            if let profilePic = user.profilePic {
+                Image(uiImage: profilePic)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: layoutMetrics.userImageSize,
+                           height: layoutMetrics.userImageSize)
+                    .clipShape(Circle())
+            } else {
+                Image(systemName: "person.circle")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: layoutMetrics.userImageSize,
+                           height: layoutMetrics.userImageSize)
+            }
+            
+            Text("by \(user.name)")
+                .font(.footnote)
+                .foregroundColor(.gray)
+        }
+    }
+    
+    private var defaultUserInfoView: some View {
+        HStack(spacing: 5) {
+            Image(systemName: "person.circle")
+                .resizable()
+                .scaledToFit()
+                .frame(width: layoutMetrics.userImageSize * 0.6,
+                       height: layoutMetrics.userImageSize * 0.6)
+            
+            Text("by User")
+                .font(.footnote)
+                .foregroundColor(.gray)
+        }
+    }
+    
+    private var profileImage: some View {
+        Group {
+            if let profileImage = retrievedImage {
+                Image(uiImage: profileImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: layoutMetrics.profileImageSize,
+                           height: layoutMetrics.profileImageSize)
+                    .clipShape(Circle())
+            } else {
+                Image(systemName: "person.crop.circle.fill")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: layoutMetrics.profileImageSize,
+                           height: layoutMetrics.profileImageSize)
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding()
+    }
+    
+    private var scaleEffect: CGFloat {
+        let originalWidth = UIScreen.main.bounds.width * 0.9
+        let originalHeight = UIScreen.main.bounds.height * 0.56
+        let originalAspect = originalWidth / originalHeight
         
+        let targetWidth = layoutMetrics.coverWidth
+        let targetHeight = layoutMetrics.coverHeight
+        let targetAspect = targetWidth / targetHeight
+        
+        // Calculate scale based on which dimension is more constrained
+        if originalAspect > targetAspect {
+            // Width-constrained (original is wider than target)
+            return targetWidth / originalWidth
+        } else {
+            // Height-constrained (original is taller than target)
+            return targetHeight / originalHeight
+        }
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func loadInitialData() {
+        communityScrapbooks = userVM.getCommunityScrapbooks()
+        savedScrapbooks = userVM.getSavedScrapbooks()
+        Task {
+            await loadCommunityScrapbooks()
+        }
+    }
+    
+    private func toggleSaveStatus(for scrapbook: Scrapbook) {
+        if let index = savedScrapbooks.firstIndex(where: { $0.id == scrapbook.id }) {
+            savedScrapbooks.remove(at: index)
+        } else {
+            savedScrapbooks.append(scrapbook)
+        }
+        userVM.updateSavedScrapbooks(scrapbooks: savedScrapbooks)
+        Task {
+            await fbVM.updateSavedScrapbooks(userID: userVM.user.id, newScrapbooks: savedScrapbooks)
+        }
     }
     
     private func loadCommunityScrapbooks() async {
@@ -217,21 +294,18 @@ struct CommunityView: View {
         error = nil
         
         do {
-            // Get all user IDs
             let userIDs = try await fbVM.getAllUserIDs()
-            print("UserIDs: \(userIDs)")
             
-            // Process each user to get their shared scrapbooks
             for userID in userIDs {
                 do {
                     let scrapbooks = try await fbVM.getUserSharedScrapbooks(userID: userID)
                     
-                    // Merge the new scrapbooks into our existing dictionary
                     await MainActor.run {
                         for (scrapbook, userInfos) in scrapbooks {
                             if !indexedScrapbooks.contains(where: { $0.id == scrapbook.id }) {
                                 indexedScrapbooks.append(scrapbook)
                             }
+                            
                             if var existingUsers = communityScrapbooks[scrapbook] {
                                 let newUserInfos = userInfos.filter { newUser in
                                     !existingUsers.contains { $0.userID == newUser.userID }
@@ -241,20 +315,17 @@ struct CommunityView: View {
                             } else {
                                 communityScrapbooks[scrapbook] = userInfos
                             }
+                            userVM.setCommunityScrapbooks(scrapbooks: communityScrapbooks)
                         }
                     }
-                    
                 } catch {
                     print("Error fetching scrapbooks for user \(userID): \(error)")
-                    // Continue with next user even if one fails
                 }
             }
             
-            // Update the userVM with the final collection
             await MainActor.run {
                 userVM.setCommunityScrapbooks(scrapbooks: communityScrapbooks)
             }
-            
         } catch {
             await MainActor.run {
                 self.error = error
@@ -264,24 +335,16 @@ struct CommunityView: View {
         isLoading = false
     }
     
-    var profileImage: some View {
-        HStack(alignment: .center, spacing: 16) {
-            if let profileImage = retrievedImage {
-                Image(uiImage: profileImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 50, height: 50)
-                    .clipShape(Circle())
-            } else {
-                Image(systemName: "person.crop.circle.fill")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 50, height: 50)
-                    .foregroundColor(.gray)
-            }
+    // MARK: - Computed Properties
+    
+    var filteredScrapbooks: [Scrapbook] {
+        switch selectedViewType {
+        case "Saved": return savedScrapbooks
+        default: return indexedScrapbooks
         }
-        .padding()
     }
+    
+    let viewTypes = ["Public Works", "Saved"]
 }
 
 struct SharpBookmark: Shape {
