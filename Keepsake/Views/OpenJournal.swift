@@ -58,10 +58,6 @@ struct OpenJournal: View {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(journal.template.coverColor)
                         .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
-                        .shadow(color: .black.opacity(0.3), radius: 5, x: 5, y: 5)
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(journal.template.coverColor)
-                        .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.56)
                         .overlay(
                             Image("\(journal.template.texture)") // Load texture image from assets
                                 .resizable()
@@ -511,7 +507,7 @@ struct JournalReturnButton: View {
                         } completion: {
                             showOnlyCover.toggle()
                             hideToolBar.toggle()
-                            withAnimation(.linear.delay(0.1)) {
+                            withAnimation {
                                 show.toggle()
                             } completion: {
                                 isAnimating.toggle()
