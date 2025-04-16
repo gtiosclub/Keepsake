@@ -12,13 +12,12 @@ struct UserSearchView: View {
     @Environment(\.presentationMode) var presentationMode
     @FocusState private var isTextFieldFocused: Bool
     @State private var searchText = ""
-    @StateObject var firebaseViewModel = FirebaseViewModel()
-    @StateObject private var viewModel = UserLookupViewModel()
-    @State private var currentUserFriends: [String] = []
-    
+    @ObservedObject var viewModel: FirebaseViewModel
+    @ObservedObject var userVM: UserViewModel
+    //@StateObject private var viewModel = UserLookupViewModel()
     var body: some View {
         NavigationStack {
-            let newUser = firebaseViewModel.currentUser
+            let newUser = viewModel.currentUser
             
             VStack {
                 HStack {
@@ -96,8 +95,7 @@ struct UserSearchView: View {
                     }
                     .background(
                         NavigationLink(
-                            destination: SearchedUserProfileView(currentUserID: newUser!, selectedUserID: user.id,
-                                    friends: $currentUserFriends),
+                            destination: SearchedUserProfileView(currentUserID: newUser?.id ?? "", selectedUserID: user.id, userVM: userVM, viewModel: viewModel),
                             tag: user.id,
                             selection: $selectedUserID
                         ) {
@@ -127,5 +125,5 @@ struct UserSearchView: View {
 }
 
 #Preview {
-    UserSearchView()
+    UserSearchView(viewModel: FirebaseViewModel(), userVM: UserViewModel(user: User()))
 }

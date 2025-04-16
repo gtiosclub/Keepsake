@@ -32,15 +32,14 @@ extension Color {
 enum Texture: String {
     case leather
     case bears
-    case blackLeather
     case flower1
     case flower2
     case flower3
     case garden
     case green
-    case redLeather
     case snoopy
     case stars
+    case blank
     
     func toDictionary() -> [String: Any] {
         switch self {
@@ -48,8 +47,6 @@ enum Texture: String {
             return ["type": "leather"]
         case .bears:
             return ["type": "bears"]
-        case .blackLeather:
-            return ["type": "blackLeather"]
         case .flower1:
             return ["type": "flower1"]
         case .flower2:
@@ -60,12 +57,12 @@ enum Texture: String {
             return ["type": "garden"]
         case .green:
             return ["type": "green"]
-        case .redLeather:
-            return ["type": "redLeather"]
         case .snoopy:
             return ["type": "snoopy"]
         case .stars:
             return ["type": "stars"]
+        case .blank:
+            return ["type": "blank"]
         }
     }
 
@@ -80,6 +77,7 @@ extension Texture: CaseIterable, Identifiable {
 }
 
 struct Template {
+    var id: UUID
     var name: String = "Default"
     var coverColor: Color
     var pageColor: Color
@@ -89,6 +87,7 @@ struct Template {
     //insert other TBD variables like color, line type, etc
 //    
     init(name: String, coverColor: Color, pageColor: Color, titleColor: Color, texture: Texture, journalPages: [JournalPage]? = nil) {
+        self.id = UUID()
         self.name = name
         self.coverColor = coverColor
         self.pageColor = pageColor
@@ -99,11 +98,11 @@ struct Template {
     
     // Overloaded initializers
     init(coverColor: Color, pageColor: Color, titleColor: Color) {
-        self.init(name: "Default", coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: .leather, journalPages: nil)
+        self.init(name: "Default", coverColor: coverColor, pageColor: pageColor, titleColor: titleColor, texture: .blank, journalPages: nil)
     }
 
     init() {
-        self.init(name: "Default", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .leather, journalPages: nil)
+        self.init(name: "Default", coverColor: .blue, pageColor: .white, titleColor: .black, texture: .blank, journalPages: nil)
     }
 }
 

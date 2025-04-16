@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-
 import AVFoundation
 import WatchConnectivity
 
@@ -15,25 +14,30 @@ struct VoiceRecordingView: View {
     @State private var isRecording = false
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
-
-    private let audioRecording = AudioRecording()
-
+    @State private var showBanner = false
+    @State private var currentPromptIndex = 0
+    @State private var currentPromptText = ""
+    @State private var isTyping = false
+    @State private var prompts = ["Tap to record", "How are you?", "What's on your mind?", "Weekend plans?"]
+    
     @State private var showDateTimeSelection = false
-    @State private var recordedAudio: String? // Placeholder for recorded file name
-
+    @State private var recordedAudio: String?
 
     var onRecordingComplete: (Reminder) -> Void
-    @Environment(\.dismiss) private var dismiss  // Dismiss when done
+    @Environment(\.dismiss) private var dismiss
+    private let audioRecording = AudioRecording()
 
     var body: some View {
         ZStack {
             Color.black.edgesIgnoringSafeArea(.all)
             
             VStack(spacing: 8) {
-                Text(isRecording ? formattedTime : "Tap to Record")
-                    .font(.system(size: 20, weight: .bold))
+                Text(currentPromptText)
+                    .font(.system(size: 17, weight: .bold))
                     .foregroundColor(.white)
-                
+                    .onAppear {
+                        startTypewriterAnimation()
+                    }
                 Button(action: {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         isRecording.toggle()
@@ -41,11 +45,9 @@ struct VoiceRecordingView: View {
                             audioRecording.stopRecording()
                             showDateTimeSelection = true
                             stopTimer()
-
                         } else {
                             audioRecording.startRecording()
                             startTimer()
-
                         }
                     }
                 }) {
@@ -54,21 +56,50 @@ struct VoiceRecordingView: View {
                 .buttonStyle(PlainButtonStyle())
             }
         }
+        .overlay(
+            Group {
+                    if showBanner {
+                        banner
+                            .frame(maxWidth: .infinity, alignment: .top)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        )
         .fullScreenCover(isPresented: $showDateTimeSelection) {
             if let recordedAudio = audioRecording.recordedAudio {
                 DateTimeSelectionView(recordedAudio: recordedAudio) { newReminder in
                     onRecordingComplete(newReminder)
-                    dismiss() // Close everything
+                    withAnimation {
+                        showBanner = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                        withAnimation {
+                            showBanner = false
+                        }
+                    }
+
+                    dismiss()
                 }
             }
         }
     }
-    
+    var banner: some View {
+        Text("Saved recording to your phone!")
+            .font(.subheadline)
+            .foregroundColor(.white)
+            .padding()
+            .background(Color(hex: "FFADF4"))
+            .cornerRadius(10)
+            .shadow(radius: 4)
+            .padding(.top, 0)
+            .transition(.move(edge: .top).combined(with: .opacity))
+    }
+
     private var recordingButton: some View {
         Circle()
             .fill(isRecording ? Color(hex: "FFADF4").opacity(0.7) : Color(hex: "FFADF4"))
             .frame(width: 70, height: 70)
-
             .overlay(
                 Circle()
                     .stroke(Color.white, lineWidth: 1)
@@ -89,9 +120,8 @@ struct VoiceRecordingView: View {
                 )
             animatedOverlay
         }
-        .scaleEffect(isRecording ? 1.1 : 1.0) // Slightly larger when recording
+        .scaleEffect(isRecording ? 1.1 : 1.0)
         .animation(.easeInOut(duration: 0.2), value: isRecording)
-
     }
 
     private func startTimer() {
@@ -111,12 +141,47 @@ struct VoiceRecordingView: View {
         let seconds = Int(elapsedTime) % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
+
+    private func startTypewriterAnimation() {
+        currentPromptText = ""
+        isTyping = true
+        
+        // Delay to start the typing effect
+        typewriterEffect(for: prompts[currentPromptIndex], onCompletion: {
+            // After 1 second, move to the next prompt
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                nextPrompt()
+            }
+        })
+    }
+
+    private func typewriterEffect(for text: String, onCompletion: @escaping () -> Void) {
+        var index = 0
+        currentPromptText = ""
+        
+        // Type character by character
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+            self.currentPromptText.append(text[text.index(text.startIndex, offsetBy: index)])
+            index += 1
+            if index == text.count {
+                timer.invalidate()
+                onCompletion()
+            }
+        }
+    }
+
+    private func nextPrompt() {
+        currentPromptIndex = (currentPromptIndex + 1) % prompts.count
+        startTypewriterAnimation()
+    }
 }
+
 
 
 
 struct DateTimeSelectionView: View {
     let recordedAudio: String?
+    @Environment(\.dismiss) private var dismiss
     var onComplete: (Reminder) -> Void
     @State private var selectedDate = Date()
     @State private var selectedHour = Calendar.current.component(.hour, from: Date()) % 12
@@ -133,6 +198,7 @@ struct DateTimeSelectionView: View {
                 )) {
                     ForEach(1...12, id: \.self) { month in
                         Text(Calendar.current.shortMonthSymbols[month - 1]).tag(month)
+                            .font(.system(size: 12))
                     }
                 }.pickerStyle(WheelPickerStyle())
                 
@@ -143,6 +209,7 @@ struct DateTimeSelectionView: View {
                 )) {
                     ForEach(1...31, id: \.self) { day in
                         Text("\(day)").tag(day)
+                            .font(.system(size: 12))
                     }
                 }.pickerStyle(WheelPickerStyle())
                 
@@ -152,6 +219,7 @@ struct DateTimeSelectionView: View {
                 )) {
                     ForEach(2024...2035, id: \.self) { year in
                         Text("\(year)").tag(year)
+                            .font(.system(size: 12))
                     }
                 }.pickerStyle(WheelPickerStyle())
             }
@@ -161,6 +229,7 @@ struct DateTimeSelectionView: View {
                 Picker("Hour", selection: $selectedHour) {
                     ForEach(1...12, id: \.self) { hour in
                         Text("\(hour)").tag(hour)
+                            .font(.system(size: 12))
                     }
                 }.pickerStyle(WheelPickerStyle())
                 
@@ -187,15 +256,11 @@ struct DateTimeSelectionView: View {
                 formatter.timeStyle = .long
                 formatter.timeZone = TimeZone.current
                 print("Final Date Selected: (\(formatter.string(from: finalDate))")
-                if let audioFilePath = recordedAudio {
-                    let reminderData: [String: Any] = [
-                        "audioFilePath": audioFilePath,
-                        "reminderDate": finalDate
-                    ]
-//                    WatchSessionManager.shared.sendMessageToPhone(data: reminderData)
-                } else {
-                    print("No audio file path available!")
-                }
+                
+                let reminder = Reminder(id: Connectivity.shared.audioUniqueId ?? "hi", prompt: UserDefaults.standard.string(forKey: "prompt") ?? "No prompt used", date: finalDate)
+                Connectivity.shared.send(reminder: reminder)
+                onComplete(reminder)
+                dismiss()
 
             } label: {
                 Text("Confirm")
